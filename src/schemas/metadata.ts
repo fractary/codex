@@ -14,6 +14,7 @@ export const MetadataSchema = z
     // Sync rules
     codex_sync_include: z.array(z.string()).optional(),
     codex_sync_exclude: z.array(z.string()).optional(),
+    codex_sync_custom: z.array(z.string()).optional(),
 
     // Metadata
     title: z.string().optional(),

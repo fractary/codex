@@ -1,0 +1,5 @@
+{
+  "timestamp": "2025-12-12T02:28:31Z",
+  "prompt": "{\"session_id\":\"48a76dd0-6107-4d17-9c51-98b216870a8f\",\"transcript_path\":\"/home/jmcwilliam/.claude/projects/-mnt-c-GitHub-fractary-codex/48a76dd0-6107-4d17-9c51-98b216870a8f.jsonl\",\"cwd\":\"/mnt/c/GitHub/fractary/codex\",\"permission_mode\":\"bypassPermissions\",\"hook_event_name\":\"UserPromptSubmit\",\"prompt\":\"/fractary-repo:commit-and-push \"} ",
+  "prompt_short": "{\"session_id\":\"48a76dd0-6107-4d17-9c5..."
+}
