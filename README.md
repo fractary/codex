@@ -1,23 +1,24 @@
 # @fractary/codex
 
-Core SDK for Fractary Codex - a centralized knowledge management and distribution platform for organizations.
+Core SDK for Fractary Codex - knowledge infrastructure for AI agents.
 
 [![npm version](https://img.shields.io/npm/v/@fractary/codex.svg)](https://www.npmjs.com/package/@fractary/codex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-The Codex SDK provides the foundational business logic for the Fractary Codex system, which enables organizations to maintain a single source of truth for documentation, AI tools, and organizational knowledge across all projects.
+The Codex SDK provides foundational infrastructure for managing organizational knowledge across AI agents and projects. It implements a universal reference system (`codex://` URIs), multi-provider storage, intelligent caching, file synchronization, and MCP (Model Context Protocol) integration.
 
 ### Key Features
 
-- **Metadata Parsing**: Extract and validate YAML frontmatter from markdown files
-- **Pattern Matching**: Glob-based pattern matching for intelligent file routing
-- **Smart Routing**: Determine which files should sync to which repositories
-- **Configuration Management**: Multi-source configuration with sensible defaults
-- **Organization-Agnostic**: Works for any organization, not just Fractary
+- **Universal References**: `codex://` URI scheme for cross-project knowledge references
+- **Multi-Provider Storage**: Local filesystem, GitHub, and HTTP storage backends
+- **Intelligent Caching**: Multi-tier caching (L1 memory, L2 disk, L3 network) with LRU eviction
+- **File Synchronization**: Bidirectional sync with conflict detection
+- **MCP Integration**: Model Context Protocol server for AI agent integration
+- **Permission System**: Fine-grained access control (none/read/write/admin)
+- **Migration Tools**: Upgrade from v2.x to v3.0 configuration format
 - **Type-Safe**: Full TypeScript support with strict typing
-- **Well-Tested**: Comprehensive unit test coverage
 
 ## Installation
 
@@ -29,193 +30,301 @@ npm install @fractary/codex
 
 ```typescript
 import {
-  parseMetadata,
-  shouldSyncToRepo,
-  loadConfig
+  parseReference,
+  resolveReference,
+  CacheManager,
+  StorageManager,
+  createMcpServer
 } from '@fractary/codex'
 
-// 1. Load configuration
-const config = loadConfig({
-  organizationSlug: 'fractary'
+// Parse a codex URI
+const ref = parseReference('codex://myorg/docs/api-guide.md')
+console.log(ref.org)      // 'myorg'
+console.log(ref.path)     // 'docs/api-guide.md'
+
+// Resolve to actual file location
+const resolved = resolveReference(ref, {
+  cacheDir: '.codex-cache'
 })
 
-// 2. Parse frontmatter from a markdown file
-const fileContent = await readFile('docs/api-guide.md', 'utf-8')
-const { metadata, content } = parseMetadata(fileContent)
+// Create storage and cache managers
+const storage = StorageManager.create()
+const cache = CacheManager.create({ cacheDir: '.codex-cache' })
 
-// 3. Determine if file should sync to a target repository
-const shouldSync = shouldSyncToRepo({
-  filePath: 'docs/api-guide.md',
-  fileMetadata: metadata,
-  targetRepo: 'api-gateway',
-  sourceRepo: 'codex.fractary.com',
-  rules: config.rules
+// Fetch content with caching
+const content = await cache.get('codex://myorg/docs/api-guide.md')
+```
+
+## Core Modules
+
+### References
+
+Universal `codex://` URI system for cross-project knowledge references:
+
+```typescript
+import {
+  parseReference,
+  buildUri,
+  resolveReference,
+  validateUri
+} from '@fractary/codex'
+
+// Parse URI
+const ref = parseReference('codex://fractary/codex/docs/api.md')
+// { org: 'fractary', project: 'codex', path: 'docs/api.md' }
+
+// Build URI
+const uri = buildUri('fractary', 'codex', 'docs/api.md')
+// 'codex://fractary/codex/docs/api.md'
+
+// Validate
+const isValid = validateUri('codex://org/project/path.md')
+```
+
+### Storage
+
+Multi-provider storage abstraction with priority-based fallback:
+
+```typescript
+import {
+  StorageManager,
+  LocalStorage,
+  GitHubStorage,
+  HttpStorage
+} from '@fractary/codex'
+
+// Create storage manager with multiple providers
+const storage = StorageManager.create({
+  providers: [
+    { type: 'local', basePath: './knowledge' },
+    { type: 'github', token: process.env.GITHUB_TOKEN },
+    { type: 'http', baseUrl: 'https://codex.example.com' }
+  ]
 })
 
-console.log(`Sync to api-gateway: ${shouldSync}`)
+// Fetch content (tries providers in order)
+const result = await storage.fetch('codex://org/project/file.md')
+console.log(result.content)
+console.log(result.provider) // Which provider served the content
 ```
 
-## Core Concepts
+### Cache
 
-### Metadata Parsing
-
-The SDK parses YAML frontmatter from markdown files to extract sync rules and metadata:
-
-```yaml
----
-org: fractary
-system: api-gateway
-codex_sync_include: ['api-*', 'core-*']
-codex_sync_exclude: ['*-test', '*-dev']
-visibility: internal
-tags: [api, rest]
----
-
-# API Documentation
-```
+Multi-tier caching with LRU eviction and stale-while-revalidate:
 
 ```typescript
-import { parseMetadata } from '@fractary/codex'
+import { CacheManager, createCacheManager } from '@fractary/codex'
 
-const result = parseMetadata(markdown)
-console.log(result.metadata.codex_sync_include) // ['api-*', 'core-*']
-```
-
-### Pattern Matching
-
-Glob patterns determine which repositories receive which files:
-
-```typescript
-import { matchPattern, matchAnyPattern } from '@fractary/codex'
-
-// Single pattern
-matchPattern('api-*', 'api-gateway')  // true
-matchPattern('api-*', 'web-app')      // false
-
-// Multiple patterns
-matchAnyPattern(['api-*', 'core-*'], 'api-gateway')  // true
-matchAnyPattern(['api-*', 'core-*'], 'web-app')      // false
-
-// Special: match all
-matchAnyPattern(['*'], 'anything')  // true
-```
-
-### Sync Routing
-
-Determine which repositories should receive a file based on frontmatter rules:
-
-```typescript
-import { shouldSyncToRepo } from '@fractary/codex'
-
-const shouldSync = shouldSyncToRepo({
-  filePath: 'docs/api-guide.md',
-  fileMetadata: {
-    codex_sync_include: ['api-*', 'core-*'],
-    codex_sync_exclude: ['*-test']
-  },
-  targetRepo: 'api-gateway',
-  sourceRepo: 'codex.fractary.com'
+const cache = createCacheManager({
+  cacheDir: '.codex-cache',
+  maxMemorySize: 50 * 1024 * 1024,  // 50MB L1 cache
+  maxDiskSize: 500 * 1024 * 1024,   // 500MB L2 cache
+  defaultTtl: 3600                   // 1 hour TTL
 })
 
-// Returns: true (matches 'api-*' and not excluded)
+// Get with automatic caching
+const entry = await cache.get('codex://org/project/file.md')
+
+// Check cache status
+const status = cache.getStatus('codex://org/project/file.md')
+// 'fresh' | 'stale' | 'expired' | 'missing'
+
+// Invalidate specific entry
+await cache.invalidate('codex://org/project/file.md')
+
+// Clear all cache
+await cache.clear()
 ```
 
-### Configuration
+### MCP Server
 
-The SDK supports multi-source configuration:
+Model Context Protocol integration for AI agents:
 
 ```typescript
-import { loadConfig, resolveOrganization } from '@fractary/codex'
+import { createMcpServer } from '@fractary/codex'
 
-// Auto-detect organization from repo name
-const org = resolveOrganization({
-  repoName: 'codex.fractary.com'
-})  // Returns: 'fractary'
-
-// Load configuration
-const config = loadConfig({
-  organizationSlug: 'fractary'
+const server = createMcpServer({
+  name: 'codex',
+  version: '1.0.0',
+  cacheDir: '.codex-cache'
 })
 
-console.log(config)
-/*
-{
-  organizationSlug: 'fractary',
-  directories: {
-    source: '.fractary',
-    target: '.fractary',
-    systems: '.fractary/systems'
-  },
-  rules: {
-    preventSelfSync: true,
-    preventCodexSync: true,
-    allowProjectOverrides: true,
-    autoSyncPatterns: []
-  }
+// Available tools:
+// - codex_fetch: Fetch document by URI
+// - codex_search: Search across documents
+// - codex_list: List available documents
+// - codex_invalidate: Clear cache entries
+
+await server.start()
+```
+
+### Sync
+
+Bidirectional file synchronization:
+
+```typescript
+import { SyncManager, createSyncPlan } from '@fractary/codex'
+
+const sync = new SyncManager({
+  sourceDir: './local-docs',
+  targetDir: './codex-repo'
+})
+
+// Create sync plan (dry run)
+const plan = await sync.plan({
+  direction: 'bidirectional',
+  include: ['**/*.md'],
+  exclude: ['**/node_modules/**']
+})
+
+console.log(plan.operations) // List of copy/update/delete operations
+
+// Execute sync
+const result = await sync.execute(plan)
+```
+
+### Permissions
+
+Fine-grained access control:
+
+```typescript
+import {
+  PermissionManager,
+  createRule,
+  CommonRules
+} from '@fractary/codex'
+
+const permissions = new PermissionManager({
+  config: { enforced: true }
+})
+
+// Add rules
+permissions.addRule(CommonRules.allowDocs())      // Allow read on docs/**
+permissions.addRule(CommonRules.denyPrivate())    // Deny .private/**
+permissions.addRule(createRule({
+  pattern: 'admin/**',
+  actions: ['fetch', 'sync'],
+  level: 'admin'
+}))
+
+// Check permissions
+const allowed = permissions.isAllowed('docs/api.md', 'fetch')
+const hasAccess = permissions.hasPermission('admin/config.md', 'sync', 'admin')
+
+// Filter paths by permission
+const accessible = permissions.filterAllowed(paths, 'fetch')
+```
+
+### Migration
+
+Upgrade from v2.x to v3.0 configuration:
+
+```typescript
+import {
+  migrateConfig,
+  detectVersion,
+  convertLegacyReferences
+} from '@fractary/codex'
+
+// Detect config version
+const detection = detectVersion(oldConfig)
+console.log(detection.version) // '2.x' | '3.0' | 'unknown'
+
+// Migrate configuration
+const result = migrateConfig(oldConfig)
+if (result.success) {
+  console.log(result.config)   // Modern v3.0 config
+  console.log(result.changes)  // List of changes made
 }
-*/
+
+// Convert legacy references in content
+const converted = convertLegacyReferences(content, {
+  defaultOrg: 'myorg',
+  defaultProject: 'myproject'
+})
+```
+
+### Types
+
+Extensible artifact type system with TTL management:
+
+```typescript
+import { TypeRegistry, BUILT_IN_TYPES } from '@fractary/codex'
+
+const types = new TypeRegistry()
+
+// Get TTL for a file
+const ttl = types.getTtl('docs/api.md')      // Uses 'docs' type TTL
+const specTtl = types.getTtl('specs/v1.md')  // Uses 'specs' type TTL
+
+// Register custom type
+types.register({
+  name: 'templates',
+  patterns: ['templates/**/*.md'],
+  ttl: 86400,  // 24 hours
+  description: 'Document templates'
+})
 ```
 
 ## API Reference
 
-### Metadata Parsing
+### References Module
+- `parseReference(uri)` - Parse codex:// URI
+- `buildUri(org, project, path)` - Build codex:// URI
+- `resolveReference(ref, options)` - Resolve to file path
+- `validateUri(uri)` - Validate URI format
 
-- `parseMetadata(content, options?)` - Parse YAML frontmatter from markdown
-- `hasFrontmatter(content)` - Check if content has frontmatter
-- `validateMetadata(metadata)` - Validate metadata against schema
-- `extractRawFrontmatter(content)` - Extract raw frontmatter string
+### Storage Module
+- `StorageManager` - Multi-provider storage coordinator
+- `LocalStorage` - Local filesystem provider
+- `GitHubStorage` - GitHub API/raw content provider
+- `HttpStorage` - Generic HTTP provider
 
-### Pattern Matching
+### Cache Module
+- `CacheManager` - Multi-tier cache coordinator
+- `CachePersistence` - Disk persistence layer
+- `createCacheEntry(uri, content, options)` - Create cache entry
 
-- `matchPattern(pattern, value)` - Match a single glob pattern
-- `matchAnyPattern(patterns, value)` - Match against multiple patterns
-- `filterByPatterns(patterns, values)` - Filter array by patterns
-- `evaluatePatterns({ value, include, exclude })` - Evaluate include/exclude rules
+### MCP Module
+- `McpServer` - MCP protocol server
+- `CODEX_TOOLS` - Available tool definitions
+- `handleToolCall(name, args, context)` - Handle tool invocation
 
-### Configuration
+### Sync Module
+- `SyncManager` - Sync orchestration
+- `createSyncPlan(options)` - Create sync plan
+- `evaluatePath(path, rules)` - Evaluate sync rules
 
-- `loadConfig(options)` - Load configuration from all sources
-- `resolveOrganization(options)` - Resolve organization slug
-- `extractOrgFromRepoName(repoName)` - Extract org from repo name pattern
-- `getDefaultConfig(orgSlug)` - Get default configuration
+### Permissions Module
+- `PermissionManager` - Permission orchestration
+- `createRule(options)` - Create permission rule
+- `CommonRules` - Pre-built common rules
 
-### Routing
-
-- `shouldSyncToRepo(options)` - Determine if file should sync to repo
-- `getTargetRepos(options)` - Get all repos that should receive a file
+### Migration Module
+- `migrateConfig(config)` - Migrate v2.x to v3.0
+- `detectVersion(config)` - Detect config version
+- `convertLegacyReferences(content)` - Convert old references
 
 ## Configuration
 
 ### Environment Variables
 
-- `ORGANIZATION_SLUG` - Organization identifier
-- `CODEX_ORG_SLUG` - Alternative organization identifier
-- `CODEX_SOURCE_DIR` - Source directory (default: `.{org}`)
-- `CODEX_TARGET_DIR` - Target directory (default: `.{org}`)
-- `CODEX_PREVENT_SELF_SYNC` - Prevent self-sync (default: `true`)
-- `CODEX_ALLOW_PROJECT_OVERRIDES` - Allow project overrides (default: `true`)
+```bash
+CODEX_CACHE_DIR=".codex-cache"    # Cache directory
+CODEX_DEFAULT_TTL="3600"          # Default TTL in seconds
+GITHUB_TOKEN="ghp_xxx"            # GitHub API token (for GitHub storage)
+```
 
-### Auto-Sync Patterns
-
-Configure patterns that automatically sync to repositories:
+### Cache Configuration
 
 ```typescript
-const config = loadConfig({
-  organizationSlug: 'fractary'
+const cache = createCacheManager({
+  cacheDir: '.codex-cache',
+  maxMemorySize: 50 * 1024 * 1024,   // 50MB
+  maxDiskSize: 500 * 1024 * 1024,    // 500MB
+  defaultTtl: 3600,                   // 1 hour
+  staleWhileRevalidate: true
 })
-
-config.rules.autoSyncPatterns = [
-  {
-    pattern: '*/docs/schema/*.json',
-    include: ['*'],  // All repos
-    exclude: []
-  },
-  {
-    pattern: '*/security/**/*.md',
-    include: ['*'],
-    exclude: ['*-public']
-  }
-]
 ```
 
 ## Development
@@ -235,39 +344,35 @@ npm run test:coverage
 
 # Type check
 npm run typecheck
+
+# Lint
+npm run lint
 ```
 
 ## Project Structure
 
 ```
 src/
-├── core/
-│   ├── metadata/       # Frontmatter parsing
-│   ├── patterns/       # Pattern matching
-│   ├── routing/        # Sync routing logic
-│   └── config/         # Configuration system
-├── schemas/            # Zod schemas
-├── errors/             # Error classes
-└── index.ts            # Main exports
-
-tests/
-├── unit/               # Unit tests
-└── fixtures/           # Test fixtures
+├── references/      # codex:// URI parsing and resolution
+├── types/           # Artifact type system
+├── storage/         # Multi-provider storage
+├── cache/           # Multi-tier caching
+├── mcp/             # MCP server integration
+├── sync/            # File synchronization
+├── permissions/     # Access control
+├── migration/       # v2.x to v3.0 migration
+├── core/            # Core utilities
+│   ├── config/      # Configuration management
+│   ├── metadata/    # Frontmatter parsing
+│   ├── patterns/    # Glob pattern matching
+│   └── routing/     # Sync routing
+├── schemas/         # Zod validation schemas
+├── errors/          # Error classes
+└── index.ts         # Public exports
 ```
-
-## Specifications
-
-Detailed specifications are available in `/docs/specs/`:
-
-- [SPEC-00001: Core SDK Overview](./docs/specs/SPEC-00001-core-sdk-overview.md)
-- [SPEC-00002: Metadata Parsing](./docs/specs/SPEC-00002-metadata-parsing.md)
-- [SPEC-00003: Pattern Matching](./docs/specs/SPEC-00003-pattern-matching.md)
-- [SPEC-00004: Routing & Distribution](./docs/specs/SPEC-00004-routing-distribution.md)
-- [SPEC-00005: Configuration System](./docs/specs/SPEC-00005-configuration-system.md)
 
 ## Related Projects
 
-- **fractary-cli** - Unified CLI for all Fractary tools (coming soon)
 - **forge-bundle-codex-github-core** - GitHub Actions workflows for codex sync
 - **forge-bundle-codex-claude-agents** - Claude Code agents for codex management
 
@@ -277,4 +382,4 @@ MIT © Fractary Engineering
 
 ## Contributing
 
-This is part of the Fractary ecosystem. For issues or contributions, please refer to the [main repository](https://github.com/fractary/codex).
+For issues or contributions, please visit the [GitHub repository](https://github.com/fractary/codex).

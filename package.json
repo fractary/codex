@@ -1,12 +1,18 @@
 {
   "name": "@fractary/codex",
   "version": "0.1.1",
-  "description": "Core SDK for Fractary Codex - centralized knowledge management and distribution platform",
+  "description": "Knowledge infrastructure SDK for AI agents - universal references, multi-tier caching, storage abstraction, and MCP integration",
   "keywords": [
     "codex",
-    "documentation",
     "knowledge-management",
+    "ai-agents",
+    "mcp",
+    "model-context-protocol",
+    "caching",
+    "storage",
     "sync",
+    "permissions",
+    "typescript",
     "fractary"
   ],
   "homepage": "https://github.com/fractary/codex#readme",
