@@ -1,273 +1,107 @@
-# @fractary/codex
+# Fractary Codex
 
-Core SDK for Fractary Codex - a centralized knowledge management and distribution platform for organizations.
+Core SDK for Fractary Codex - knowledge infrastructure for AI agents.
 
-[![npm version](https://img.shields.io/npm/v/@fractary/codex.svg)](https://www.npmjs.com/package/@fractary/codex)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-The Codex SDK provides the foundational business logic for the Fractary Codex system, which enables organizations to maintain a single source of truth for documentation, AI tools, and organizational knowledge across all projects.
+The Codex SDK provides foundational infrastructure for managing organizational knowledge across AI agents and projects. It implements a universal reference system (`codex://` URIs), multi-provider storage, intelligent caching, file synchronization, and MCP (Model Context Protocol) integration.
 
 ### Key Features
 
-- **Metadata Parsing**: Extract and validate YAML frontmatter from markdown files
-- **Pattern Matching**: Glob-based pattern matching for intelligent file routing
-- **Smart Routing**: Determine which files should sync to which repositories
-- **Configuration Management**: Multi-source configuration with sensible defaults
-- **Organization-Agnostic**: Works for any organization, not just Fractary
-- **Type-Safe**: Full TypeScript support with strict typing
-- **Well-Tested**: Comprehensive unit test coverage
+- **Universal References**: `codex://` URI scheme for cross-project knowledge references
+- **Multi-Provider Storage**: Local filesystem, GitHub, and HTTP storage backends
+- **Intelligent Caching**: Multi-tier caching (L1 memory, L2 disk, L3 network) with LRU eviction
+- **File Synchronization**: Bidirectional sync with conflict detection
+- **MCP Integration**: Model Context Protocol server for AI agent integration
+- **Permission System**: Fine-grained access control (none/read/write/admin)
+- **Type-Safe**: Full TypeScript and Python type support
 
-## Installation
+## SDKs
 
-```bash
-npm install @fractary/codex
-```
+This monorepo contains SDK implementations for multiple languages:
+
+| Language | Package | Status | Install |
+|----------|---------|--------|---------|
+| **JavaScript/TypeScript** | [`@fractary/codex`](./packages/js/) | [![npm](https://img.shields.io/npm/v/@fractary/codex.svg)](https://www.npmjs.com/package/@fractary/codex) | `npm install @fractary/codex` |
+| **Python** | [`fractary-codex`](./packages/python/) | In Development | `pip install fractary-codex` |
 
 ## Quick Start
 
-```typescript
-import {
-  parseMetadata,
-  shouldSyncToRepo,
-  loadConfig
-} from '@fractary/codex'
-
-// 1. Load configuration
-const config = loadConfig({
-  organizationSlug: 'fractary'
-})
-
-// 2. Parse frontmatter from a markdown file
-const fileContent = await readFile('docs/api-guide.md', 'utf-8')
-const { metadata, content } = parseMetadata(fileContent)
-
-// 3. Determine if file should sync to a target repository
-const shouldSync = shouldSyncToRepo({
-  filePath: 'docs/api-guide.md',
-  fileMetadata: metadata,
-  targetRepo: 'api-gateway',
-  sourceRepo: 'codex.fractary.com',
-  rules: config.rules
-})
-
-console.log(`Sync to api-gateway: ${shouldSync}`)
-```
-
-## Core Concepts
-
-### Metadata Parsing
-
-The SDK parses YAML frontmatter from markdown files to extract sync rules and metadata:
-
-```yaml
----
-org: fractary
-system: api-gateway
-codex_sync_include: ['api-*', 'core-*']
-codex_sync_exclude: ['*-test', '*-dev']
-visibility: internal
-tags: [api, rest]
----
-
-# API Documentation
-```
+### JavaScript/TypeScript
 
 ```typescript
-import { parseMetadata } from '@fractary/codex'
+import { parseReference, CacheManager } from '@fractary/codex'
 
-const result = parseMetadata(markdown)
-console.log(result.metadata.codex_sync_include) // ['api-*', 'core-*']
+// Parse a codex URI
+const ref = parseReference('codex://myorg/docs/api-guide.md')
+
+// Fetch with caching
+const cache = CacheManager.create({ cacheDir: '.codex-cache' })
+const content = await cache.get('codex://myorg/docs/api-guide.md')
 ```
 
-### Pattern Matching
+### Python
 
-Glob patterns determine which repositories receive which files:
+```python
+import asyncio
+from fractary_codex import CodexClient
 
-```typescript
-import { matchPattern, matchAnyPattern } from '@fractary/codex'
+async def main():
+    client = CodexClient()
+    doc = await client.fetch("codex://myorg/docs/api-guide.md")
+    print(doc.content)
 
-// Single pattern
-matchPattern('api-*', 'api-gateway')  // true
-matchPattern('api-*', 'web-app')      // false
-
-// Multiple patterns
-matchAnyPattern(['api-*', 'core-*'], 'api-gateway')  // true
-matchAnyPattern(['api-*', 'core-*'], 'web-app')      // false
-
-// Special: match all
-matchAnyPattern(['*'], 'anything')  // true
-```
-
-### Sync Routing
-
-Determine which repositories should receive a file based on frontmatter rules:
-
-```typescript
-import { shouldSyncToRepo } from '@fractary/codex'
-
-const shouldSync = shouldSyncToRepo({
-  filePath: 'docs/api-guide.md',
-  fileMetadata: {
-    codex_sync_include: ['api-*', 'core-*'],
-    codex_sync_exclude: ['*-test']
-  },
-  targetRepo: 'api-gateway',
-  sourceRepo: 'codex.fractary.com'
-})
-
-// Returns: true (matches 'api-*' and not excluded)
-```
-
-### Configuration
-
-The SDK supports multi-source configuration:
-
-```typescript
-import { loadConfig, resolveOrganization } from '@fractary/codex'
-
-// Auto-detect organization from repo name
-const org = resolveOrganization({
-  repoName: 'codex.fractary.com'
-})  // Returns: 'fractary'
-
-// Load configuration
-const config = loadConfig({
-  organizationSlug: 'fractary'
-})
-
-console.log(config)
-/*
-{
-  organizationSlug: 'fractary',
-  directories: {
-    source: '.fractary',
-    target: '.fractary',
-    systems: '.fractary/systems'
-  },
-  rules: {
-    preventSelfSync: true,
-    preventCodexSync: true,
-    allowProjectOverrides: true,
-    autoSyncPatterns: []
-  }
-}
-*/
-```
-
-## API Reference
-
-### Metadata Parsing
-
-- `parseMetadata(content, options?)` - Parse YAML frontmatter from markdown
-- `hasFrontmatter(content)` - Check if content has frontmatter
-- `validateMetadata(metadata)` - Validate metadata against schema
-- `extractRawFrontmatter(content)` - Extract raw frontmatter string
-
-### Pattern Matching
-
-- `matchPattern(pattern, value)` - Match a single glob pattern
-- `matchAnyPattern(patterns, value)` - Match against multiple patterns
-- `filterByPatterns(patterns, values)` - Filter array by patterns
-- `evaluatePatterns({ value, include, exclude })` - Evaluate include/exclude rules
-
-### Configuration
-
-- `loadConfig(options)` - Load configuration from all sources
-- `resolveOrganization(options)` - Resolve organization slug
-- `extractOrgFromRepoName(repoName)` - Extract org from repo name pattern
-- `getDefaultConfig(orgSlug)` - Get default configuration
-
-### Routing
-
-- `shouldSyncToRepo(options)` - Determine if file should sync to repo
-- `getTargetRepos(options)` - Get all repos that should receive a file
-
-## Configuration
-
-### Environment Variables
-
-- `ORGANIZATION_SLUG` - Organization identifier
-- `CODEX_ORG_SLUG` - Alternative organization identifier
-- `CODEX_SOURCE_DIR` - Source directory (default: `.{org}`)
-- `CODEX_TARGET_DIR` - Target directory (default: `.{org}`)
-- `CODEX_PREVENT_SELF_SYNC` - Prevent self-sync (default: `true`)
-- `CODEX_ALLOW_PROJECT_OVERRIDES` - Allow project overrides (default: `true`)
-
-### Auto-Sync Patterns
-
-Configure patterns that automatically sync to repositories:
-
-```typescript
-const config = loadConfig({
-  organizationSlug: 'fractary'
-})
-
-config.rules.autoSyncPatterns = [
-  {
-    pattern: '*/docs/schema/*.json',
-    include: ['*'],  // All repos
-    exclude: []
-  },
-  {
-    pattern: '*/security/**/*.md',
-    include: ['*'],
-    exclude: ['*-public']
-  }
-]
-```
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Test
-npm test
-
-# Test with coverage
-npm run test:coverage
-
-# Type check
-npm run typecheck
+asyncio.run(main())
 ```
 
 ## Project Structure
 
 ```
-src/
-├── core/
-│   ├── metadata/       # Frontmatter parsing
-│   ├── patterns/       # Pattern matching
-│   ├── routing/        # Sync routing logic
-│   └── config/         # Configuration system
-├── schemas/            # Zod schemas
-├── errors/             # Error classes
-└── index.ts            # Main exports
-
-tests/
-├── unit/               # Unit tests
-└── fixtures/           # Test fixtures
+codex/
+├── packages/
+│   ├── js/                 # JavaScript/TypeScript SDK
+│   │   ├── src/            # TypeScript source
+│   │   ├── tests/          # Test suite
+│   │   └── package.json    # npm configuration
+│   └── python/             # Python SDK
+│       ├── fractary_codex/ # Python package
+│       ├── tests/          # Test suite
+│       └── pyproject.toml  # PyPI configuration
+├── docs/                   # Shared documentation
+├── specs/                  # Feature specifications
+└── README.md               # This file
 ```
 
-## Specifications
+## Documentation
 
-Detailed specifications are available in `/docs/specs/`:
+- [JavaScript SDK Documentation](./packages/js/README.md)
+- [Python SDK Documentation](./packages/python/README.md)
+- [API Reference](./docs/)
 
-- [SPEC-00001: Core SDK Overview](./docs/specs/SPEC-00001-core-sdk-overview.md)
-- [SPEC-00002: Metadata Parsing](./docs/specs/SPEC-00002-metadata-parsing.md)
-- [SPEC-00003: Pattern Matching](./docs/specs/SPEC-00003-pattern-matching.md)
-- [SPEC-00004: Routing & Distribution](./docs/specs/SPEC-00004-routing-distribution.md)
-- [SPEC-00005: Configuration System](./docs/specs/SPEC-00005-configuration-system.md)
+## Development
+
+### JavaScript SDK
+
+```bash
+cd packages/js
+npm install
+npm run build
+npm test
+```
+
+### Python SDK
+
+```bash
+cd packages/python
+pip install -e ".[dev]"
+pytest
+mypy fractary_codex
+```
 
 ## Related Projects
 
-- **fractary-cli** - Unified CLI for all Fractary tools (coming soon)
 - **forge-bundle-codex-github-core** - GitHub Actions workflows for codex sync
 - **forge-bundle-codex-claude-agents** - Claude Code agents for codex management
 
@@ -277,4 +111,4 @@ MIT © Fractary Engineering
 
 ## Contributing
 
-This is part of the Fractary ecosystem. For issues or contributions, please refer to the [main repository](https://github.com/fractary/codex).
+For issues or contributions, please visit the [GitHub repository](https://github.com/fractary/codex).
