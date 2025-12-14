@@ -53,6 +53,7 @@ class CacheEntry:
         # Calculate expires_at if not set
         if self.expires_at is None and self.ttl > 0:
             from datetime import timedelta
+
             self.expires_at = self.fetched_at + timedelta(seconds=self.ttl)
 
     @property
@@ -228,7 +229,7 @@ def generate_cache_key(path: str, provider: Optional[str] = None) -> str:
     # Remove protocol prefixes for consistency
     for prefix in ("codex://", "http://", "https://", "file://"):
         if key.startswith(prefix):
-            key = key[len(prefix):]
+            key = key[len(prefix) :]
             break
 
     # Replace unsafe characters

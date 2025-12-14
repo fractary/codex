@@ -287,7 +287,9 @@ class GitHubStorage(BaseStorageProvider):
                 url = f"{self.API_BASE_URL}/repos/{org}/{repo}/contents/{file_path}"
                 params = {"ref": branch}
                 session = await self._get_session()
-                async with session.head(url, params=params, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                async with session.head(
+                    url, params=params, timeout=aiohttp.ClientTimeout(total=10)
+                ) as response:
                     return response.status == 200
 
         except (StorageError, aiohttp.ClientError):

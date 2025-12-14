@@ -157,7 +157,9 @@ class TypeRegistry:
         return self._sorted_types
 
     @staticmethod
-    def _matches_patterns(path: str, patterns: Union[List[str], Tuple[str, ...], Sequence[str]]) -> bool:
+    def _matches_patterns(
+        path: str, patterns: Union[List[str], Tuple[str, ...], Sequence[str]]
+    ) -> bool:
         """Check if a path matches any of the patterns.
 
         Args:

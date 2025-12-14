@@ -176,9 +176,7 @@ class StorageManager:
             _, error = errors[0]
             raise error
 
-        error_details = {
-            name: str(err) for name, err in errors
-        }
+        error_details = {name: str(err) for name, err in errors}
         raise StorageError(
             f"All providers failed to fetch: {path}",
             code="ALL_PROVIDERS_FAILED",
@@ -239,7 +237,10 @@ class StorageManager:
                 raise StorageError(
                     f"Provider '{explicit_provider}' not registered",
                     code="PROVIDER_NOT_FOUND",
-                    details={"provider": explicit_provider, "available": list(self._providers.keys())},
+                    details={
+                        "provider": explicit_provider,
+                        "available": list(self._providers.keys()),
+                    },
                 )
             return [explicit_provider]
 
@@ -255,7 +256,8 @@ class StorageManager:
         if provider_type and not fallback:
             # Return only providers of the detected type
             matching = [
-                name for name, _ in sorted_providers
+                name
+                for name, _ in sorted_providers
                 if self._provider_matches_type(name, provider_type)
             ]
             if matching:

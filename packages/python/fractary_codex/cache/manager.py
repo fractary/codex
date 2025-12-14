@@ -121,9 +121,7 @@ class CacheManager:
             # Stale entry exists - try conditional request
             if entry is not None:
                 try:
-                    result = await self._conditional_fetch(
-                        path, storage, entry, options
-                    )
+                    result = await self._conditional_fetch(path, storage, entry, options)
                     if result is not None:
                         return result
                 except StorageError:
@@ -327,6 +325,7 @@ class CacheManager:
                 file_path = parts[2]
         elif path.startswith(("http://", "https://")):
             from urllib.parse import urlparse
+
             parsed = urlparse(path)
             file_path = parsed.path
 

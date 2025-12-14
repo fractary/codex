@@ -118,9 +118,7 @@ class HttpStorage(BaseStorageProvider):
                         content=b"",
                         content_type=response.content_type or "application/octet-stream",
                         etag=response.headers.get("ETag"),
-                        last_modified=self._parse_date(
-                            response.headers.get("Last-Modified")
-                        ),
+                        last_modified=self._parse_date(response.headers.get("Last-Modified")),
                         size=0,
                         metadata={"not_modified": True, "status": 304},
                     )
@@ -166,9 +164,7 @@ class HttpStorage(BaseStorageProvider):
                 content_type = response.content_type or "application/octet-stream"
                 encoding = response.charset
                 etag = response.headers.get("ETag")
-                last_modified = self._parse_date(
-                    response.headers.get("Last-Modified")
-                )
+                last_modified = self._parse_date(response.headers.get("Last-Modified"))
 
                 return FetchResult(
                     content=content,
