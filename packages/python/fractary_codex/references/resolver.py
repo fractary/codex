@@ -5,14 +5,12 @@ This module provides functions to resolve codex:// URIs to actual file paths
 and detect the current project context from git repositories.
 """
 
-import os
 import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Union
 
-from ..errors import ReferenceError, ValidationError
 from .parser import ParsedReference, parse_reference
 
 
@@ -104,7 +102,7 @@ def detect_current_project(
 
 
 def resolve_reference(
-    ref: ParsedReference | str,
+    ref: Union[ParsedReference, str],
     *,
     base_dir: Optional[Path] = None,
     cache_dir: Optional[Path] = None,
@@ -169,11 +167,11 @@ def resolve_reference(
 
 
 def resolve_references(
-    refs: list[ParsedReference | str],
+    refs: List[Union[ParsedReference, str]],
     *,
     base_dir: Optional[Path] = None,
     cache_dir: Optional[Path] = None,
-) -> list[ResolvedReference]:
+) -> List[ResolvedReference]:
     """Resolve multiple references at once.
 
     Args:

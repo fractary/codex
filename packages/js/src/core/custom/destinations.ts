@@ -90,7 +90,7 @@ export function getCustomSyncDestinations(
     try {
       const parsed = parseCustomDestination(destination)
       results.push(parsed)
-    } catch (error) {
+    } catch (_error) {
       // Skip invalid destinations but preserve valid ones
       // Consumers can validate metadata if they want strict validation
       continue

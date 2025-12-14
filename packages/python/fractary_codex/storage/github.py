@@ -7,13 +7,12 @@ repositories using the GitHub API or raw content URLs.
 
 import base64
 import os
-from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
 import aiohttp
 
 from ..errors import StorageError
-from ..references import ParsedReference, parse_reference
+from ..references import parse_reference
 from .base import BaseStorageProvider, FetchOptions, FetchResult
 
 

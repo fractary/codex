@@ -13,7 +13,6 @@ import yaml
 
 from ..errors import ValidationError
 
-
 # Frontmatter regex pattern - matches content between --- markers
 # The \n? before closing --- handles empty frontmatter (---\n---\n)
 FRONTMATTER_PATTERN = re.compile(

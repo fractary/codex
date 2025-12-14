@@ -8,10 +8,9 @@ filesystem, with support for async operations.
 import asyncio
 import hashlib
 import mimetypes
-import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from ..errors import StorageError
 from .base import BaseStorageProvider, FetchOptions, FetchResult
@@ -31,7 +30,7 @@ class LocalStorage(BaseStorageProvider):
 
     def __init__(
         self,
-        base_path: str | Path = ".",
+        base_path: Union[str, Path] = ".",
         *,
         create_dirs: bool = False,
         follow_symlinks: bool = True,

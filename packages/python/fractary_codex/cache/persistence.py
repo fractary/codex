@@ -9,9 +9,9 @@ import asyncio
 import json
 import os
 import tempfile
-from datetime import datetime, timezone
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import AsyncIterator, Optional
+from typing import Optional, Union
 
 from ..errors import CacheError
 from .entry import CacheEntry
@@ -35,7 +35,7 @@ class FileCacheStore:
 
     def __init__(
         self,
-        cache_dir: str | Path,
+        cache_dir: Union[str, Path],
         *,
         create_dirs: bool = True,
         max_key_length: int = 200,
@@ -85,7 +85,7 @@ class FileCacheStore:
 
             return entry
 
-        except (json.JSONDecodeError, KeyError, OSError) as e:
+        except (json.JSONDecodeError, KeyError, OSError):
             # Corrupted entry - try to clean up
             try:
                 await self.delete(key)
@@ -230,7 +230,7 @@ class FileCacheStore:
 
         return count
 
-    async def stats(self) -> dict:
+    async def stats(self) -> dict[str, object]:
         """Get cache statistics.
 
         Returns:

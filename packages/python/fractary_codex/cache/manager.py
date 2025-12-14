@@ -8,11 +8,10 @@ TTL-based caching, using the TypeRegistry for automatic TTL determination.
 import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from ..core import DEFAULT_CACHE_DIR
 from ..errors import CacheError, StorageError
-from ..references import get_extension
 from ..storage.base import FetchOptions, FetchResult, StorageProvider
 from ..types import TypeRegistry, create_default_registry
 from .entry import CacheEntry, generate_cache_key
@@ -53,7 +52,7 @@ class CacheManager:
 
     def __init__(
         self,
-        cache_dir: Optional[str | Path] = None,
+        cache_dir: Optional[Union[str, Path]] = None,
         *,
         type_registry: Optional[TypeRegistry] = None,
         default_ttl: int = 3600,
@@ -77,7 +76,7 @@ class CacheManager:
 
         self._store = FileCacheStore(self.cache_dir)
         self._closed = False
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._cleanup_task: Optional[asyncio.Task[int]] = None
         self._last_cleanup = datetime.now(timezone.utc)
 
     async def fetch(

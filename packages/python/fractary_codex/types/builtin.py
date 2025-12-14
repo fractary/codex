@@ -5,8 +5,9 @@ This module defines the default artifact types recognized by the Codex SDK,
 along with their default TTL (time-to-live) values for caching.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Optional
 
 
 class TTL:
@@ -148,7 +149,7 @@ BUILT_IN_TYPES: dict[str, ArtifactType] = {
 DEFAULT_TTL: int = TTL.DAY
 
 
-def get_built_in_type(name: str) -> ArtifactType | None:
+def get_built_in_type(name: str) -> Optional[ArtifactType]:
     """Get a built-in type by name.
 
     Args:

@@ -1,9 +1,9 @@
 """Tests for cache module."""
 
-import pytest
 import asyncio
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
+
+import pytest
 
 from fractary_codex.cache import (
     CacheEntry,
@@ -11,8 +11,7 @@ from fractary_codex.cache import (
     FileCacheStore,
     generate_cache_key,
 )
-from fractary_codex.storage import LocalStorage, FetchResult
-from fractary_codex.errors import CacheError
+from fractary_codex.storage import LocalStorage
 
 
 class TestCacheEntry:

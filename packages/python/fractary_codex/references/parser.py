@@ -7,12 +7,11 @@ which are used to reference documents across organizations and projects.
 URI Format: codex://org/project/path/to/file.md
 """
 
+import re
 from dataclasses import dataclass
 from typing import Optional
-import re
 
 from ..errors import ValidationError
-
 
 CODEX_URI_PREFIX = "codex://"
 LEGACY_REF_PREFIX = "$ref:"

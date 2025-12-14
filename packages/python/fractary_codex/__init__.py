@@ -28,50 +28,12 @@ For more information, see https://github.com/fractary/codex
 __version__ = "0.1.0"
 
 # Errors
-from .errors import (
-    CacheError,
-    CodexError,
-    ConfigurationError,
-    ReferenceError,
-    StorageError,
-    ValidationError,
-)
-
-# References
-from .references import (
-    CODEX_URI_PREFIX,
-    LEGACY_REF_PREFIX,
-    ParsedReference,
-    ProjectContext,
-    ResolvedReference,
-    build_uri,
-    convert_legacy_reference,
-    detect_current_project,
-    get_extension,
-    is_legacy_reference,
-    is_safe_path,
-    is_valid_uri,
-    normalize_path,
-    parse_reference,
-    resolve_reference,
-    resolve_references,
-    sanitize_path,
-    validate_path,
-)
-
-# Types
-from .types import (
-    BUILT_IN_TYPES,
-    DEFAULT_TTL,
-    TTL,
-    ArtifactType,
-    TypeRegistry,
-    create_default_registry,
-    get_all_built_in_types,
-    get_built_in_type,
-    load_custom_types,
-    merge_type,
-    parse_custom_type,
+# Cache
+from .cache import (
+    CacheEntry,
+    CacheManager,
+    FileCacheStore,
+    generate_cache_key,
 )
 
 # Core
@@ -96,6 +58,46 @@ from .core import (
     resolve_organization,
     update_frontmatter,
     validate_metadata,
+)
+from .errors import (
+    CacheError,
+    CodexError,
+    ConfigurationError,
+    ReferenceError,
+    StorageError,
+    ValidationError,
+)
+
+# Migration
+from .migration import (
+    ConversionResult,
+    FileConversionResult,
+    convert_legacy_references,
+    migrate_directory,
+    migrate_file,
+    scan_for_legacy_references,
+)
+
+# References
+from .references import (
+    CODEX_URI_PREFIX,
+    LEGACY_REF_PREFIX,
+    ParsedReference,
+    ProjectContext,
+    ResolvedReference,
+    build_uri,
+    convert_legacy_reference,
+    detect_current_project,
+    get_extension,
+    is_legacy_reference,
+    is_safe_path,
+    is_valid_uri,
+    normalize_path,
+    parse_reference,
+    resolve_reference,
+    resolve_references,
+    sanitize_path,
+    validate_path,
 )
 
 # Schemas
@@ -124,22 +126,19 @@ from .storage import (
     StorageProvider,
 )
 
-# Cache
-from .cache import (
-    CacheEntry,
-    CacheManager,
-    FileCacheStore,
-    generate_cache_key,
-)
-
-# Migration
-from .migration import (
-    ConversionResult,
-    FileConversionResult,
-    convert_legacy_references,
-    migrate_directory,
-    migrate_file,
-    scan_for_legacy_references,
+# Types
+from .types import (
+    BUILT_IN_TYPES,
+    DEFAULT_TTL,
+    TTL,
+    ArtifactType,
+    TypeRegistry,
+    create_default_registry,
+    get_all_built_in_types,
+    get_built_in_type,
+    load_custom_types,
+    merge_type,
+    parse_custom_type,
 )
 
 __all__ = [

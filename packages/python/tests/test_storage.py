@@ -1,17 +1,16 @@
 """Tests for storage module."""
 
-import pytest
-from pathlib import Path
 from datetime import datetime, timezone
 
+import pytest
+
+from fractary_codex.errors import StorageError
 from fractary_codex.storage import (
-    FetchResult,
     FetchOptions,
-    BaseStorageProvider,
+    FetchResult,
     LocalStorage,
     StorageManager,
 )
-from fractary_codex.errors import StorageError
 
 
 class TestFetchResult:
@@ -30,14 +29,14 @@ class TestFetchResult:
     def test_text_property(self):
         """Test text property decoding."""
         result = FetchResult(
-            content="Hello, World!".encode("utf-8"),
+            content=b"Hello, World!",
             encoding="utf-8",
         )
         assert result.text == "Hello, World!"
 
     def test_text_with_different_encoding(self):
         """Test text with different encoding."""
-        content = "Héllo, Wörld!".encode("utf-8")
+        content = "Héllo, Wörld!".encode()
         result = FetchResult(
             content=content,
             encoding="utf-8",

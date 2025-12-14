@@ -5,8 +5,9 @@ This module provides dataclass-based schemas for configuration validation
 and type-safe configuration handling.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Literal, Optional, Sequence
+from typing import Any, Literal, Optional, Union
 
 
 @dataclass
@@ -109,7 +110,7 @@ class TypeConfig:
     """
 
     patterns: Sequence[str]
-    ttl: int | str = 86400
+    ttl: Union[int, str] = 86400
     description: str = ""
     priority: int = 0
 

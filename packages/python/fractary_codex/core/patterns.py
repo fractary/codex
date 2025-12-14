@@ -7,7 +7,8 @@ with support for ** recursive matching.
 
 import fnmatch
 import re
-from typing import Iterable, List, Optional, Sequence
+from collections.abc import Iterable, Sequence
+from typing import List, Optional
 
 
 def match_pattern(path: str, pattern: str) -> bool:

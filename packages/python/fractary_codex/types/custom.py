@@ -8,7 +8,7 @@ configuration files and merging them with built-in types.
 from typing import Any
 
 from ..errors import ConfigurationError
-from .builtin import ArtifactType, DEFAULT_TTL
+from .builtin import DEFAULT_TTL, ArtifactType
 
 
 def parse_custom_type(name: str, config: dict[str, Any]) -> ArtifactType:

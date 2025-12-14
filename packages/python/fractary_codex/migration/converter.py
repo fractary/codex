@@ -8,12 +8,11 @@ to the new codex:// URI scheme.
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Tuple, Union
 
 from ..references import (
     LEGACY_REF_PREFIX,
     convert_legacy_reference,
-    is_legacy_reference,
 )
 
 
@@ -107,7 +106,7 @@ def convert_legacy_references(
     text: str,
     *,
     default_org: Optional[str] = None,
-) -> tuple[str, list[ConversionResult]]:
+) -> Tuple[str, List[ConversionResult]]:
     """Convert all legacy references in text to codex:// URIs.
 
     Args:
@@ -134,7 +133,7 @@ def convert_legacy_references(
             try:
                 # Build the full legacy reference
                 legacy_ref = f"{LEGACY_REF_PREFIX}{ref_path}"
-                converted = convert_legacy_reference(legacy_ref, default_org)
+                converted = convert_legacy_reference(legacy_ref, default_org or "unknown")
 
                 result = ConversionResult(
                     original=original,
@@ -166,7 +165,7 @@ def convert_legacy_references(
 
 
 def migrate_file(
-    path: str | Path,
+    path: Union[str, Path],
     *,
     default_org: Optional[str] = None,
     write: bool = False,
@@ -252,13 +251,13 @@ def migrate_file(
 
 
 def migrate_directory(
-    directory: str | Path,
+    directory: Union[str, Path],
     *,
     pattern: str = "**/*.md",
     default_org: Optional[str] = None,
     write: bool = False,
     backup: bool = True,
-) -> list[FileConversionResult]:
+) -> List[FileConversionResult]:
     """Migrate all matching files in a directory.
 
     Args:

@@ -4,7 +4,6 @@ import pytest
 
 from fractary_codex.errors import ValidationError
 from fractary_codex.references import (
-    ParsedReference,
     build_uri,
     convert_legacy_reference,
     is_legacy_reference,

@@ -8,8 +8,7 @@ providers with priority-based fallback and automatic provider selection.
 from typing import Any, Optional
 
 from ..errors import StorageError
-from ..references import ParsedReference, parse_reference
-from .base import BaseStorageProvider, FetchOptions, FetchResult, StorageProvider
+from .base import FetchOptions, FetchResult, StorageProvider
 
 
 class StorageManager:

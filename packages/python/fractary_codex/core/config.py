@@ -15,7 +15,6 @@ import yaml
 from ..errors import ConfigurationError
 from ..references.resolver import detect_current_project
 
-
 # Configuration file locations (in search order)
 CONFIG_FILENAMES = ["codex.yaml", "codex.yml"]
 CONFIG_DIRS = [".fractary", ".codex"]

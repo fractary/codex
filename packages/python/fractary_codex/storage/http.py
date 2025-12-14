@@ -5,10 +5,10 @@ This module provides a storage provider that fetches content from HTTP/HTTPS
 URLs using aiohttp for async operations.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from email.utils import parsedate_to_datetime
-from typing import Any, Optional
-from urllib.parse import urljoin, urlparse
+from typing import Optional
+from urllib.parse import urlparse
 
 import aiohttp
 

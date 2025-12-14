@@ -6,7 +6,6 @@ import pytest
 
 from fractary_codex.core import (
     CodexConfig,
-    ParsedMetadata,
     build_frontmatter,
     compile_pattern,
     filter_by_patterns,

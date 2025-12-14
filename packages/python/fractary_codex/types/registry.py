@@ -6,9 +6,10 @@ including built-in types and custom types from configuration.
 """
 
 import fnmatch
-from typing import Iterator, Optional
+from collections.abc import Iterator, Sequence
+from typing import List, Optional, Tuple, Union
 
-from .builtin import BUILT_IN_TYPES, DEFAULT_TTL, ArtifactType, get_all_built_in_types
+from .builtin import BUILT_IN_TYPES, DEFAULT_TTL, ArtifactType
 
 
 class TypeRegistry:
@@ -41,7 +42,7 @@ class TypeRegistry:
             include_builtins: Whether to include built-in types (default: True)
         """
         self._types: dict[str, ArtifactType] = {}
-        self._sorted_types: list[ArtifactType] | None = None
+        self._sorted_types: Optional[List[ArtifactType]] = None
 
         if include_builtins:
             for type_def in BUILT_IN_TYPES.values():
@@ -156,7 +157,7 @@ class TypeRegistry:
         return self._sorted_types
 
     @staticmethod
-    def _matches_patterns(path: str, patterns: list[str] | tuple[str, ...]) -> bool:
+    def _matches_patterns(path: str, patterns: Union[List[str], Tuple[str, ...], Sequence[str]]) -> bool:
         """Check if a path matches any of the patterns.
 
         Args:

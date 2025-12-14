@@ -6,11 +6,9 @@ to prevent path traversal attacks and ensure safe file access.
 """
 
 import os
-import re
 from typing import List, Optional
 
 from ..errors import ValidationError
-
 
 # Dangerous path patterns
 DANGEROUS_PATTERNS = [
