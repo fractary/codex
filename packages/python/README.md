@@ -229,6 +229,63 @@ ruff check fractary_codex
 ruff format fractary_codex
 ```
 
+## Publishing to PyPI
+
+### Prerequisites
+
+1. **PyPI Account**: Create accounts on [PyPI](https://pypi.org) and [TestPyPI](https://test.pypi.org)
+2. **API Tokens**: Generate API tokens for both registries
+3. **GitHub Secrets**: Add `PYPI_API_TOKEN` and `TEST_PYPI_API_TOKEN` to repository secrets
+
+### Manual Publishing
+
+```bash
+# Install build tools
+pip install build twine
+
+# Build the package
+python -m build
+
+# Check the package
+twine check dist/*
+
+# Upload to TestPyPI first
+twine upload --repository testpypi dist/*
+
+# Test installation from TestPyPI
+pip install --index-url https://test.pypi.org/simple/ fractary-codex
+
+# Upload to PyPI (production)
+twine upload dist/*
+```
+
+### Automated Publishing (CI/CD)
+
+The GitHub Actions workflow handles publishing automatically:
+
+1. **On Pull Request**: Runs tests, linting, and type checking
+2. **On Release**: Publishes to TestPyPI, then PyPI
+
+To publish a new version:
+
+```bash
+# 1. Update version in pyproject.toml and fractary_codex/__init__.py
+# 2. Commit and push changes
+# 3. Create a GitHub release with tag (e.g., v0.2.0)
+# 4. CI/CD will automatically publish to PyPI
+```
+
+### Version Management
+
+Update version in two places:
+- `pyproject.toml`: `version = "X.Y.Z"`
+- `fractary_codex/__init__.py`: `__version__ = "X.Y.Z"`
+
+Follow [Semantic Versioning](https://semver.org/):
+- **MAJOR** (X): Breaking API changes
+- **MINOR** (Y): New features, backward compatible
+- **PATCH** (Z): Bug fixes, backward compatible
+
 ## License
 
 MIT - see [LICENSE](LICENSE)
