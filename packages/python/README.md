@@ -290,7 +290,15 @@ Follow [Semantic Versioning](https://semver.org/):
 
 MIT - see [LICENSE](LICENSE)
 
+## Documentation
+
+- [CLI Integration Guide](../../docs/guides/cli-integration.md) - How to integrate into CLI applications
+- [API Reference](../../docs/guides/api-reference.md) - Complete API documentation
+- [Configuration Guide](../../docs/guides/configuration.md) - Configuration reference
+- [Troubleshooting](../../docs/guides/troubleshooting.md) - Common issues and solutions
+- [Examples](../../docs/examples/) - Real-world usage patterns
+
 ## See Also
 
 - [JavaScript SDK](../js/) - `@fractary/codex` on npm
-- [Documentation](../../docs/)
+- [Technical Specifications](../../docs/specs/) - Detailed specs

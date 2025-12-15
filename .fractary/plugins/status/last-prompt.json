@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-14T17:03:25Z",
-  "prompt": "{\"session_id\":\"bb124dce-6377-411a-b928-ca4674c78775\",\"transcript_path\":\"/home/jmcwilliam/.claude/projects/-mnt-c-GitHub-fractary-codex/bb124dce-6377-411a-b928-ca4674c78775.jsonl\",\"cwd\":\"/mnt/c/GitHub/fractary/codex/packages/python\",\"permission_mode\":\"bypassPermissions\",\"hook_event_name\":\"UserPromptSubmit\",\"prompt\":\"have we increased the version for these packages? Also, are each sufficiently documented? Make sure we have documentation in each for how to deploy these (ie. to npm, pip, etc.) \"} ",
-  "prompt_short": "{\"session_id\":\"bb124dce-6377-411a-b92..."
+  "timestamp": "2025-12-15T01:20:14Z",
+  "prompt": "{\"session_id\":\"e330259a-31be-4316-8a4a-3198d9dc3b1c\",\"transcript_path\":\"/home/jmcwilliam/.claude/projects/-mnt-c-GitHub-fractary-codex/e330259a-31be-4316-8a4a-3198d9dc3b1c.jsonl\",\"cwd\":\"/mnt/c/GitHub/fractary/codex\",\"permission_mode\":\"bypassPermissions\",\"hook_event_name\":\"UserPromptSubmit\",\"prompt\":\"/fractary-repo:commit-and-push \"} ",
+  "prompt_short": "{\"session_id\":\"e330259a-31be-4316-8a4..."
 }

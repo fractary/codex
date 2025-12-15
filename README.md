@@ -76,9 +76,25 @@ codex/
 
 ## Documentation
 
-- [JavaScript SDK Documentation](./packages/js/README.md)
-- [Python SDK Documentation](./packages/python/README.md)
-- [API Reference](./docs/)
+### Getting Started
+
+- [JavaScript SDK](./packages/js/README.md) - Installation and quick start for JS/TS
+- [Python SDK](./packages/python/README.md) - Installation and quick start for Python
+
+### Guides
+
+- [CLI Integration Guide](./docs/guides/cli-integration.md) - How to integrate Codex into CLI applications
+- [API Reference](./docs/guides/api-reference.md) - Comprehensive API documentation
+- [Configuration Guide](./docs/guides/configuration.md) - Complete configuration reference
+- [Troubleshooting Guide](./docs/guides/troubleshooting.md) - Common issues and solutions
+
+### Examples
+
+- [Usage Examples](./docs/examples/) - Real-world integration patterns and code samples
+
+### Technical Specifications
+
+- [Specification Documents](./docs/specs/) - Detailed technical specifications
 
 ## Development
 
