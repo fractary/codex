@@ -1,0 +1,74 @@
+{
+  "version": "3.0",
+  "organization": "fractary",
+  "codex_repo": "codex.fractary.com",
+  "sync_patterns": [
+    "docs/**",
+    "CLAUDE.md",
+    "README.md",
+    ".claude/**",
+    "standards/**",
+    "guides/**"
+  ],
+  "exclude_patterns": [
+    "**/.git/**",
+    "**/node_modules/**",
+    "**/.env",
+    "**/.env.*",
+    "**/*.log",
+    "**/dist/**",
+    "**/build/**",
+    "**/.DS_Store",
+    "**/credentials.json",
+    "**/*secret*",
+    "**/*password*",
+    "docs/private/**",
+    "docs/drafts/**"
+  ],
+  "auto_sync": false,
+  "sync_direction": "bidirectional",
+  "environments": {
+    "dev": {
+      "branch": "test",
+      "description": "Development environment"
+    },
+    "test": {
+      "branch": "test",
+      "description": "Test/QA environment"
+    },
+    "staging": {
+      "branch": "main",
+      "description": "Staging environment (defaults to prod branch)"
+    },
+    "prod": {
+      "branch": "main",
+      "description": "Production environment"
+    }
+  },
+  "handlers": {
+    "sync": {
+      "active": "github",
+      "options": {
+        "github": {
+          "parallel_repos": 5,
+          "deletion_threshold": 50,
+          "deletion_threshold_percent": 20,
+          "sparse_checkout": true,
+          "retry_attempts": 3,
+          "retry_delay": 5
+        }
+      }
+    }
+  },
+  "logging": {
+    "enabled": true,
+    "log_file": ".fractary/plugins/codex/logs/audit.log",
+    "level": "info"
+  },
+  "cache": {
+    "ttl_days": 7,
+    "max_size_mb": 0,
+    "auto_cleanup": true,
+    "cleanup_interval_days": 7
+  }
+}

@@ -1,0 +1,415 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Codex Plugin Configuration v3.0",
+  "description": "Configuration schema for the Fractary codex plugin - documentation and knowledge sync across organization projects with MCP server integration",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Configuration version",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "default": "3.0"
+    },
+    "organization": {
+      "type": "string",
+      "description": "GitHub/GitLab organization name",
+      "minLength": 1
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Current project name (for codex:// URI resolution)",
+      "minLength": 1
+    },
+    "codex_repo": {
+      "type": "string",
+      "description": "Codex core repository name (e.g., codex.fractary.com)",
+      "pattern": "^codex\\.[a-zA-Z0-9-]+\\.[a-z]{2,}$"
+    },
+    "sync_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns for files to sync to/from codex",
+      "default": [
+        "docs/**",
+        "CLAUDE.md",
+        "README.md",
+        ".claude/**"
+      ]
+    },
+    "exclude_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns for files to exclude from sync",
+      "default": [
+        "**/.git/**",
+        "**/node_modules/**",
+        "**/.env",
+        "**/*.log"
+      ]
+    },
+    "auto_sync": {
+      "type": "boolean",
+      "description": "Enable automatic sync on repository changes",
+      "default": false
+    },
+    "sync_direction": {
+      "type": "string",
+      "enum": ["to-codex", "from-codex", "bidirectional"],
+      "description": "Default sync direction for operations",
+      "default": "bidirectional"
+    },
+    "environments": {
+      "type": "object",
+      "description": "Environment-to-branch mappings for codex repository. Each environment maps to a branch in the codex repo. Custom environments can be added beyond the defaults.",
+      "properties": {
+        "dev": {
+          "type": "object",
+          "description": "Development environment configuration",
+          "properties": {
+            "branch": {
+              "type": "string",
+              "description": "Branch in codex repo for dev environment",
+              "default": "test"
+            },
+            "description": {
+              "type": "string",
+              "description": "Human-readable description of this environment"
+            }
+          },
+          "required": ["branch"]
+        },
+        "test": {
+          "type": "object",
+          "description": "Test/QA environment configuration",
+          "properties": {
+            "branch": {
+              "type": "string",
+              "description": "Branch in codex repo for test environment",
+              "default": "test"
+            },
+            "description": {
+              "type": "string",
+              "description": "Human-readable description of this environment"
+            }
+          },
+          "required": ["branch"]
+        },
+        "staging": {
+          "type": "object",
+          "description": "Staging environment configuration",
+          "properties": {
+            "branch": {
+              "type": "string",
+              "description": "Branch in codex repo for staging environment",
+              "default": "main"
+            },
+            "description": {
+              "type": "string",
+              "description": "Human-readable description of this environment"
+            }
+          },
+          "required": ["branch"]
+        },
+        "prod": {
+          "type": "object",
+          "description": "Production environment configuration",
+          "properties": {
+            "branch": {
+              "type": "string",
+              "description": "Branch in codex repo for production environment",
+              "default": "main"
+            },
+            "description": {
+              "type": "string",
+              "description": "Human-readable description of this environment"
+            }
+          },
+          "required": ["branch"]
+        }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "description": "Custom environment configuration",
+        "properties": {
+          "branch": {
+            "type": "string",
+            "description": "Branch in codex repo for this environment"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of this environment"
+          }
+        },
+        "required": ["branch"]
+      },
+      "default": {
+        "dev": { "branch": "test", "description": "Development environment" },
+        "test": { "branch": "test", "description": "Test/QA environment" },
+        "staging": { "branch": "main", "description": "Staging environment (defaults to prod branch)" },
+        "prod": { "branch": "main", "description": "Production environment" }
+      }
+    },
+    "handlers": {
+      "type": "object",
+      "description": "Handler configuration for sync mechanisms",
+      "properties": {
+        "sync": {
+          "type": "object",
+          "properties": {
+            "active": {
+              "type": "string",
+              "enum": ["github", "vector", "mcp"],
+              "description": "Active sync handler (github: script-based, vector: vector DB, mcp: MCP server)",
+              "default": "github"
+            },
+            "options": {
+              "type": "object",
+              "description": "Handler-specific configuration options",
+              "properties": {
+                "github": {
+                  "type": "object",
+                  "properties": {
+                    "parallel_repos": {
+                      "type": "integer",
+                      "description": "Maximum number of repositories to sync in parallel",
+                      "minimum": 1,
+                      "maximum": 20,
+                      "default": 5
+                    },
+                    "deletion_threshold": {
+                      "type": "integer",
+                      "description": "Maximum number of files that can be deleted in a single sync before requiring confirmation",
+                      "minimum": 1,
+                      "default": 50
+                    },
+                    "deletion_threshold_percent": {
+                      "type": "number",
+                      "description": "Maximum percentage of files that can be deleted (0-100)",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "default": 20
+                    },
+                    "sparse_checkout": {
+                      "type": "boolean",
+                      "description": "Use git sparse checkout for efficiency (only clone sync patterns)",
+                      "default": true
+                    },
+                    "retry_attempts": {
+                      "type": "integer",
+                      "description": "Number of retry attempts for failed sync operations",
+                      "minimum": 0,
+                      "maximum": 10,
+                      "default": 3
+                    },
+                    "retry_delay": {
+                      "type": "integer",
+                      "description": "Delay in seconds between retry attempts",
+                      "minimum": 1,
+                      "default": 5
+                    }
+                  }
+                },
+                "vector": {
+                  "type": "object",
+                  "description": "Vector database sync configuration (future)",
+                  "properties": {
+                    "provider": {
+                      "type": "string",
+                      "enum": ["pinecone", "weaviate", "qdrant"],
+                      "description": "Vector database provider"
+                    },
+                    "endpoint": {
+                      "type": "string",
+                      "description": "Vector database endpoint URL"
+                    }
+                  }
+                },
+                "mcp": {
+                  "type": "object",
+                  "description": "MCP server sync configuration (future)",
+                  "properties": {
+                    "server_url": {
+                      "type": "string",
+                      "description": "MCP server URL"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["active"]
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "description": "Logging and audit configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable audit logging of sync operations",
+          "default": true
+        },
+        "log_file": {
+          "type": "string",
+          "description": "Path to audit log file (relative to project root or absolute)",
+          "default": ".fractary/plugins/codex/logs/audit.log"
+        },
+        "level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "description": "Logging level",
+          "default": "info"
+        }
+      }
+    },
+    "notifications": {
+      "type": "object",
+      "description": "Notification configuration for sync events",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable notifications",
+          "default": false
+        },
+        "on_success": {
+          "type": "boolean",
+          "description": "Notify on successful sync",
+          "default": false
+        },
+        "on_failure": {
+          "type": "boolean",
+          "description": "Notify on failed sync",
+          "default": true
+        },
+        "webhook_url": {
+          "type": "string",
+          "description": "Webhook URL for notifications (Slack, Discord, etc.)",
+          "format": "uri"
+        }
+      }
+    },
+    "cache": {
+      "type": "object",
+      "description": "Cache configuration for knowledge retrieval and MCP server",
+      "properties": {
+        "default_ttl": {
+          "type": "integer",
+          "description": "Default time-to-live for cached documents in seconds (604800 = 7 days)",
+          "minimum": 60,
+          "default": 604800
+        },
+        "check_expiration": {
+          "type": "boolean",
+          "description": "Check TTL expiration when reading from cache",
+          "default": true
+        },
+        "fallback_to_stale": {
+          "type": "boolean",
+          "description": "Use stale content when fetch fails or offline",
+          "default": true
+        },
+        "offline_mode": {
+          "type": "boolean",
+          "description": "Disable network fetches, use cache only",
+          "default": false
+        },
+        "max_size_mb": {
+          "type": "integer",
+          "description": "Maximum cache size in megabytes (0 = unlimited)",
+          "minimum": 0,
+          "default": 0
+        },
+        "auto_cleanup": {
+          "type": "boolean",
+          "description": "Automatically remove expired cache entries",
+          "default": true
+        },
+        "cleanup_interval_days": {
+          "type": "integer",
+          "description": "Interval in days between automatic cleanup runs",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 7
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "description": "Authentication configuration for fetching from sources",
+      "properties": {
+        "default": {
+          "type": "string",
+          "enum": ["inherit", "env", "config"],
+          "description": "Default auth method: inherit from git/repo plugin, use env vars, or config tokens",
+          "default": "inherit"
+        },
+        "fallback_to_public": {
+          "type": "boolean",
+          "description": "Try unauthenticated access if auth fails",
+          "default": true
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "description": "Per-source configuration for knowledge retrieval (keyed by org name or source identifier)",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["github-org", "http", "s3", "local"],
+            "description": "Source type",
+            "default": "github-org"
+          },
+          "ttl": {
+            "type": "integer",
+            "description": "TTL override for this source in seconds",
+            "minimum": 60
+          },
+          "token_env": {
+            "type": "string",
+            "description": "Environment variable name for auth token (e.g., PARTNER_TOKEN)"
+          },
+          "token": {
+            "type": "string",
+            "description": "Token value or ${ENV_VAR} reference"
+          },
+          "base_url": {
+            "type": "string",
+            "description": "Base URL for http sources"
+          },
+          "branch": {
+            "type": "string",
+            "description": "Default branch for github-org sources",
+            "default": "main"
+          }
+        }
+      },
+      "examples": [
+        {
+          "fractary": {
+            "type": "github-org",
+            "ttl": 1209600
+          },
+          "partner-org": {
+            "type": "github-org",
+            "token_env": "PARTNER_TOKEN"
+          },
+          "api-docs": {
+            "type": "http",
+            "base_url": "https://docs.example.com",
+            "ttl": 86400
+          }
+        }
+      ]
+    }
+  },
+  "required": ["version", "organization", "codex_repo"],
+  "additionalProperties": false
+}
