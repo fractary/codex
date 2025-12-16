@@ -1605,8 +1605,8 @@ plugins/work/
 
 | Level | Location | Purpose |
 |-------|----------|---------|
-| Unit Tests | `packages/*/src/**/*.test.ts` | Individual functions |
-| Integration Tests | `packages/*/tests/integration/` | Provider + API |
+| Unit Tests | `sdk/*/src/**/*.test.ts` | Individual functions |
+| Integration Tests | `sdk/*/tests/integration/` | Provider + API |
 | Conformance Tests | `tests/conformance/` | Cross-language parity |
 | E2E Tests | `tests/e2e/` | Full CLI workflows |
 

@@ -24,8 +24,8 @@ This monorepo contains SDK implementations for multiple languages:
 
 | Language | Package | Status | Install |
 |----------|---------|--------|---------|
-| **JavaScript/TypeScript** | [`@fractary/codex`](./packages/js/) | [![npm](https://img.shields.io/npm/v/@fractary/codex.svg)](https://www.npmjs.com/package/@fractary/codex) | `npm install @fractary/codex` |
-| **Python** | [`fractary-codex`](./packages/python/) | In Development | `pip install fractary-codex` |
+| **JavaScript/TypeScript** | [`@fractary/codex`](./sdk/js/) | [![npm](https://img.shields.io/npm/v/@fractary/codex.svg)](https://www.npmjs.com/package/@fractary/codex) | `npm install @fractary/codex` |
+| **Python** | [`fractary-codex`](./sdk/py/) | In Development | `pip install fractary-codex` |
 
 ## Quick Start
 
@@ -60,12 +60,12 @@ asyncio.run(main())
 
 ```
 codex/
-├── packages/
+├── sdk/
 │   ├── js/                 # JavaScript/TypeScript SDK
 │   │   ├── src/            # TypeScript source
 │   │   ├── tests/          # Test suite
 │   │   └── package.json    # npm configuration
-│   └── python/             # Python SDK
+│   └── py/                 # Python SDK
 │       ├── fractary_codex/ # Python package
 │       ├── tests/          # Test suite
 │       └── pyproject.toml  # PyPI configuration
@@ -78,8 +78,8 @@ codex/
 
 ### Getting Started
 
-- [JavaScript SDK](./packages/js/README.md) - Installation and quick start for JS/TS
-- [Python SDK](./packages/python/README.md) - Installation and quick start for Python
+- [JavaScript SDK](./sdk/js/README.md) - Installation and quick start for JS/TS
+- [Python SDK](./sdk/py/README.md) - Installation and quick start for Python
 
 ### Guides
 
@@ -101,7 +101,7 @@ codex/
 ### JavaScript SDK
 
 ```bash
-cd packages/js
+cd sdk/js
 npm install
 npm run build
 npm test
@@ -110,7 +110,7 @@ npm test
 ### Python SDK
 
 ```bash
-cd packages/python
+cd sdk/py
 pip install -e ".[dev]"
 pytest
 mypy fractary_codex

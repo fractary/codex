@@ -12,7 +12,7 @@ on:
 
 defaults:
   run:
-    working-directory: packages/python
+    working-directory: sdk/py
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-package
-          path: packages/python/dist/
+          path: sdk/py/dist/
 
   test:
     needs: build
@@ -61,7 +61,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: python-package
-          path: packages/python/dist/
+          path: sdk/py/dist/
 
       - name: Install package from wheel
         run: |

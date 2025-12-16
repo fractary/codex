@@ -4,17 +4,17 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/js/**'
+      - 'sdk/js/**'
       - '.github/workflows/js-ci.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'packages/js/**'
+      - 'sdk/js/**'
       - '.github/workflows/js-ci.yml'
 
 defaults:
   run:
-    working-directory: packages/js
+    working-directory: sdk/js
 
 jobs:
   test:
@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: packages/js/package-lock.json
+          cache-dependency-path: sdk/js/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -59,7 +59,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: packages/js/package-lock.json
+          cache-dependency-path: sdk/js/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -77,7 +77,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: packages/js/package-lock.json
+          cache-dependency-path: sdk/js/package-lock.json
 
       - name: Install dependencies
         run: npm ci

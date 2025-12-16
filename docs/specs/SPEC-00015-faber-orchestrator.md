@@ -1095,7 +1095,7 @@ Each repository follows a consistent structure with language implementations in 
 
 ```
 fractary/core/
-├── packages/
+├── sdk/
 │   ├── ts/                    # TypeScript implementation
 │   │   ├── src/
 │   │   ├── package.json       # @fractary/core

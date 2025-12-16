@@ -12,7 +12,7 @@ on:
 
 defaults:
   run:
-    working-directory: packages/js
+    working-directory: sdk/js
 
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: packages/js/package-lock.json
+          cache-dependency-path: sdk/js/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -44,9 +44,9 @@ jobs:
         with:
           name: js-package
           path: |
-            packages/js/dist/
-            packages/js/package.json
-            packages/js/README.md
+            sdk/js/dist/
+            sdk/js/package.json
+            sdk/js/README.md
 
   test-install:
     needs: build
@@ -67,10 +67,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: js-package
-          path: packages/js/
+          path: sdk/js/
 
       - name: Pack and install locally
-        working-directory: packages/js
+        working-directory: sdk/js
         run: |
           npm pack
           npm install -g ./*.tgz
@@ -93,7 +93,7 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
-          cache-dependency-path: packages/js/package-lock.json
+          cache-dependency-path: sdk/js/package-lock.json
 
       - name: Install dependencies
         run: npm ci

@@ -1,0 +1,39 @@
+{
+    "name": "fractary-codex",
+    "owner": {
+      "name": "The Fractary",
+      "email": "admin@fractary.com",
+      "url": "https://github.com/fractary"
+    },
+    "metadata": {
+      "description": "Knowledge infrastructure for AI agents - universal references, multi-tier caching, storage abstraction",
+      "version": "2.0.2",
+      "pluginRoot": "./plugins"
+    },
+    "plugins": [
+      {
+        "name": "fractary-codex",
+        "source": "./plugins/codex",
+        "description": "Project documentation and org-wide synchronization to and from organization central codex",
+        "version": "3.0.1",
+        "author": {
+          "name": "The Fractary",
+          "url": "https://github.com/fractary"
+        },
+        "homepage": "https://github.com/fractary/codex/tree/main/plugins/codex",
+        "repository": "https://github.com/fractary/codex/tree/main/plugins/codex",
+        "license": "MIT",
+        "keywords": [
+          "documentation"
+        ],
+        "category": "documentation",
+        "strict": true,
+        "commands": [
+          "./commands/sync-project.md"
+        ],
+        "agents": [
+          "./agents/codex-manager.md"
+        ]
+      }
+    ]
+  }

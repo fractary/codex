@@ -4,17 +4,17 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/python/**'
+      - 'sdk/py/**'
       - '.github/workflows/python-ci.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'packages/python/**'
+      - 'sdk/py/**'
       - '.github/workflows/python-ci.yml'
 
 defaults:
   run:
-    working-directory: packages/python
+    working-directory: sdk/py
 
 jobs:
   test:
@@ -44,7 +44,7 @@ jobs:
         uses: codecov/codecov-action@v4
         if: matrix.python-version == '3.12'
         with:
-          files: packages/python/coverage.xml
+          files: sdk/py/coverage.xml
           flags: python-sdk
           fail_ci_if_error: false
 

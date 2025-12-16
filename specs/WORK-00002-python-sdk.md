@@ -134,7 +134,7 @@ A Python SDK will expand accessibility to the broader Python AI/ML ecosystem and
 ### Package Structure
 
 ```
-packages/python/
+sdk/py/
 ├── fractary_codex/
 │   ├── __init__.py           # Public API exports
 │   ├── py.typed              # PEP 561 marker
@@ -449,7 +449,7 @@ class CacheManager:
 ### PyPI Configuration
 
 ```toml
-# packages/python/pyproject.toml
+# sdk/py/pyproject.toml
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -540,7 +540,7 @@ on:
       - 'python-v*'
   pull_request:
     paths:
-      - 'packages/python/**'
+      - 'sdk/py/**'
 
 jobs:
   test:
@@ -558,21 +558,21 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        working-directory: packages/python
+        working-directory: sdk/py
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
       - name: Type check with mypy
-        working-directory: packages/python
+        working-directory: sdk/py
         run: mypy fractary_codex
 
       - name: Lint with ruff
-        working-directory: packages/python
+        working-directory: sdk/py
         run: ruff check fractary_codex
 
       - name: Test with pytest
-        working-directory: packages/python
+        working-directory: sdk/py
         run: pytest --cov=fractary_codex --cov-report=xml
 
   publish:
@@ -595,13 +595,13 @@ jobs:
         run: pip install build
 
       - name: Build package
-        working-directory: packages/python
+        working-directory: sdk/py
         run: python -m build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: packages/python/dist/
+          packages-dir: sdk/py/dist/
 ```
 
 ## Implementation Plan
@@ -609,7 +609,7 @@ jobs:
 ### Phase 1: Core (MVP) - Estimated 3-4 days
 
 1. **Project Setup**
-   - Create `packages/python/` directory structure
+   - Create `sdk/py/` directory structure
    - Set up `pyproject.toml` with dependencies
    - Configure pytest, mypy, ruff
    - Add `py.typed` marker
@@ -749,13 +749,13 @@ jobs:
 ## Related Links
 
 - [Issue #2: Add Python SDK](https://github.com/fractary/codex/issues/2)
-- [JS SDK Source](https://github.com/fractary/codex/tree/main/packages/js/src)
-- [Python SDK Source](https://github.com/fractary/codex/tree/main/packages/python)
+- [JS SDK Source](https://github.com/fractary/codex/tree/main/sdk/js/src)
+- [Python SDK Source](https://github.com/fractary/codex/tree/main/sdk/py)
 - [JS SDK npm](https://www.npmjs.com/package/@fractary/codex)
 
 ## Changelog
 
 | Date | Change | Author |
 |------|--------|--------|
-| 2025-12-14 | Updated paths for monorepo structure (`packages/python/`) | Claude |
+| 2025-12-14 | Updated paths for monorepo structure (`sdk/py/`) | Claude |
 | 2025-12-14 | Initial specification created | Claude (spec-generator) |
