@@ -151,6 +151,15 @@ function resourceResult(uri: string, content: string, mimeType?: string): ToolRe
 export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { uri, branch, noCache } = args
 
+  // Validate input
+  if (!uri || typeof uri !== 'string') {
+    return textResult('URI is required and must be a string', true)
+  }
+
+  if (branch && typeof branch !== 'string') {
+    return textResult('Branch must be a string', true)
+  }
+
   // Resolve the reference
   const ref = resolveReference(uri)
   if (!ref) {
@@ -186,6 +195,19 @@ export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext):
  */
 export async function handleSearch(args: SearchToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { query, org, project, limit = 10 } = args
+
+  // Validate input
+  if (!query || typeof query !== 'string') {
+    return textResult('Query is required and must be a string', true)
+  }
+
+  if (query.length > 500) {
+    return textResult('Query too long (max 500 characters)', true)
+  }
+
+  if (typeof limit !== 'number' || limit < 1 || limit > 100) {
+    return textResult('Limit must be a number between 1 and 100', true)
+  }
 
   // Get all cached entries
   const stats = await ctx.cache.getStats()
@@ -244,10 +266,53 @@ export async function handleList(args: ListToolArgs, ctx: ToolHandlerContext): P
 }
 
 /**
+ * Validate and sanitize regex pattern to prevent ReDoS attacks
+ */
+function validateRegexPattern(pattern: string): { valid: boolean; error?: string } {
+  // Check pattern length (prevent extremely long patterns)
+  if (pattern.length > 1000) {
+    return { valid: false, error: 'Pattern too long (max 1000 characters)' }
+  }
+
+  // Check for common ReDoS patterns
+  const redosPatterns = [
+    /(\.\*){3,}/,           // Multiple consecutive .*
+    /(\+\+|\*\*|\?\?)/,     // Nested quantifiers
+    /(\([^)]*){10,}/,       // Too many groups
+    /(\[[^\]]{100,})/,      // Very long character classes
+  ]
+
+  for (const redos of redosPatterns) {
+    if (redos.test(pattern)) {
+      return { valid: false, error: 'Pattern contains potentially dangerous constructs' }
+    }
+  }
+
+  // Try to compile the regex to check for syntax errors
+  try {
+    new RegExp(pattern)
+    return { valid: true }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invalid regex'
+    return { valid: false, error: message }
+  }
+}
+
+/**
  * Handle codex_invalidate tool
  */
 export async function handleInvalidate(args: InvalidateToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { pattern } = args
+
+  if (!pattern || typeof pattern !== 'string') {
+    return textResult('Pattern is required and must be a string', true)
+  }
+
+  // Validate pattern to prevent ReDoS
+  const validation = validateRegexPattern(pattern)
+  if (!validation.valid) {
+    return textResult(`Invalid pattern: ${validation.error}`, true)
+  }
 
   try {
     const regex = new RegExp(pattern)
@@ -256,7 +321,7 @@ export async function handleInvalidate(args: InvalidateToolArgs, ctx: ToolHandle
     return textResult(`Invalidated ${count} cache entries matching pattern: ${pattern}`)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return textResult(`Invalid pattern: ${message}`, true)
+    return textResult(`Failed to invalidate cache: ${message}`, true)
   }
 }
 

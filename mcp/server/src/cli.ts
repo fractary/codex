@@ -2,13 +2,12 @@
 /**
  * CLI entry point for @fractary/codex-mcp-server
  *
- * Provides MCP server with stdio and HTTP/SSE transports.
+ * Provides MCP server with stdio transport.
  */
 
 import { Command } from 'commander'
 import { createCacheManager, createStorageManager } from '@fractary/codex'
 import { readFileSync } from 'fs'
-import { createServer } from 'http'
 import * as yaml from 'js-yaml'
 import { McpServer } from './server.js'
 
@@ -19,9 +18,6 @@ program
   .description('MCP server for Fractary Codex knowledge management')
   .version('0.1.0')
   .option('--config <path>', 'Path to config file', '.fractary/codex.yaml')
-  .option('--stdio', 'Use stdio transport (default)')
-  .option('--port <number>', 'HTTP server port (alternative to stdio)')
-  .option('--host <string>', 'HTTP server host', 'localhost')
   .action(async (options) => {
     // Load configuration
     let config: Record<string, unknown> = {}
@@ -50,75 +46,42 @@ program
       storage,
     })
 
-    if (options.port) {
-      // HTTP/SSE mode
-      const port = parseInt(options.port, 10)
-      const host = options.host
+    // Stdio mode
+    process.stdin.setEncoding('utf-8')
 
-      const httpServer = createServer((req, res) => {
-        if (req.method === 'POST' && req.url === '/message') {
-          let body = ''
-          req.on('data', chunk => {
-            body += chunk.toString()
-          })
-          req.on('end', async () => {
-            try {
-              const message = JSON.parse(body)
-              const response = await handleMessage(server, message)
-              res.writeHead(200, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify(response))
-            } catch (error) {
-              res.writeHead(500, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }))
+    let buffer = ''
+    process.stdin.on('data', async (chunk) => {
+      buffer += chunk
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (line.trim()) {
+          try {
+            const message = JSON.parse(line)
+            const response = await handleMessage(server, message)
+            process.stdout.write(JSON.stringify(response) + '\n')
+          } catch (error) {
+            const errorResponse = {
+              jsonrpc: '2.0',
+              error: {
+                code: -32700,
+                message: 'Parse error',
+                data: error instanceof Error ? error.message : 'Unknown error',
+              },
+              id: null,
             }
-          })
-        } else {
-          res.writeHead(404)
-          res.end()
-        }
-      })
-
-      httpServer.listen(port, host, () => {
-        console.error(`MCP server listening on http://${host}:${port}`)
-      })
-    } else {
-      // Stdio mode (default)
-      process.stdin.setEncoding('utf-8')
-
-      let buffer = ''
-      process.stdin.on('data', async (chunk) => {
-        buffer += chunk
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          if (line.trim()) {
-            try {
-              const message = JSON.parse(line)
-              const response = await handleMessage(server, message)
-              process.stdout.write(JSON.stringify(response) + '\n')
-            } catch (error) {
-              const errorResponse = {
-                jsonrpc: '2.0',
-                error: {
-                  code: -32700,
-                  message: 'Parse error',
-                  data: error instanceof Error ? error.message : 'Unknown error',
-                },
-                id: null,
-              }
-              process.stdout.write(JSON.stringify(errorResponse) + '\n')
-            }
+            process.stdout.write(JSON.stringify(errorResponse) + '\n')
           }
         }
-      })
+      }
+    })
 
-      process.stdin.on('end', () => {
-        process.exit(0)
-      })
+    process.stdin.on('end', () => {
+      process.exit(0)
+    })
 
-      console.error('MCP server running in stdio mode')
-    }
+    console.error('MCP server running in stdio mode')
   })
 
 /**
