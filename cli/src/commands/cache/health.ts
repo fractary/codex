@@ -14,8 +14,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { getClient } from '../client/get-client';
-import { readYamlConfig } from '../config/migrate-config';
+import { getClient } from '../../client/get-client';
+import { readYamlConfig } from '../../config/migrate-config';
 
 interface HealthCheck {
   name: string;

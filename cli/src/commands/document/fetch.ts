@@ -11,7 +11,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs/promises';
-import { getClient } from '../client/get-client';
+import { getClient } from '../../client/get-client';
 
 /**
  * Calculate content hash

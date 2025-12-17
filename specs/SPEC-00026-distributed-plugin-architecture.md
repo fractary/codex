@@ -169,7 +169,7 @@ fractary/core/                   # Primitive operations
 │   └── package.json
 │
 ├── mcp/
-│   └── server/                  # MCP Server → @fractary/core-mcp-server (JavaScript)
+│   └── server/                  # MCP → @fractary/core-mcp (JavaScript)
 │       ├── src/tools/
 │       ├── src/server.ts
 │       └── package.json
@@ -204,10 +204,10 @@ fractary/faber/                  # Workflow orchestration
 │   └── py/                      # fractary-faber
 ├── cli/                         # @fractary/faber-cli
 ├── mcp/
-│   ├── server/                  # @fractary/faber-mcp-server
+│   ├── server/                  # @fractary/faber-mcp
 │   │   └── package.json
-│   └── client/                  # @fractary/faber-mcp-client (orchestrates, needs to consume tools)
-│       └── package.json
+│   └── client/                  # Internal client code (uses @modelcontextprotocol/sdk)
+│       └── client.ts
 ├── plugins/                     # Native Claude Code format
 │   ├── .claude-plugin/
 │   │   └── marketplace.json
@@ -227,7 +227,7 @@ fractary/codex/                  # Knowledge management
 │   └── py/                      # fractary-codex
 ├── cli/                         # @fractary/codex-cli
 ├── mcp/
-│   └── server/                  # @fractary/codex-mcp-server (exists)
+│   └── server/                  # @fractary/codex-mcp (exists)
 │       └── package.json
 ├── plugins/                     # Native Claude Code format
 │   ├── .claude-plugin/
@@ -657,7 +657,7 @@ All Fractary packages, tools, commands, and binaries use a **consistent `fractar
 | **npm package (SDK)** | `@fractary/{domain}` | `@fractary/core` | `/` (scope) |
 | **pip package (SDK)** | `fractary-{domain}` | `fractary-core` | `-` (hyphen) |
 | **npm package (CLI)** | `@fractary/{domain}-cli` | `@fractary/core-cli` | `-` (hyphen) |
-| **npm package (MCP)** | `@fractary/{domain}-mcp-server` | `@fractary/core-mcp-server` | `-` (hyphen) |
+| **npm package (MCP)** | `@fractary/{domain}-mcp` | `@fractary/core-mcp` | `-` (hyphen) |
 | **CLI binary** | `fractary-{domain}` | `fractary-core` | `-` (hyphen) |
 | **MCP server name** | `fractary-{domain}` | `fractary-core` | `-` (hyphen) |
 | **MCP tool name** | `fractary_{domain}_{action}` | `fractary_work_issue_fetch` | `_` (underscore) |
@@ -684,7 +684,7 @@ npm install -g @fractary/core-cli             # CLI
 # MCP server configuration
 "fractary-core": {
   "command": "npx",
-  "args": ["-y", "@fractary/core-mcp-server"]
+  "args": ["-y", "@fractary/core-mcp"]
 }
 
 # MCP tool invocation
@@ -786,8 +786,8 @@ issue = provider.get_work_item('123')
 
 | Component | When to Include | Purpose | Example |
 |-----------|----------------|---------|---------|
-| **MCP Server** | Always | Expose SDK functionality as tools | `@fractary/core-mcp-server` exposes work/repo/file operations |
-| **MCP Client** | Only if SDK needs to call other tools | Consume tools from other MCP servers | `@fractary/faber-mcp-client` calls core/codex tools during orchestration |
+| **MCP Server** | Always | Expose SDK functionality as tools | `@fractary/core-mcp` exposes work/repo/file operations |
+| **MCP Client** | Only if SDK needs to call other tools | Consume tools from other MCP servers | Faber's internal client code calls core/codex tools during orchestration |
 
 **Directory structure:**
 ```
@@ -834,7 +834,7 @@ mcp/
 
 ```
 mcp/
-└── server/                      # @fractary/core-mcp-server
+└── server/                      # @fractary/core-mcp
     ├── src/
     │   ├── tools/
     │   │   ├── work.ts          # Work tracking tools
@@ -902,18 +902,18 @@ Users configure MCP servers in `.claude/settings.json`:
   "mcpServers": {
     "fractary-core": {
       "command": "npx",
-      "args": ["-y", "@fractary/core-mcp-server"],
+      "args": ["-y", "@fractary/core-mcp"],
       "env": {
         "FRACTARY_CONFIG": ".fractary/plugins/core/config.json"
       }
     },
     "fractary-faber": {
       "command": "npx",
-      "args": ["-y", "@fractary/faber-mcp-server"]
+      "args": ["-y", "@fractary/faber-mcp"]
     },
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server"]
+      "args": ["-y", "@fractary/codex-mcp"]
     }
   }
 }
@@ -958,16 +958,17 @@ cli:
 
 ### 3.12 Complete Package Matrix
 
-| SDK | JavaScript (npm) | Python (pip) | CLI (npm) | MCP Server (npm) | MCP Client (npm) | Binary |
-|-----|-----------------|--------------|-----------|------------------|------------------|--------|
-| **core** | `@fractary/core` | `fractary-core` | `@fractary/core-cli` | `@fractary/core-mcp-server` | - | `fractary-core` |
-| **faber** | `@fractary/faber` | `fractary-faber` | `@fractary/faber-cli` | `@fractary/faber-mcp-server` | `@fractary/faber-mcp-client`¹ | `fractary-faber` |
-| **codex** | `@fractary/codex` | `fractary-codex` | `@fractary/codex-cli` | `@fractary/codex-mcp-server` | - | `fractary-codex` |
-| **forge** | `@fractary/forge` | `fractary-forge` | `@fractary/forge-cli` | `@fractary/forge-mcp-server` | `@fractary/forge-mcp-client`¹ | `fractary-forge` |
-| **helm** | `@fractary/helm` | `fractary-helm` | `@fractary/helm-cli` | `@fractary/helm-mcp-server` | `@fractary/helm-mcp-client`¹ | `fractary-helm` |
+| SDK | JavaScript (npm) | Python (pip) | CLI (npm) | MCP (npm) | Binary |
+|-----|-----------------|--------------|-----------|-----------|--------|
+| **core** | `@fractary/core` | `fractary-core` | `@fractary/core-cli` | `@fractary/core-mcp` | `fractary-core` |
+| **faber** | `@fractary/faber` | `fractary-faber` | `@fractary/faber-cli` | `@fractary/faber-mcp` | `fractary-faber` |
+| **codex** | `@fractary/codex` | `fractary-codex` | `@fractary/codex-cli` | `@fractary/codex-mcp` | `fractary-codex` |
+| **forge** | `@fractary/forge` | `fractary-forge` | `@fractary/forge-cli` | `@fractary/forge-mcp` | `fractary-forge` |
+| **helm** | `@fractary/helm` | `fractary-helm` | `@fractary/helm-cli` | `@fractary/helm-mcp` | `fractary-helm` |
 
 **Notes:**
-1. MCP client only included for SDKs that need to consume tools from other MCP servers (orchestration/integration use cases)
+- MCP packages expose SDK functionality as tools (server functionality)
+- SDKs that need MCP client capabilities (e.g., Faber orchestration) include internal client code using `@modelcontextprotocol/sdk`
 
 **Installation patterns:**
 
@@ -980,7 +981,7 @@ pip install fractary-core           # Python
 npm install -g @fractary/core-cli   # Installs fractary-core binary
 
 # MCP server (tool integration)
-npx @fractary/core-mcp-server       # Run directly via npx
+npx @fractary/core-mcp              # Run directly via npx
 ```
 
 ## 4. Registry System

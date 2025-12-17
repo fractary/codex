@@ -2,7 +2,7 @@
 model: claude-haiku-4-5
 ---
 
-# /fractary-codex:migrate
+# /fractary-codex:config-migrate
 
 Migrate configuration from SPEC-00012 (v2.0 push-based sync) to SPEC-00030 (v3.0 pull-based retrieval).
 
@@ -10,16 +10,16 @@ Migrate configuration from SPEC-00012 (v2.0 push-based sync) to SPEC-00030 (v3.0
 
 ```bash
 # Interactive migration with prompts
-/fractary-codex:migrate
+/fractary-codex:config-migrate
 
 # Dry-run mode (preview changes without applying)
-/fractary-codex:migrate --dry-run
+/fractary-codex:config-migrate --dry-run
 
 # Automatic mode (no prompts, use defaults)
-/fractary-codex:migrate --yes
+/fractary-codex:config-migrate --yes
 
 # Force migration even if already migrated
-/fractary-codex:migrate --force
+/fractary-codex:config-migrate --force
 ```
 
 ## What It Does
@@ -82,13 +82,13 @@ The script converts your configuration from:
 
 ```bash
 # Preview migration
-/fractary-codex:migrate --dry-run
+/fractary-codex:config-migrate --dry-run
 
 # Execute migration with prompts
-/fractary-codex:migrate
+/fractary-codex:config-migrate
 
 # Automated migration for CI/CD
-/fractary-codex:migrate --yes --backup-path /backups
+/fractary-codex:config-migrate --yes --backup-path /backups
 ```
 
 ## Related

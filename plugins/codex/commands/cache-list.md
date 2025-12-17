@@ -78,7 +78,7 @@ EXPIRED ENTRIES (4):
 
 ───────────────────────────────────────
 Use /fractary-codex:cache-clear to remove entries
-Use /fractary-codex:fetch --force-refresh to refresh
+Use /fractary-codex:document-fetch --force-refresh to refresh
 ```
 
 ## Understanding Status Indicators
@@ -94,9 +94,9 @@ Cache is stored in: `codex/` (ephemeral, gitignored, regeneratable)
 
 ## Related Commands
 
-- `/fractary-codex:fetch` - Fetch documents (populates cache)
+- `/fractary-codex:document-fetch` - Fetch documents (populates cache)
 - `/fractary-codex:cache-clear` - Clear cache entries
-- `/fractary-codex:init` - Configure codex plugin
+- `/fractary-codex:config-init` - Configure codex plugin
 
 ---
 

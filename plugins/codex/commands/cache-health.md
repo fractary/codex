@@ -2,7 +2,7 @@
 model: claude-haiku-4-5
 ---
 
-# /fractary-codex:health
+# /fractary-codex:cache-health
 
 Perform comprehensive health checks on the codex knowledge retrieval system and diagnose issues.
 
@@ -10,21 +10,21 @@ Perform comprehensive health checks on the codex knowledge retrieval system and 
 
 ```bash
 # Run all health checks
-/fractary-codex:health
+/fractary-codex:cache-health
 
 # Run specific check category
-/fractary-codex:health --check cache
-/fractary-codex:health --check config
-/fractary-codex:health --check permissions
+/fractary-codex:cache-health --check cache
+/fractary-codex:cache-health --check config
+/fractary-codex:cache-health --check permissions
 
 # Verbose output with details
-/fractary-codex:health --verbose
+/fractary-codex:cache-health --verbose
 
 # Fix issues automatically (where possible)
-/fractary-codex:health --fix
+/fractary-codex:cache-health --fix
 
 # Output as JSON
-/fractary-codex:health --format json
+/fractary-codex:cache-health --format json
 ```
 
 ## What It Checks
@@ -74,16 +74,16 @@ Perform comprehensive health checks on the codex knowledge retrieval system and 
 
 ```bash
 # Quick health check
-/fractary-codex:health
+/fractary-codex:cache-health
 
 # Diagnose cache issues
-/fractary-codex:health --check cache --verbose
+/fractary-codex:cache-health --check cache --verbose
 
 # Fix issues automatically
-/fractary-codex:health --fix
+/fractary-codex:cache-health --fix
 
 # Machine-readable output for monitoring
-/fractary-codex:health --format json
+/fractary-codex:cache-health --format json
 ```
 
 ## Sample Output
@@ -171,6 +171,6 @@ When using `--fix`, the health check will attempt to automatically repair:
 
 ## Related
 
-- [/fractary-codex:metrics](./metrics.md) - View statistics and metrics
+- [/fractary-codex:cache-stats](./metrics.md) - View statistics and metrics
 - [/fractary-codex:cache-list](./cache-list.md) - List cached documents
 - [Troubleshooting](../docs/MIGRATION-PHASE4.md#troubleshooting) - Troubleshooting guide

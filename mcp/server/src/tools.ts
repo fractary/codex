@@ -318,7 +318,7 @@ export async function handleCacheClear(args: CacheClearToolArgs, ctx: ToolHandle
     const regex = new RegExp(pattern)
     const count = await ctx.cache.invalidatePattern(regex)
 
-    return textResult(`Invalidated ${count} cache entries matching pattern: ${pattern}`)
+    return textResult(`Cleared ${count} cache entries matching pattern: ${pattern}`)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     return textResult(`Failed to clear cache: ${message}`, true)

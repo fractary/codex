@@ -2,7 +2,7 @@
 model: claude-haiku-4-5
 ---
 
-# /fractary-codex:metrics
+# /fractary-codex:cache-stats
 
 Display cache statistics, performance metrics, and health information for the codex knowledge retrieval system.
 
@@ -10,18 +10,18 @@ Display cache statistics, performance metrics, and health information for the co
 
 ```bash
 # Show all metrics
-/fractary-codex:metrics
+/fractary-codex:cache-stats
 
 # Show specific category
-/fractary-codex:metrics --category cache
-/fractary-codex:metrics --category performance
-/fractary-codex:metrics --category sources
+/fractary-codex:cache-stats --category cache
+/fractary-codex:cache-stats --category performance
+/fractary-codex:cache-stats --category sources
 
 # Output as JSON
-/fractary-codex:metrics --format json
+/fractary-codex:cache-stats --format json
 
 # Include historical data (last 7 days)
-/fractary-codex:metrics --history
+/fractary-codex:cache-stats --history
 ```
 
 ## What It Shows
@@ -63,16 +63,16 @@ Display cache statistics, performance metrics, and health information for the co
 
 ```bash
 # Quick overview
-/fractary-codex:metrics
+/fractary-codex:cache-stats
 
 # Performance analysis
-/fractary-codex:metrics --category performance --history
+/fractary-codex:cache-stats --category performance --history
 
 # Machine-readable output
-/fractary-codex:metrics --format json
+/fractary-codex:cache-stats --format json
 
 # Storage analysis
-/fractary-codex:metrics --category storage
+/fractary-codex:cache-stats --category storage
 ```
 
 ## Sample Output
@@ -125,6 +125,6 @@ Recommendations:
 
 ## Related
 
-- [/fractary-codex:health](./health.md) - Detailed health checks
+- [/fractary-codex:cache-health](./health.md) - Detailed health checks
 - [/fractary-codex:cache-list](./cache-list.md) - List cached documents
 - [README](../README.md) - Full documentation

@@ -1,12 +1,12 @@
 ---
-name: fetch
+name: document-fetch
 description: Fetch a document from codex knowledge base by reference
 model: claude-haiku-4-5
-usage: /fractary-codex:fetch <reference> [--force-refresh] [--ttl <days>]
+usage: /fractary-codex:document-fetch <reference> [--force-refresh] [--ttl <days>]
 examples:
-  - /fractary-codex:fetch @codex/auth-service/docs/oauth.md
-  - /fractary-codex:fetch @codex/faber-cloud/specs/SPEC-00020.md --force-refresh
-  - /fractary-codex:fetch @codex/shared/standards/api-design.md --ttl 14
+  - /fractary-codex:document-fetch @codex/auth-service/docs/oauth.md
+  - /fractary-codex:document-fetch @codex/faber-cloud/specs/SPEC-00020.md --force-refresh
+  - /fractary-codex:document-fetch @codex/shared/standards/api-design.md --ttl 14
 ---
 
 # Fetch Document from Codex
@@ -16,7 +16,7 @@ Fetch a document from the codex knowledge base using `@codex/` reference syntax.
 ## Usage
 
 ```
-/fractary-codex:fetch <reference> [OPTIONS]
+/fractary-codex:document-fetch <reference> [OPTIONS]
 ```
 
 ## Arguments
@@ -34,17 +34,17 @@ Fetch a document from the codex knowledge base using `@codex/` reference syntax.
 
 **Fetch document (cache-first):**
 ```bash
-/fractary-codex:fetch @codex/auth-service/docs/oauth.md
+/fractary-codex:document-fetch @codex/auth-service/docs/oauth.md
 ```
 
 **Force fresh fetch:**
 ```bash
-/fractary-codex:fetch @codex/auth-service/docs/oauth.md --force-refresh
+/fractary-codex:document-fetch @codex/auth-service/docs/oauth.md --force-refresh
 ```
 
 **Fetch with custom TTL:**
 ```bash
-/fractary-codex:fetch @codex/shared/standards/api-design.md --ttl 14
+/fractary-codex:document-fetch @codex/shared/standards/api-design.md --ttl 14
 ```
 
 ## How It Works
@@ -59,8 +59,8 @@ Fetch a document from the codex knowledge base using `@codex/` reference syntax.
 
 **Important**: The fetch command always retrieves documents from the **production** branch of the codex repository. This is by design:
 
-- **fetch** = Read-only retrieval for knowledge access (always production)
-- **sync-project** = Bidirectional sync for documentation updates (environment-aware)
+- **document-fetch** = Read-only retrieval for knowledge access (always production)
+- **sync** = Bidirectional sync for documentation updates (environment-aware)
 
 This separation ensures:
 - AI agents always have access to stable, production-grade documentation
@@ -69,8 +69,8 @@ This separation ensures:
 
 **To sync with a specific environment**, use:
 ```bash
-/fractary-codex:sync-project --env test   # Sync with test environment
-/fractary-codex:sync-project --env prod   # Sync with production environment
+/fractary-codex:sync --env test   # Sync with test environment
+/fractary-codex:sync --env prod   # Sync with production environment
 ```
 
 ## Output
@@ -106,7 +106,7 @@ Suggestions:
 
 - `/fractary-codex:cache-list` - View cached documents
 - `/fractary-codex:cache-clear` - Clear cache entries
-- `/fractary-codex:init` - Configure codex plugin
+- `/fractary-codex:config-init` - Configure codex plugin
 
 ---
 

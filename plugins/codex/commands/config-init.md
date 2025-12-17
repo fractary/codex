@@ -1,5 +1,5 @@
 ---
-name: fractary-codex:init
+name: config-init
 description: Initialize codex plugin configuration for this project
 model: claude-haiku-4-5
 argument-hint: [--org <name>] [--codex <repo>]
@@ -40,7 +40,7 @@ You provide a streamlined setup experience with auto-detection, config migration
 <INPUTS>
 Command format:
 ```
-/fractary-codex:init [options]
+/fractary-codex:config-init [options]
 ```
 
 **Options:**
@@ -50,9 +50,9 @@ Command format:
 
 **Examples:**
 ```
-/fractary-codex:init
-/fractary-codex:init --org fractary --codex codex.fractary.com
-/fractary-codex:init --yes
+/fractary-codex:config-init
+/fractary-codex:config-init --org fractary --codex codex.fractary.com
+/fractary-codex:config-init --yes
 ```
 </INPUTS>
 
@@ -292,7 +292,7 @@ Next steps:
   1. Restart Claude Code to load the MCP server
   2. Review and customize: cat .fractary/codex.yaml
   3. Validate setup: fractary codex health
-  4. Run first sync: /fractary-codex:sync-project --dry-run
+  4. Run first sync: /fractary-codex:sync --dry-run
   5. Use codex:// URIs to reference documents
 
 CLI Commands:
@@ -373,7 +373,7 @@ Display error from agent with:
 Display:
 ```
 Initialization cancelled. No changes made.
-Run /fractary-codex:init again when ready.
+Run /fractary-codex:config-init again when ready.
 ```
 </OUTPUTS>
 
@@ -390,7 +390,7 @@ Run /fractary-codex:init again when ready.
   If organization auto-detection fails:
   1. Explain why (not in git repo, no remote, etc.)
   2. Ask user to specify with --org flag
-  3. Provide example: /fractary-codex:init --org fractary
+  3. Provide example: /fractary-codex:config-init --org fractary
   4. Don't proceed without organization
   </AUTO_DETECTION_FAILED>
 
@@ -399,7 +399,7 @@ Run /fractary-codex:init again when ready.
   1. Explain that no codex.* repo was found
   2. Ask user to specify with --codex flag
   3. Explain naming convention (codex.{org}.{tld})
-  4. Provide example: /fractary-codex:init --codex codex.fractary.com
+  4. Provide example: /fractary-codex:config-init --codex codex.fractary.com
   </CODEX_REPO_NOT_FOUND>
 
   <AGENT_FAILURE>
@@ -447,7 +447,7 @@ After successful initialization, guide the user:
 
      Override with explicit `--env` flag:
      ```bash
-     /fractary-codex:sync-project --env prod  # Explicit, no confirmation
+     /fractary-codex:sync --env prod  # Explicit, no confirmation
      ```
 
      To disable separate test environment (all syncs go to main):
@@ -476,9 +476,9 @@ After successful initialization, guide the user:
 
 4. **Next steps**:
    - Restart Claude Code to load the MCP server
-   - Test with dry-run: `/fractary-codex:sync-project --dry-run`
-   - Run first sync: `/fractary-codex:sync-project --from-codex`
-   - Validate setup: `/fractary-codex:validate-setup`
+   - Test with dry-run: `/fractary-codex:sync --dry-run`
+   - Run first sync: `/fractary-codex:sync --from-codex`
+   - Validate setup: `/fractary-codex:config-validate`
    - See full docs: `plugins/codex/README.md`
 
 Keep guidance concise but complete.

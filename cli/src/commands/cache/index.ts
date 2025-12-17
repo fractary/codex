@@ -5,12 +5,14 @@
  * - list: View cached entries
  * - clear: Remove cache entries
  * - stats: Display cache statistics
+ * - health: Diagnostics and auto-repair
  */
 
 import { Command } from 'commander';
 import { cacheListCommand } from './list';
 import { cacheClearCommand } from './clear';
 import { cacheStatsCommand } from './stats';
+import { healthCommand } from './health';
 
 export function cacheCommand(): Command {
   const cmd = new Command('cache');
@@ -22,6 +24,7 @@ export function cacheCommand(): Command {
   cmd.addCommand(cacheListCommand());
   cmd.addCommand(cacheClearCommand());
   cmd.addCommand(cacheStatsCommand());
+  cmd.addCommand(healthCommand());
 
   return cmd;
 }

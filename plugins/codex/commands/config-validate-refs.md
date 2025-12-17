@@ -32,7 +32,7 @@ This ensures documents remain portable when synced between projects and codex re
 <INPUTS>
 Command format:
 ```
-/fractary-codex:validate-refs [options]
+/fractary-codex:config-validate-refs [options]
 ```
 
 **Options:**
@@ -42,9 +42,9 @@ Command format:
 
 **Examples:**
 ```
-/fractary-codex:validate-refs
-/fractary-codex:validate-refs --fix
-/fractary-codex:validate-refs --path docs/
+/fractary-codex:config-validate-refs
+/fractary-codex:config-validate-refs --fix
+/fractary-codex:config-validate-refs --path docs/
 ```
 </INPUTS>
 
