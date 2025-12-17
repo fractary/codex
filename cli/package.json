@@ -37,7 +37,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run test"
   },
   "dependencies": {
     "@fractary/codex": "^0.2.0",
