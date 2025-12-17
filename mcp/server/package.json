@@ -1,5 +1,5 @@
 {
-  "name": "@fractary/codex-mcp-server",
+  "name": "@fractary/codex-mcp",
   "version": "0.1.0",
   "description": "MCP server for Fractary Codex knowledge management",
   "keywords": [
