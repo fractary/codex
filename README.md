@@ -6,7 +6,7 @@ Core SDK for Fractary Codex - knowledge infrastructure for AI agents.
 
 ## Overview
 
-The Codex SDK provides foundational infrastructure for managing organizational knowledge across AI agents and projects. It implements a universal reference system (`codex://` URIs), multi-provider storage, intelligent caching, file synchronization, and MCP (Model Context Protocol) integration.
+The Codex SDK provides foundational infrastructure for managing organizational knowledge across AI agents and projects. It implements a universal reference system (`codex://` URIs), multi-provider storage, intelligent caching, and file synchronization.
 
 ### Key Features
 
@@ -14,7 +14,6 @@ The Codex SDK provides foundational infrastructure for managing organizational k
 - **Multi-Provider Storage**: Local filesystem, GitHub, and HTTP storage backends
 - **Intelligent Caching**: Multi-tier caching (L1 memory, L2 disk, L3 network) with LRU eviction
 - **File Synchronization**: Bidirectional sync with conflict detection
-- **MCP Integration**: Model Context Protocol server for AI agent integration
 - **Permission System**: Fine-grained access control (none/read/write/admin)
 - **Type-Safe**: Full TypeScript and Python type support
 
@@ -52,6 +51,38 @@ fractary-codex health
 ```
 
 See the [CLI documentation](./cli/README.md) for full command reference.
+
+## MCP Server
+
+A standalone Model Context Protocol server for AI agent integration:
+
+| Tool | Package | Status | Install |
+|------|---------|--------|---------|
+| **MCP Server** | [`@fractary/codex-mcp-server`](./mcp/server/) | Ready | `npx @fractary/codex-mcp-server` |
+
+**Quick example:**
+```bash
+# Run MCP server with stdio transport (default)
+npx @fractary/codex-mcp-server --config .fractary/codex.yaml
+
+# Run MCP server with HTTP transport
+npx @fractary/codex-mcp-server --port 3000 --config .fractary/codex.yaml
+```
+
+**Claude Code integration:**
+Add to `.claude/settings.json`:
+```json
+{
+  "mcpServers": {
+    "fractary-codex": {
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"]
+    }
+  }
+}
+```
+
+See the [MCP Server documentation](./mcp/server/README.md) for full reference.
 
 ## Quick Start
 
@@ -95,6 +126,13 @@ codex/
 │       ├── fractary_codex/ # Python package
 │       ├── tests/          # Test suite
 │       └── pyproject.toml  # PyPI configuration
+├── cli/                    # Command-line interface
+│   ├── src/                # CLI source
+│   └── package.json        # npm configuration
+├── mcp/
+│   └── server/             # MCP server (standalone)
+│       ├── src/            # Server source
+│       └── package.json    # npm configuration
 ├── docs/                   # Shared documentation
 ├── specs/                  # Feature specifications
 └── README.md               # This file

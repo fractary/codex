@@ -5,7 +5,8 @@
   "description": "Fractary Codex - Knowledge infrastructure for AI agents",
   "workspaces": [
     "sdk/js",
-    "cli"
+    "cli",
+    "mcp/server"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
