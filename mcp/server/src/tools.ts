@@ -13,7 +13,7 @@ import type {
   FetchToolArgs,
   SearchToolArgs,
   ListToolArgs,
-  InvalidateToolArgs,
+  CacheClearToolArgs,
 } from './types.js'
 
 /**
@@ -21,7 +21,7 @@ import type {
  */
 export const CODEX_TOOLS: McpTool[] = [
   {
-    name: 'codex_fetch',
+    name: 'codex_document_fetch',
     description: 'Fetch a document from the Codex knowledge base by URI. Returns the document content.',
     inputSchema: {
       type: 'object',
@@ -73,7 +73,7 @@ export const CODEX_TOOLS: McpTool[] = [
     },
   },
   {
-    name: 'codex_list',
+    name: 'codex_cache_list',
     description: 'List documents in the Codex cache.',
     inputSchema: {
       type: 'object',
@@ -94,8 +94,8 @@ export const CODEX_TOOLS: McpTool[] = [
     },
   },
   {
-    name: 'codex_invalidate',
-    description: 'Invalidate cached documents matching a pattern.',
+    name: 'codex_cache_clear',
+    description: 'Clear cached documents matching a pattern.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -146,7 +146,7 @@ function resourceResult(uri: string, content: string, mimeType?: string): ToolRe
 }
 
 /**
- * Handle codex_fetch tool
+ * Handle codex_document_fetch tool
  */
 export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { uri, branch, noCache } = args
@@ -212,7 +212,7 @@ export async function handleSearch(args: SearchToolArgs, ctx: ToolHandlerContext
   // Get all cached entries
   const stats = await ctx.cache.getStats()
   if (stats.entryCount === 0) {
-    return textResult('No documents in cache. Use codex_fetch to load documents first.')
+    return textResult('No documents in cache. Use codex_document_fetch to load documents first.')
   }
 
   // This is a simplified search - in a real implementation,
@@ -228,14 +228,14 @@ Query: "${query}"
 Filters: org=${org || 'any'}, project=${project || 'any'}
 Limit: ${limit}
 
-To fetch documents, use codex_fetch with a specific URI like:
+To fetch documents, use codex_document_fetch with a specific URI like:
 codex://org/project/docs/file.md`
 
   return textResult(message)
 }
 
 /**
- * Handle codex_list tool
+ * Handle codex_cache_list tool
  */
 export async function handleList(args: ListToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { org, project, includeExpired } = args
@@ -299,9 +299,9 @@ function validateRegexPattern(pattern: string): { valid: boolean; error?: string
 }
 
 /**
- * Handle codex_invalidate tool
+ * Handle codex_cache_clear tool
  */
-export async function handleInvalidate(args: InvalidateToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
+export async function handleCacheClear(args: CacheClearToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { pattern } = args
 
   if (!pattern || typeof pattern !== 'string') {
@@ -318,10 +318,10 @@ export async function handleInvalidate(args: InvalidateToolArgs, ctx: ToolHandle
     const regex = new RegExp(pattern)
     const count = await ctx.cache.invalidatePattern(regex)
 
-    return textResult(`Invalidated ${count} cache entries matching pattern: ${pattern}`)
+    return textResult(`Cleared ${count} cache entries matching pattern: ${pattern}`)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return textResult(`Failed to invalidate cache: ${message}`, true)
+    return textResult(`Failed to clear cache: ${message}`, true)
   }
 }
 
@@ -334,14 +334,14 @@ export async function handleToolCall(
   ctx: ToolHandlerContext
 ): Promise<ToolResult> {
   switch (name) {
-    case 'codex_fetch':
+    case 'codex_document_fetch':
       return handleFetch(args as unknown as FetchToolArgs, ctx)
     case 'codex_search':
       return handleSearch(args as unknown as SearchToolArgs, ctx)
-    case 'codex_list':
+    case 'codex_cache_list':
       return handleList(args as unknown as ListToolArgs, ctx)
-    case 'codex_invalidate':
-      return handleInvalidate(args as unknown as InvalidateToolArgs, ctx)
+    case 'codex_cache_clear':
+      return handleCacheClear(args as unknown as CacheClearToolArgs, ctx)
     default:
       return textResult(`Unknown tool: ${name}`, true)
   }

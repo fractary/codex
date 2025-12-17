@@ -17,7 +17,7 @@ import {
   migrateConfig,
   writeYamlConfig,
   type MigrationResult
-} from '../config/migrate-config';
+} from '../../config/migrate-config';
 
 /**
  * Check if file exists

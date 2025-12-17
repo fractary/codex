@@ -79,10 +79,10 @@ export interface ListToolArgs {
 }
 
 /**
- * Tool call arguments for invalidate tool
+ * Tool call arguments for cache clear tool
  */
-export interface InvalidateToolArgs {
-  /** URI pattern to invalidate (regex) */
+export interface CacheClearToolArgs {
+  /** URI pattern to clear from cache (regex) */
   pattern: string
 }
 

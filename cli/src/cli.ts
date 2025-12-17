@@ -7,13 +7,11 @@
  */
 
 import { Command } from 'commander';
-import { initCommand } from './commands/init.js';
-import { fetchCommand } from './commands/fetch.js';
+import { documentCommand } from './commands/document/index.js';
+import { configCommand } from './commands/config/index.js';
 import { cacheCommand } from './commands/cache/index.js';
-import { syncCommand } from './commands/sync/index.js';
+import { syncCommand } from './commands/sync.js';
 import { typesCommand } from './commands/types/index.js';
-import { healthCommand } from './commands/health.js';
-import { migrateCommand } from './commands/migrate.js';
 
 /**
  * Create and configure the CLI
@@ -23,16 +21,14 @@ function createCLI(): Command {
 
   program
     .description('Centralized knowledge management and distribution for AI agents')
-    .version('0.2.0');
+    .version('0.3.0');
 
-  // Core commands (v3.0)
-  program.addCommand(initCommand());      // Initialize codex configuration
-  program.addCommand(fetchCommand());     // Fetch documents by codex:// URI
-  program.addCommand(cacheCommand());     // Cache management (list, clear, stats)
-  program.addCommand(syncCommand());      // Bidirectional sync (project, org)
+  // Core commands (v3.0 - noun-verb pattern)
+  program.addCommand(documentCommand());  // Document operations (fetch)
+  program.addCommand(configCommand());    // Configuration operations (init, migrate)
+  program.addCommand(cacheCommand());     // Cache management (list, clear, stats, health)
+  program.addCommand(syncCommand());      // Bidirectional sync
   program.addCommand(typesCommand());     // Type registry (list, show, add, remove)
-  program.addCommand(healthCommand());    // Diagnostics and auto-repair
-  program.addCommand(migrateCommand());   // v2.0 to v3.0 migration
 
   return program;
 }

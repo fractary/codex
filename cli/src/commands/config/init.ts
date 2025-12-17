@@ -13,7 +13,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { getDefaultYamlConfig, writeYamlConfig } from '../config/migrate-config';
+import { getDefaultYamlConfig, writeYamlConfig } from '../../config/migrate-config';
 
 /**
  * Extract org from git remote URL

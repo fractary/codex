@@ -57,7 +57,7 @@ You provide a simple, intuitive interface for syncing documentation between a pr
 <INPUTS>
 Command format:
 ```
-/fractary-codex:sync-project [project-name] [options]
+/fractary-codex:sync [project-name] [options]
 ```
 
 **Arguments:**
@@ -79,23 +79,23 @@ Command format:
 **Examples:**
 ```bash
 # Auto-detect environment from current branch
-/fractary-codex:sync-project
+/fractary-codex:sync
 # On feat/123-feature → syncs to test (no prompt)
 # On main → syncs to prod (prompts for confirmation)
 
 # Explicit environment (skips confirmation)
-/fractary-codex:sync-project --env test
-/fractary-codex:sync-project --env prod
+/fractary-codex:sync --env test
+/fractary-codex:sync --env prod
 
 # With project name
-/fractary-codex:sync-project my-project --env test
+/fractary-codex:sync my-project --env test
 
 # Dry-run preview
-/fractary-codex:sync-project --dry-run
+/fractary-codex:sync --dry-run
 
 # Direction-specific
-/fractary-codex:sync-project --to-codex --env prod
-/fractary-codex:sync-project --from-codex --env test
+/fractary-codex:sync --to-codex --env prod
+/fractary-codex:sync --from-codex --env test
 ```
 </INPUTS>
 
@@ -136,7 +136,7 @@ If not found:
 The codex plugin requires configuration at:
 .fractary/plugins/codex/config.json
 
-Run: /fractary-codex:init
+Run: /fractary-codex:config-init
 
 This will set up your organization and codex repository settings.
 ```
@@ -402,7 +402,7 @@ From Codex:
 Recommendation: Safe to proceed
 
 Run without --dry-run to apply changes:
-/fractary-codex:sync-project my-project
+/fractary-codex:sync my-project
 ```
 </OUTPUTS>
 
@@ -419,14 +419,14 @@ Run without --dry-run to apply changes:
   If project auto-detection fails:
   1. Explain why (not in git repo, no remote)
   2. Ask user to specify project name
-  3. Example: /fractary-codex:sync-project my-project
+  3. Example: /fractary-codex:sync my-project
   4. Don't proceed without project name
   </PROJECT_DETECTION_FAILED>
 
   <CONFIGURATION_MISSING>
   If configuration not found at `.fractary/plugins/codex/config.json`:
   1. Explain that config is required at `.fractary/plugins/codex/config.json`
-  2. Tell user to run /fractary-codex:init
+  2. Tell user to run /fractary-codex:config-init
   3. Explain what init does
   4. Don't invoke agent without config
   5. Do NOT look for or use global config at `~/.config/...`
@@ -436,7 +436,7 @@ Run without --dry-run to apply changes:
   If specified environment doesn't exist in config:
   1. List valid environments from config
   2. Show how to add custom environments
-  3. Example: /fractary-codex:sync-project --env test
+  3. Example: /fractary-codex:sync --env test
   4. Don't invoke agent with invalid environment
   </INVALID_ENVIRONMENT>
 
@@ -515,15 +515,15 @@ After sync, provide helpful guidance:
    - **Evaluate Phase**: Sync to test environment
      ```bash
      # During FABER evaluate, sync docs to test for review
-     /fractary-codex:sync-project --env test
+     /fractary-codex:sync --env test
      # or auto-detected when on feature branch
-     /fractary-codex:sync-project
+     /fractary-codex:sync
      ```
 
    - **Release Phase**: Sync to production environment
      ```bash
      # During FABER release, sync docs to production
-     /fractary-codex:sync-project --env prod
+     /fractary-codex:sync --env prod
      ```
 
    - **Promotion Pattern**: To promote docs from test to prod:

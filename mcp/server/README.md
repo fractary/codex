@@ -86,7 +86,7 @@ storage:
 
 The MCP server exposes the following tools:
 
-### codex_fetch
+### codex_document_fetch
 
 Fetch a document from the Codex knowledge base by URI.
 
@@ -112,7 +112,7 @@ Search for documents in the knowledge base.
 }
 ```
 
-### codex_list
+### codex_cache_list
 
 List cached documents.
 
@@ -124,9 +124,9 @@ List cached documents.
 }
 ```
 
-### codex_invalidate
+### codex_cache_clear
 
-Invalidate cached documents by pattern.
+Clear cached documents by pattern.
 
 ```json
 {

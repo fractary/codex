@@ -15,7 +15,7 @@ export {
   handleFetch,
   handleSearch,
   handleList,
-  handleInvalidate,
+  handleCacheClear,
   type ToolHandlerContext,
 } from './tools.js'
 
@@ -29,7 +29,7 @@ export type {
   FetchToolArgs,
   SearchToolArgs,
   ListToolArgs,
-  InvalidateToolArgs,
+  CacheClearToolArgs,
   ToolResult,
   ResourceContent,
   SearchResult,

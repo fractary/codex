@@ -121,15 +121,15 @@ Cache index updated: codex/.cache-index.json
 ## Cache Regeneration
 
 All cleared entries will be automatically re-fetched when accessed:
-- Next `/fractary-codex:fetch` will retrieve from source
+- Next `/fractary-codex:document-fetch` will retrieve from source
 - Cache will be repopulated with fresh content
 - TTL will be reset to configured default
 
 ## Related Commands
 
-- `/fractary-codex:fetch` - Fetch documents (populates cache)
+- `/fractary-codex:document-fetch` - Fetch documents (populates cache)
 - `/fractary-codex:cache-list` - View cache status
-- `/fractary-codex:init` - Configure codex plugin
+- `/fractary-codex:config-init` - Configure codex plugin
 
 ---
 

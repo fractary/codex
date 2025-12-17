@@ -32,7 +32,7 @@ This helps users diagnose configuration issues and verify proper plugin setup.
 <INPUTS>
 Command format:
 ```
-/fractary-codex:validate-setup [options]
+/fractary-codex:config-validate [options]
 ```
 
 **Options:**
@@ -40,8 +40,8 @@ Command format:
 
 **Examples:**
 ```
-/fractary-codex:validate-setup
-/fractary-codex:validate-setup --verbose
+/fractary-codex:config-validate
+/fractary-codex:config-validate --verbose
 ```
 </INPUTS>
 
@@ -98,14 +98,14 @@ Cache:
 
 MCP Server:
   ⚠️ Not installed
-     Run: /fractary-codex:init to install
+     Run: /fractary-codex:config-init to install
 
 Issues (2):
   • Cache: Directory not found at .fractary/plugins/codex/cache
   • MCP: Server not found in .claude/settings.json
 
 Next Steps:
-  Run: /fractary-codex:init to configure the plugin
+  Run: /fractary-codex:config-init to configure the plugin
 ```
 
 **If not configured:**
@@ -129,7 +129,7 @@ Issues (3):
   • MCP: Server not found in .claude/settings.json
 
 Next Steps:
-  Run: /fractary-codex:init to configure the plugin
+  Run: /fractary-codex:config-init to configure the plugin
 ```
 </WORKFLOW>
 

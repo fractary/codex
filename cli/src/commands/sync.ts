@@ -1,7 +1,7 @@
 /**
- * Sync project command (v3.0)
+ * Sync command (v3.0)
  *
- * Synchronizes a single project with the codex repository using SDK SyncManager:
+ * Synchronizes project with the codex repository using SDK SyncManager:
  * - Multi-directional sync (to-codex, from-codex, bidirectional)
  * - Manifest tracking for sync state
  * - Conflict detection and resolution
@@ -17,7 +17,7 @@ import type {
   SyncDirection,
   SyncOptions
 } from '@fractary/codex';
-import { readYamlConfig } from '../../config/migrate-config';
+import { readYamlConfig } from '../config/migrate-config';
 
 /**
  * Get environment branch mapping
@@ -50,8 +50,8 @@ function formatDuration(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export function syncProjectCommand(): Command {
-  const cmd = new Command('project');
+export function syncCommand(): Command {
+  const cmd = new Command('sync');
 
   cmd
     .description('Sync single project with codex repository')

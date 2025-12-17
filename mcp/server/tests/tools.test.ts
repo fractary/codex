@@ -48,10 +48,10 @@ describe('MCP Tools', () => {
     it('should export all required tools', () => {
       expect(CODEX_TOOLS).toHaveLength(4)
       const toolNames = CODEX_TOOLS.map((t) => t.name)
-      expect(toolNames).toContain('codex_fetch')
+      expect(toolNames).toContain('codex_document_fetch')
       expect(toolNames).toContain('codex_search')
-      expect(toolNames).toContain('codex_list')
-      expect(toolNames).toContain('codex_invalidate')
+      expect(toolNames).toContain('codex_cache_list')
+      expect(toolNames).toContain('codex_cache_clear')
     })
 
     it('should have valid tool schemas', () => {
@@ -165,7 +165,7 @@ describe('MCP Tools', () => {
       } as never)
 
       const result = await handleToolCall(
-        'codex_fetch',
+        'codex_document_fetch',
         { uri: 'codex://org/project/doc.md' },
         mockContext
       )
@@ -190,7 +190,7 @@ describe('MCP Tools', () => {
       vi.mocked(mockCache.get).mockRejectedValue(new Error('Cache error'))
 
       const result = await handleToolCall(
-        'codex_fetch',
+        'codex_document_fetch',
         { uri: 'codex://org/project/doc.md' },
         mockContext
       )
