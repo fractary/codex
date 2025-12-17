@@ -13,7 +13,7 @@ import type {
   FetchToolArgs,
   SearchToolArgs,
   ListToolArgs,
-  InvalidateToolArgs,
+  CacheClearToolArgs,
 } from './types.js'
 
 /**
@@ -301,7 +301,7 @@ function validateRegexPattern(pattern: string): { valid: boolean; error?: string
 /**
  * Handle codex_cache_clear tool
  */
-export async function handleInvalidate(args: InvalidateToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
+export async function handleCacheClear(args: CacheClearToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { pattern } = args
 
   if (!pattern || typeof pattern !== 'string') {
@@ -321,7 +321,7 @@ export async function handleInvalidate(args: InvalidateToolArgs, ctx: ToolHandle
     return textResult(`Invalidated ${count} cache entries matching pattern: ${pattern}`)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    return textResult(`Failed to invalidate cache: ${message}`, true)
+    return textResult(`Failed to clear cache: ${message}`, true)
   }
 }
 
@@ -341,7 +341,7 @@ export async function handleToolCall(
     case 'codex_cache_list':
       return handleList(args as unknown as ListToolArgs, ctx)
     case 'codex_cache_clear':
-      return handleInvalidate(args as unknown as InvalidateToolArgs, ctx)
+      return handleCacheClear(args as unknown as CacheClearToolArgs, ctx)
     default:
       return textResult(`Unknown tool: ${name}`, true)
   }
