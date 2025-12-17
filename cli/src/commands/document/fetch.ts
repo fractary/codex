@@ -10,6 +10,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import { getClient } from '../../client/get-client';
 
@@ -17,7 +18,6 @@ import { getClient } from '../../client/get-client';
  * Calculate content hash
  */
 function hashContent(content: Buffer): string {
-  const crypto = require('crypto');
   return crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
 }
 

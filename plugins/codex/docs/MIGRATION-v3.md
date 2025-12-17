@@ -398,6 +398,78 @@ The migration follows a staged rollout:
 
 Migrate early to avoid disruption and benefit from v3.0 features.
 
+## Command Changes (v3.0)
+
+### Unified Naming Convention
+
+v3.0 introduces a consistent noun-verb naming pattern across all commands for improved discoverability and consistency.
+
+#### Command Renames
+
+| Old Command (v2.0) | New Command (v3.0) | Notes |
+|--------------------|---------------------|-------|
+| `/fractary-codex:fetch` | `/fractary-codex:document-fetch` | Explicit noun prefix |
+| `/fractary-codex:metrics` | `/fractary-codex:cache-stats` | Aligned with SDK terminology |
+| `/fractary-codex:init` | `/fractary-codex:config-init` | Category-scoped |
+| `/fractary-codex:migrate` | `/fractary-codex:config-migrate` | Category-scoped |
+| `/fractary-codex:sync-project` | `/fractary-codex:sync` | Simplified (project scope implicit) |
+| `/fractary-codex:sync-org` | **REMOVED** | See migration path below |
+
+### Organization Sync Removal
+
+The `/fractary-codex:sync-org` command has been removed in v3.0. This was a bulk operation that synced all projects in an organization.
+
+**Migration Path:**
+
+1. **For multi-project workflows**, use the individual `/fractary-codex:sync` command for each project:
+   ```bash
+   # Old (v2.0)
+   /fractary-codex:sync-org --org fractary
+
+   # New (v3.0) - run for each project
+   cd project1 && /fractary-codex:sync
+   cd project2 && /fractary-codex:sync
+   cd project3 && /fractary-codex:sync
+   ```
+
+2. **For scripted workflows**, create a shell script:
+   ```bash
+   #!/bin/bash
+   # sync-all-projects.sh
+
+   for project in project1 project2 project3; do
+     echo "Syncing $project..."
+     (cd "$project" && /fractary-codex:sync)
+   done
+   ```
+
+3. **Alternative: Use the MCP server** for knowledge retrieval across all projects:
+   ```bash
+   # No pre-sync needed - documents fetched on-demand
+   # Use codex:// URIs to reference any project
+   codex://org/project1/docs/api.md
+   codex://org/project2/specs/architecture.md
+   ```
+
+**Rationale:**
+- v3.0 uses pull-based retrieval instead of push-based sync
+- Documents are fetched on-demand, eliminating need for bulk pre-sync
+- Project-level sync provides finer-grained control
+- Reduces complexity and improves performance
+
+### Backward Compatibility
+
+**Deprecation Period:** Old command names will show deprecation warnings in v3.0-3.2, with full removal in v3.3+.
+
+During the deprecation period:
+```bash
+# Still works but shows warning
+/fractary-codex:fetch
+# Warning: /fractary-codex:fetch is deprecated. Use /fractary-codex:document-fetch instead.
+```
+
+**Update Your Scripts:** Review and update any automation, CI/CD pipelines, or documentation that references old command names.
+
 ## Related Documentation
 
 - [README](../README.md) - Plugin overview
