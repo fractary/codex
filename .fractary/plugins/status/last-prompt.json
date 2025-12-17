@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-12-17T10:40:54Z",
-  "prompt": "{\"session_id\":\"3a309a08-98b6-499c-9294-18912f9badf4\",\"transcript_path\":\"/home/jmcwilliam/.claude/projects/-mnt-c-GitHub-fractary-codex/3a309a08-98b6-499c-9294-18912f9badf4.jsonl\",\"cwd\":\"/mnt/c/GitHub/fractary/codex/cli\",\"permission_mode\":\"bypassPermissions\",\"hook_event_name\":\"UserPromptSubmit\",\"prompt\":\"/fractary-repo:commit-and-push \"} ",
-  "prompt_short": "{\"session_id\":\"3a309a08-98b6-499c-929..."
+  "timestamp": "2025-12-17T12:42:47Z",
+  "prompt": "{\"session_id\":\"8e154172-3a0c-4196-97e2-500fb04b677d\",\"transcript_path\":\"/home/jmcwilliam/.claude/projects/-mnt-c-GitHub-fractary-codex/8e154172-3a0c-4196-97e2-500fb04b677d.jsonl\",\"cwd\":\"/mnt/c/GitHub/fractary/codex\",\"permission_mode\":\"bypassPermissions\",\"hook_event_name\":\"UserPromptSubmit\",\"prompt\":\"/fractary-repo:pr-create \"} ",
+  "prompt_short": "{\"session_id\":\"8e154172-3a0c-4196-97e..."
 }

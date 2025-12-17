@@ -23,7 +23,7 @@ function createCLI(): Command {
 
   program
     .description('Centralized knowledge management and distribution for AI agents')
-    .version('0.1.0');
+    .version('0.2.0');
 
   // Core commands (v3.0)
   program.addCommand(initCommand());      // Initialize codex configuration

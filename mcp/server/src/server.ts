@@ -5,9 +5,9 @@
  * This server can be used standalone or embedded in other applications.
  */
 
-import type { CacheManager } from '../cache/manager.js'
-import type { StorageManager } from '../storage/manager.js'
-import { resolveReference } from '../references/index.js'
+import type { CacheManager } from '@fractary/codex'
+import type { StorageManager } from '@fractary/codex'
+import { resolveReference } from '@fractary/codex'
 import type {
   McpServerInfo,
   McpCapabilities,

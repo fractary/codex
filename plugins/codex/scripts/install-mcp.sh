@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install SDK-based MCP server reference in project settings
+# Install MCP server reference in project settings
 #
 # Usage: ./install-mcp.sh [options]
 # Output: JSON with installation status
@@ -8,17 +8,15 @@
 #   --settings <path>      Override settings.json path
 #   --backup               Create backup of existing settings (default: true)
 #   --no-backup            Skip backup creation
-#   --use-global           Use global 'fractary' CLI instead of npx
 #
 # Adds mcpServers.fractary-codex configuration to .claude/settings.json
-# Uses SDK MCP server from @fractary/codex package
+# Uses standalone MCP server from @fractary/codex-mcp-server package
 
 set -euo pipefail
 
 # Default paths
 settings_path=".claude/settings.json"
 create_backup="true"
-use_global="false"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -39,20 +37,11 @@ while [[ $# -gt 0 ]]; do
       create_backup="false"
       shift
       ;;
-    --use-global)
-      use_global="true"
-      shift
-      ;;
     *)
       shift
       ;;
   esac
 done
-
-# Detect if global fractary CLI is available
-if command -v fractary &> /dev/null; then
-  use_global="true"
-fi
 
 # Create .claude directory if needed
 settings_dir=$(dirname "$settings_path")
@@ -77,22 +66,25 @@ fi
 # Check if already installed
 migration_performed="false"
 if echo "$existing_settings" | jq -e '.mcpServers["fractary-codex"]' >/dev/null 2>&1; then
-  # Check if it's the old custom server format (contains "mcp-server" or "node" command)
+  # Check if it's the old format that needs migration
   existing_command=$(echo "$existing_settings" | jq -r '.mcpServers["fractary-codex"].command // ""')
-  existing_args=$(echo "$existing_settings" | jq -r '.mcpServers["fractary-codex"].args[0] // ""')
+  existing_args=$(echo "$existing_settings" | jq -r '.mcpServers["fractary-codex"].args // []' | jq -r '.[1] // ""')
 
   if [[ "$existing_command" == "node" ]] && [[ "$existing_args" == *"mcp-server"* ]]; then
-    # Old custom server detected - will migrate
+    # Old custom server format (node + local mcp-server) - will migrate
     migration_performed="true"
-  elif [[ "$existing_command" == "npx" ]] || [[ "$existing_command" == "fractary" ]]; then
-    # Already using SDK MCP server
+  elif [[ "$existing_args" == "@fractary/codex" ]]; then
+    # Old SDK-embedded format (@fractary/codex package) - will migrate
+    migration_performed="true"
+  elif [[ "$existing_args" == "@fractary/codex-mcp-server" ]]; then
+    # Already using standalone MCP server
     jq -n \
       --arg command "$existing_command" \
       --arg settings "$settings_path" \
       '{
         success: true,
         status: "already_installed",
-        message: "SDK MCP server already configured",
+        message: "MCP server already configured",
         details: {
           command: $command,
           settings: $settings
@@ -102,24 +94,13 @@ if echo "$existing_settings" | jq -e '.mcpServers["fractary-codex"]' >/dev/null 
   fi
 fi
 
-# Build SDK MCP server configuration
-if [[ "$use_global" == "true" ]]; then
-  # Use global fractary CLI
-  mcp_config=$(jq -n \
-    '{
-      command: "fractary",
-      args: ["codex", "mcp", "--config", ".fractary/codex.yaml"],
-      env: {}
-    }')
-else
-  # Use npx
-  mcp_config=$(jq -n \
-    '{
-      command: "npx",
-      args: ["@fractary/codex", "mcp", "--config", ".fractary/codex.yaml"],
-      env: {}
-    }')
-fi
+# Build standalone MCP server configuration
+mcp_config=$(jq -n \
+  '{
+    command: "npx",
+    args: ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"],
+    env: {}
+  }')
 
 # Merge into existing settings
 new_settings=$(echo "$existing_settings" | jq \
@@ -130,9 +111,8 @@ new_settings=$(echo "$existing_settings" | jq \
 echo "$new_settings" | jq . > "$settings_path"
 
 # Output result
-command_type=$(if [[ "$use_global" == "true" ]]; then echo "fractary"; else echo "npx"; fi)
 jq -n \
-  --arg command "$command_type" \
+  --arg command "npx" \
   --arg settings "$settings_path" \
   --arg backup "$backup_path" \
   --argjson had_existing "$(echo "$existing_settings" | jq 'has("mcpServers")')" \
@@ -140,10 +120,10 @@ jq -n \
   '{
     success: true,
     status: (if $migrated then "migrated" else "installed" end),
-    message: (if $migrated then "Migrated to SDK MCP server successfully" else "SDK MCP server configured successfully" end),
+    message: (if $migrated then "Migrated to standalone MCP server successfully" else "MCP server configured successfully" end),
     details: {
       mcp_command: $command,
-      sdk_package: "@fractary/codex",
+      mcp_package: "@fractary/codex-mcp-server",
       config_path: ".fractary/codex.yaml",
       settings: $settings,
       backup: (if $backup == "" then null else $backup end),

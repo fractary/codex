@@ -4,8 +4,8 @@
     "fractary-codex": {
       "command": "npx",
       "args": [
-        "@fractary/codex",
-        "mcp",
+        "-y",
+        "@fractary/codex-mcp-server",
         "--config",
         ".fractary/codex.yaml"
       ],

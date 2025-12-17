@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Uninstall SDK-based MCP server reference from project settings
+# Uninstall MCP server reference from project settings
 #
 # Usage: ./uninstall-mcp.sh [options]
 # Output: JSON with uninstallation status
@@ -10,7 +10,7 @@
 #   --restore-backup       Restore from most recent backup
 #
 # Removes mcpServers.fractary-codex configuration from .claude/settings.json
-# Works with both SDK-based and legacy custom MCP server configurations
+# Works with both standalone and legacy custom MCP server configurations
 
 set -euo pipefail
 

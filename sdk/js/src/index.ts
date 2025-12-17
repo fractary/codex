@@ -199,35 +199,6 @@ export {
   type CacheLookupResult,
 } from './cache/index.js'
 
-// MCP - Model Context Protocol server
-export {
-  // Types
-  type McpTool,
-  type McpResource,
-  type McpResourceTemplate,
-  type McpCapabilities,
-  type McpServerInfo,
-  type FetchToolArgs,
-  type SearchToolArgs,
-  type ListToolArgs,
-  type InvalidateToolArgs,
-  type ToolResult,
-  type ResourceContent,
-  type SearchResult,
-  // Tools
-  CODEX_TOOLS,
-  handleToolCall,
-  handleFetch,
-  handleSearch,
-  handleList,
-  handleInvalidate,
-  type ToolHandlerContext,
-  // Server
-  McpServer,
-  createMcpServer,
-  type McpServerConfig,
-} from './mcp/index.js'
-
 // Sync - File synchronization
 export {
   // Types
