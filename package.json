@@ -1,0 +1,28 @@
+{
+  "name": "@fractary/codex-monorepo",
+  "version": "0.1.3",
+  "private": true,
+  "description": "Fractary Codex - Knowledge infrastructure for AI agents",
+  "workspaces": [
+    "sdk/js",
+    "cli"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "keywords": [
+    "codex",
+    "knowledge-management",
+    "ai-agents",
+    "fractary"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fractary/codex.git"
+  },
+  "license": "MIT",
+  "author": "Fractary Engineering"
+}

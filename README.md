@@ -27,6 +27,32 @@ This monorepo contains SDK implementations for multiple languages:
 | **JavaScript/TypeScript** | [`@fractary/codex`](./sdk/js/) | [![npm](https://img.shields.io/npm/v/@fractary/codex.svg)](https://www.npmjs.com/package/@fractary/codex) | `npm install @fractary/codex` |
 | **Python** | [`fractary-codex`](./sdk/py/) | In Development | `pip install fractary-codex` |
 
+## CLI
+
+A command-line interface is available for codex operations:
+
+| Tool | Package | Status | Install |
+|------|---------|--------|---------|
+| **Codex CLI** | [`@fractary/codex-cli`](./cli/) | Ready | `npm install -g @fractary/codex-cli` |
+
+**Quick example:**
+```bash
+# Initialize codex in your project
+fractary-codex init
+
+# Fetch a document
+fractary-codex fetch codex://myorg/docs/api-guide.md
+
+# Manage cache
+fractary-codex cache list
+fractary-codex cache clear --all
+
+# Run diagnostics
+fractary-codex health
+```
+
+See the [CLI documentation](./cli/README.md) for full command reference.
+
 ## Quick Start
 
 ### JavaScript/TypeScript
