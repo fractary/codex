@@ -177,6 +177,27 @@ Extract include and exclude patterns from command arguments:
   → include: ["docs/**"], exclude: ["docs/private/**", "**/*.draft.md"]
 ```
 
+**Implementation Note:**
+- The command layer receives `--include` and `--exclude` as strings
+- The command layer splits by comma and passes arrays to the agent
+- The agent passes these arrays directly to the skill
+- The skill iterates and creates multiple `--include`/`--exclude` CLI arguments
+
+**Important: AND Logic Behavior**
+
+The `--include` flag narrows the configured patterns using AND logic:
+- Config defines what CAN be synced (e.g., `docs/**`, `specs/**`)
+- `--include` defines what you WANT to sync NOW
+- Files must match BOTH config patterns AND include patterns to sync
+
+Example:
+- Config includes: `["docs/**", "specs/**"]`
+- Command: `--include "docs/api/**"`
+- Result: Only files in `docs/api/` (intersection of both)
+- Warning: `--include "other/**"` would sync 0 files (no intersection with config)
+
+If you want to sync files outside the configured patterns, you must update the configuration file first.
+
 ## Step 3: Load Configuration
 
 Check that configuration exists at `.fractary/plugins/codex/config.json`
