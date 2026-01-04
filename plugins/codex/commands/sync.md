@@ -2,7 +2,7 @@
 name: fractary-codex:sync-project
 description: Sync a single project bidirectionally with codex repository
 model: claude-haiku-4-5
-argument-hint: [project-name] [--env <env>] [--to-codex|--from-codex|--bidirectional] [--dry-run]
+argument-hint: [project-name] [--env <env>] [--to-codex|--from-codex|--bidirectional] [--dry-run] [--include <patterns>] [--exclude <patterns>]
 ---
 
 <CONTEXT>
@@ -70,6 +70,8 @@ Command format:
 - `--bidirectional`: Sync both directions (default)
 - `--dry-run`: Preview changes without applying them
 - `--patterns <patterns>`: Override sync patterns (comma-separated)
+- `--include <patterns>`: Include only files matching glob patterns. Narrows the configured sync patterns. Use comma-separated list for multiple patterns. Example: `--include "docs/api/**"` or `--include "docs/**,specs/**"`
+- `--exclude <patterns>`: Exclude files matching glob patterns. Use comma-separated list for multiple patterns. Example: `--exclude "docs/private/**,**/*.draft.md"`
 
 **Environment Auto-Detection:**
 - On feature/fix/chore/etc branch → `test` environment
@@ -96,6 +98,24 @@ Command format:
 # Direction-specific
 /fractary-codex:sync --to-codex --env prod
 /fractary-codex:sync --from-codex --env test
+
+# Sync only API documentation
+/fractary-codex:sync --include "docs/api/**"
+
+# Multiple include patterns (comma-separated)
+/fractary-codex:sync --include "docs/**,specs/**"
+
+# Combine include with exclude
+/fractary-codex:sync --include "docs/**" --exclude "docs/private/**"
+
+# Sync specific files (comma-separated)
+/fractary-codex:sync --include "README.md,CLAUDE.md"
+
+# Multiple excludes
+/fractary-codex:sync --exclude "**/*.draft.md,docs/private/**"
+
+# Dry-run to preview filtered sync
+/fractary-codex:sync --include "docs/api/**" --dry-run
 ```
 </INPUTS>
 
@@ -124,6 +144,38 @@ If project name NOT provided:
 If project name provided:
 - Use the specified project name
 - No need to detect
+
+## Step 2.5: Parse Include/Exclude Options
+
+Extract include and exclude patterns from command arguments:
+
+**Parse `--include` flag:**
+- Single argument with comma-separated values
+- Examples: `--include "docs/**"` or `--include "docs/**,specs/**"`
+
+**Parse `--exclude` flag:**
+- Single argument with comma-separated values
+- Examples: `--exclude "docs/private/**"` or `--exclude "**/*.draft.md,docs/private/**"`
+
+**Processing:**
+1. Take the `--include` value (if provided)
+2. Split by comma to create array
+3. Trim whitespace from each pattern
+4. Remove empty patterns
+5. Repeat for `--exclude` value
+6. Validate glob syntax (basic check)
+
+**Example parsing:**
+```
+--include "docs/**,specs/**"
+  → include: ["docs/**", "specs/**"]
+
+--exclude "**/*.draft.md"
+  → exclude: ["**/*.draft.md"]
+
+--include "docs/**" --exclude "docs/private/**,**/*.draft.md"
+  → include: ["docs/**"], exclude: ["docs/private/**", "**/*.draft.md"]
+```
 
 ## Step 3: Load Configuration
 
@@ -275,6 +327,8 @@ Use the @agent-fractary-codex:codex-manager agent with the following request:
     "direction": "<to-codex|from-codex|bidirectional>",
     "patterns": <from-config-or-override>,
     "exclude": <from-config>,
+    "include_patterns": <array-from-include-flag>,
+    "exclude_patterns": <array-from-exclude-flag>,
     "dry_run": <true|false>,
     "config": <full-config-object>
   }

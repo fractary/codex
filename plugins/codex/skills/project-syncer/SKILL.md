@@ -63,6 +63,14 @@ All via the TypeScript SDK.
   - Examples: ["docs/private/**", "*.tmp"]
 - **dry_run**: boolean - Preview mode (default: false)
   - Shows what would be synced without making changes
+- **include_patterns**: array - Include patterns to narrow sync scope (optional)
+  - Only files matching BOTH config patterns AND these patterns will sync
+  - Uses AND logic (intersection)
+  - Higher priority than config patterns (priority 200)
+  - Examples: ["docs/api/**"], ["docs/**", "specs/**"]
+- **exclude_patterns**: array - Exclude patterns to filter out files (optional)
+  - Added to config excludes
+  - Examples: ["docs/private/**"], ["**/*.draft.md"]
 - **config**: object - Handler configuration (optional)
   - Default: from `.fractary/codex.yaml`
 </INPUTS>
@@ -106,6 +114,16 @@ if (patterns && patterns.length > 0) {
 // Add excludes if provided
 if (exclude && exclude.length > 0) {
   exclude.forEach(e => args.push("--exclude", e))
+}
+
+// Add include patterns if provided
+if (include_patterns && include_patterns.length > 0) {
+  include_patterns.forEach(pattern => args.push("--include", pattern))
+}
+
+// Add exclude patterns if provided
+if (exclude_patterns && exclude_patterns.length > 0) {
+  exclude_patterns.forEach(pattern => args.push("--exclude", pattern))
 }
 
 // Add dry-run flag

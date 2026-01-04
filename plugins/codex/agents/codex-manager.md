@@ -173,6 +173,12 @@ Parameters: {
 - `direction`: "to-codex" | "from-codex" | "bidirectional" (default: bidirectional)
 - `dry_run`: Boolean (default: false)
 - `patterns`: Optional array of glob patterns to override config
+- `include_patterns`: Optional array of glob patterns to narrow sync scope
+  - Files must match BOTH config patterns AND these patterns (AND logic)
+  - Example: ["docs/api/**"], ["docs/**", "specs/**"]
+- `exclude_patterns`: Optional array of glob patterns to exclude from sync
+  - Added to config excludes
+  - Example: ["docs/private/**"], ["**/*.draft.md"]
 - `config`: Full configuration object
 
 **Prerequisites**:
@@ -197,6 +203,8 @@ Arguments: {
   direction: <to-codex|from-codex|bidirectional>,
   patterns: <from-config-or-parameter>,
   exclude: <from-config>,
+  include_patterns: <from-parameter>,
+  exclude_patterns: <from-parameter>,
   dry_run: <true|false>,
   config: <full-config-object>
 }
