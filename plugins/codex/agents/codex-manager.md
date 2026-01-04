@@ -20,7 +20,6 @@ You work with multiple skills to accomplish operations:
 **Sync Operations:**
 - **repo-discoverer**: Discover repositories in an organization
 - **project-syncer**: Sync a single project bidirectionally
-- **org-syncer**: Sync all projects in an organization
 - **handler-sync-github**: GitHub-specific sync mechanism
 
 **Knowledge Retrieval Operations:**
@@ -208,60 +207,6 @@ Arguments: {
 - Commits created (if not dry-run)
 - Any errors or warnings
 - Summary report
-
-## Operation: sync-org
-
-**Purpose**: Sync all projects in organization with codex repository (parallel execution)
-
-**Parameters**:
-- `organization`: Organization name (from config)
-- `codex_repo`: Codex repository name (from config)
-- `environment`: Environment name (dev, test, staging, prod, or custom)
-- `target_branch`: Branch in codex repository to sync with (from environment mapping)
-- `direction`: "to-codex" | "from-codex" | "bidirectional" (default: bidirectional)
-- `dry_run`: Boolean (default: false)
-- `exclude`: Array of glob patterns for repos to exclude
-- `parallel`: Number of parallel sync operations (default: from config, typically 5)
-- `config`: Full configuration object
-
-**Prerequisites**:
-- Configuration must exist at `.fractary/plugins/codex/config.json`
-- Read configuration to get: organization, codex_repo, default_sync_patterns, environments
-
-**Environment Handling**:
-- For org-wide sync, environment defaults to "test" (safe default)
-- Explicit --env prod requires confirmation from command layer
-- The command layer resolves environment to target_branch using config.environments
-- This operation receives the resolved target_branch
-
-**Delegation**:
-```
-USE SKILL: org-syncer
-Operation: sync-all
-Arguments: {
-  organization: <from-config>,
-  codex_repo: <from-config>,
-  environment: <environment-name>,
-  target_branch: <target-branch-from-environment>,
-  direction: <to-codex|from-codex|bidirectional>,
-  exclude: <from-parameter>,
-  parallel: <from-config-or-parameter>,
-  dry_run: <true|false>,
-  config: <full-config-object>
-}
-```
-
-**Expected Output**:
-- Total repositories discovered
-- Repositories synced successfully (count and list)
-- Repositories failed (count, list, and errors)
-- Aggregate statistics (files synced, commits created)
-- Summary report
-
-**Note on Parallel Execution**:
-- Projects→codex phase runs first (parallel within phase)
-- Codex→projects phase runs after (parallel within phase)
-- Phases are SEQUENTIAL, repos within each phase are PARALLEL
 
 ## Operation: fetch
 
@@ -460,12 +405,6 @@ An operation is complete when:
 - Results reported to user with summary
 - Any errors or warnings communicated
 
-✅ **For sync-org operation**:
-- org-syncer skill executed successfully
-- Aggregate results returned (all repos processed)
-- Summary statistics reported to user
-- Any failures clearly communicated with affected repos
-
 ✅ **For fetch operation**:
 - document-fetcher skill executed successfully
 - Document content returned
@@ -560,7 +499,7 @@ Please specify: <what to provide>
 
 <HANDLERS>
   <SYNC_MECHANISM>
-  When delegating to project-syncer or org-syncer skills, they will use the handler specified in configuration:
+  When delegating to project-syncer skill, it will use the handler specified in configuration:
 
   **Configuration Path**: `handlers.sync.active`
   **Default**: "github"

@@ -1,4 +1,6 @@
 ---
+name: fractary-codex:config-migrate
+description: Migrate configuration from v2.0 to v3.0
 model: claude-haiku-4-5
 ---
 

@@ -1,4 +1,6 @@
 ---
+name: fractary-codex:cache-health
+description: Perform comprehensive health checks on codex system
 model: claude-haiku-4-5
 ---
 

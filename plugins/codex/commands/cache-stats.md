@@ -1,4 +1,6 @@
 ---
+name: fractary-codex:cache-stats
+description: Display cache statistics and performance metrics
 model: claude-haiku-4-5
 ---
 
