@@ -1,5 +1,5 @@
 ---
-name: cache-list
+name: fractary-codex:cache-list
 description: List documents in the codex cache with freshness status
 model: claude-haiku-4-5
 usage: /fractary-codex:cache-list [--expired] [--fresh] [--project <name>]

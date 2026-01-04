@@ -1,5 +1,5 @@
 ---
-name: document-fetch
+name: fractary-codex:document-fetch
 description: Fetch a document from codex knowledge base by reference
 model: claude-haiku-4-5
 usage: /fractary-codex:document-fetch <reference> [--force-refresh] [--ttl <days>]

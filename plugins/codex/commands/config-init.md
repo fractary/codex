@@ -1,5 +1,5 @@
 ---
-name: config-init
+name: fractary-codex:config-init
 description: Initialize codex plugin configuration for this project
 model: claude-haiku-4-5
 argument-hint: [--org <name>] [--codex <repo>]

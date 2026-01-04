@@ -2,24 +2,35 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "description": "Claude Code project settings for fractary plugin marketplace",
   "extraKnownMarketplaces": {
-    "fractary": {
+    "fractary-core": {
       "source": {
         "source": "github",
-        "repo": "fractary/claude-plugins"
+        "repo": "fractary/core"
+      }
+    }, 
+    "fractary-codex": {
+      "source": {
+        "source": "github",
+        "repo": "fractary/codex"
+      }
+    }, 
+    "fractary-faber": {
+      "source": {
+        "source": "github",
+        "repo": "fractary/faber"
       }
     }
   },
   "enabledPlugins": {
-    "fractary-codex@fractary": true,
-    "fractary-repo@fractary": true,
-    "fractary-work@fractary": true,
-    "fractary-file@fractary": true,
-    "fractary-docs@fractary": true,
-    "fractary-logs@fractary": true,
-    "fractary-spec@fractary": true,
-    "fractary-status@fractary": true,
-    "fractary-faber@fractary": true,
-    "fractary-faber-cloud@fractary": true
+    "fractary-codex@fractary-codex": true,
+    "fractary-repo@fractary-core": true,
+    "fractary-work@fractary-core": true,
+    "fractary-docs@fractary-core": true,
+    "fractary-spec@fractary-core": true,
+    "fractary-logs@fractary-core": true,
+    "fractary-file@fractary-core": true,
+    "fractary-faber@fractary-faber": true, 
+    "fractary-faber-cloud@fractary-faber": true
   },
   "permissions": {
     "bash": {
