@@ -695,7 +695,7 @@ This section has been replaced by the comprehensive command reference table abov
 - `plugins/codex/commands/config-init.md` - Rename from init.md
 - `plugins/codex/commands/config-migrate.md` - Rename from migrate.md
 - `plugins/codex/commands/cache-stats.md` - Rename from metrics.md
-- `plugins/codex/commands/sync.md` - Rename from sync-project.md
+- `plugins/codex/commands/sync-project.md` - Rename from sync.md (align filename with command name)
 - `plugins/codex/plugin.json` - Update skill registry
 - **DELETE** `plugins/codex/skills/org-syncer/` - Remove org sync entirely
 - **DELETE** `plugins/codex/commands/sync-org.md` - Remove org sync command
