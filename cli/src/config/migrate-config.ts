@@ -77,7 +77,7 @@ export async function migrateConfig(
 
     // Migrate cache configuration
     if (legacy.cache) {
-      yamlConfig.cacheDir = legacy.cache.directory || '.codex-cache';
+      yamlConfig.cacheDir = legacy.cache.directory || '.fractary/codex/cache';
 
       // Note: Legacy config had cache.defaultTtl, cache.maxSize with string formats
       // These are now handled by CacheManager config separately
@@ -215,12 +215,12 @@ export async function writeYamlConfig(
 }
 
 /**
- * Get default YAML config
+ * Get default YAML config (v4.0 standard)
  */
 export function getDefaultYamlConfig(organization: string): CodexYamlConfig {
   return {
     organization,
-    cacheDir: '.codex-cache',
+    cacheDir: '.fractary/codex/cache',
 
     storage: [
       {

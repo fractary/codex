@@ -15,12 +15,12 @@ import yaml
 from ..errors import ConfigurationError
 from ..references.resolver import detect_current_project
 
-# Configuration file locations (in search order)
-CONFIG_FILENAMES = ["codex.yaml", "codex.yml"]
-CONFIG_DIRS = [".fractary", ".codex"]
+# Configuration file locations (v4.0 standard only)
+CONFIG_FILENAMES = ["config.yaml", "config.yml"]
+CONFIG_DIRS = [".fractary/codex"]
 
-# Default configuration values
-DEFAULT_CACHE_DIR = ".codex-cache"
+# Default configuration values (v4.0 standard)
+DEFAULT_CACHE_DIR = ".fractary/codex/cache"
 DEFAULT_TTL = 86400  # 1 day
 
 

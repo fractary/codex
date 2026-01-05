@@ -1,14 +1,19 @@
 # Codex Plugin Migration Guide v3 → v4
 
-This guide helps you migrate from codex plugin v3.0 (custom bash scripts + JSON config) to v4.0 (@fractary/cli + YAML config).
+This guide helps you migrate from codex plugin v3.x to v4.0.
+
+## ⚠️ Breaking Change
+
+**v4.0 is a breaking change.** You MUST migrate your configuration to the new format and location. Backward compatibility has been removed for clarity and simplicity.
 
 ## Overview
 
-**What's changing**:
+**What's changing** (REQUIRED):
 - Configuration format: JSON → YAML
-- Configuration location: `.fractary/plugins/codex/config.json` → `.fractary/codex.yaml`
+- Configuration location: `.fractary/plugins/codex/config.json` → `.fractary/codex/config.yaml`
+- Cache location: `.codex-cache/` or `.fractary/plugins/codex/cache/` → `.fractary/codex/cache/`
 - Implementation: Custom bash scripts → @fractary/cli delegation
-- Global config: Deprecated (project-level only)
+- Global config: No longer supported (project-level only)
 
 **What's staying**:
 - All functionality remains the same
@@ -22,6 +27,54 @@ This guide helps you migrate from codex plugin v3.0 (custom bash scripts + JSON 
 - TypeScript type safety
 - Consistent with CLI ecosystem
 - YAML is more readable
+- Cleaner directory organization
+- No confusion from multiple config locations
+
+## v4.0 Path Consolidation
+
+v4.0 introduces a unified location for all codex files under `.fractary/codex/`:
+
+**Before (v3.x)**:
+```
+project-root/
+├── .codex-cache/                    # Cache (CLI default)
+├── .fractary/
+│   ├── codex.yaml                   # Config (v3.5)
+│   └── plugins/
+│       └── codex/
+│           ├── config.json          # Config (v3.0)
+│           └── cache/               # Cache (plugin default)
+```
+
+**After (v4.0)**:
+```
+project-root/
+└── .fractary/
+    └── codex/
+        ├── config.yaml              # Configuration
+        └── cache/                   # Cache directory
+```
+
+**Benefits**:
+- Single namespace for all codex files
+- No project root pollution
+- Clear organization and ownership
+- Future-proof for additional codex metadata
+
+**Migration is REQUIRED** before v4.0 will work. Run:
+```bash
+fractary codex migrate
+```
+
+This will:
+1. Detect your current config location (v3.0 or v3.5)
+2. Convert JSON → YAML if needed
+3. Move config → `.fractary/codex/config.yaml`
+4. Move cache → `.fractary/codex/cache/` (merge if needed)
+5. Preserve all cache entries and metadata
+6. Remove old config and cache locations
+
+**After migration, v3.x configs will no longer work.**
 
 ## Migration Checklist
 

@@ -26,7 +26,7 @@ export interface ResolvedReference extends ParsedReference {
  * Options for resolving references
  */
 export interface ResolveOptions {
-  /** Base directory for cache (default: .fractary/plugins/codex/cache) */
+  /** Base directory for cache (default: .fractary/codex/cache) */
   cacheDir?: string
   /** Override current organization detection */
   currentOrg?: string
@@ -37,9 +37,9 @@ export interface ResolveOptions {
 }
 
 /**
- * Default cache directory
+ * Default cache directory (v4.0 standard)
  */
-export const DEFAULT_CACHE_DIR = '.fractary/plugins/codex/cache'
+export const DEFAULT_CACHE_DIR = '.fractary/codex/cache'
 
 /**
  * Detect the current project from git remote
