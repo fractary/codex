@@ -3,7 +3,7 @@ name: sync-manager
 model: claude-opus-4-5
 description: Sync project bidirectionally with codex repository
 tools: Bash, Skill
-color: green
+color: orange
 ---
 
 <CONTEXT>

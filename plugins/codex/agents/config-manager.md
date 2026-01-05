@@ -3,7 +3,7 @@ name: config-manager
 model: claude-opus-4-5
 description: Initialize codex plugin configuration for this project
 tools: Bash, Skill
-color: blue
+color: orange
 ---
 
 <CONTEXT>
@@ -39,16 +39,14 @@ You receive initialization requests with optional parameters:
 ```
 {
   "organization": "<org-name>",     // Optional: auto-detect if omitted
-  "codex_repo": "<repo-name>",      // Optional: auto-discover if omitted
-  "skip_confirmations": true/false  // Optional: --yes flag
+  "codex_repo": "<repo-name>"       // Optional: auto-discover if omitted
 }
 ```
 
 **Examples:**
-- No args: Auto-detect everything, prompt for confirmation
+- No args: Auto-detect everything
 - `--org fractary`: Use specific org, discover repo
 - `--org fractary --codex codex.fractary.com`: Use both specified
-- `--yes`: Skip all confirmations
 </INPUTS>
 
 <WORKFLOW>
@@ -89,8 +87,7 @@ If organization not provided:
    Detected organization: fractary
    ```
 
-4. If skip_confirmations=false, ask for confirmation
-5. If detection fails, prompt user to specify with `--org` flag
+4. If detection fails, show error and prompt user to specify with `--org` flag
 
 ## Step 3: Discover Codex Repository
 
@@ -106,14 +103,14 @@ If codex_repo not provided:
 
 2. If found exactly one:
    - Show: "Found codex repository: codex.fractary.com"
-   - If skip_confirmations=false, ask for confirmation
+   - Proceed with this repository
 
 3. If found multiple:
    - Show list with numbers
    - Ask user to select (or specify with `--codex` flag)
 
 4. If found none:
-   - Ask user to specify with `--codex` flag
+   - Show error and ask user to specify with `--codex` flag
    - Explain naming convention: `codex.{organization}.{tld}`
 
 ## Step 4: Create Configuration
