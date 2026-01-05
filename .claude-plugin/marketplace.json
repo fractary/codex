@@ -7,7 +7,7 @@
     },
     "metadata": {
       "description": "Knowledge infrastructure for AI agents - universal references, multi-tier caching, storage abstraction",
-      "version": "2.0.2",
+      "version": "2.0.3",
       "pluginRoot": "./plugins"
     },
     "plugins": [
@@ -15,7 +15,7 @@
         "name": "fractary-codex",
         "source": "./plugins/codex",
         "description": "Project documentation and org-wide synchronization to and from organization central codex",
-        "version": "3.0.1",
+        "version": "3.0.4",
         "author": {
           "name": "The Fractary",
           "url": "https://github.com/fractary"
@@ -29,6 +29,15 @@
         "category": "documentation",
         "strict": true,
         "commands": [
+          "./commands/cache-clear.md",
+          "./commands/cache-health.md",
+          "./commands/cache-list.md",
+          "./commands/cache-stats.md",
+          "./commands/config-init.md",
+          "./commands/config-migrate.md",
+          "./commands/config-validate.md",
+          "./commands/config-validate-refs.md",
+          "./commands/document-fetch.md",
           "./commands/sync-project.md"
         ],
         "agents": [
