@@ -26,7 +26,7 @@ Currently, the sync command syncs all files matching the configured patterns (e.
 
 The sync command operates through 5 layers:
 
-1. **Command** (`plugins/codex/commands/sync.md`) - Parses arguments, delegates to agent
+1. **Command** (`plugins/codex/commands/sync-project.md`) - Parses arguments, delegates to agent
 2. **Agent** (`plugins/codex/agents/codex-manager.md`) - Validates and coordinates operations
 3. **Skill** (`plugins/codex/skills/project-syncer/SKILL.md`) - Builds CLI arguments
 4. **CLI** (`cli/src/commands/sync.ts`) - Executes sync via SDK
@@ -77,7 +77,7 @@ Simply wire through the existing CLI flags to the plugin layers (command → age
 
 #### 1. Update Command Layer
 
-**File**: `/mnt/c/GitHub/fractary/codex/plugins/codex/commands/sync.md`
+**File**: `/mnt/c/GitHub/fractary/codex/plugins/codex/commands/sync-project.md`
 
 **Changes**:
 
@@ -329,7 +329,7 @@ if (exclude_patterns && exclude_patterns.length > 0) {
 
 ## Files Modified
 
-1. `/mnt/c/GitHub/fractary/codex/plugins/codex/commands/sync.md`
+1. `/mnt/c/GitHub/fractary/codex/plugins/codex/commands/sync-project.md`
    - Add `--include`, `--exclude` to argument-hint
    - Add options documentation
    - Add examples

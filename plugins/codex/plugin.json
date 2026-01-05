@@ -28,7 +28,7 @@
     {"name": "handler-http", "version": "2.0.0", "description": "HTTP handler", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/handler-http/tool.yaml", "checksum": "sha256:a1cd7fb54dd0a8c42506757b2bc1502a97f23675fcfa236bb96db10f52325122", "size": 442},
     {"name": "handler-sync-github", "version": "2.0.0", "description": "GitHub sync", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/handler-sync-github/tool.yaml", "checksum": "sha256:5f2760c8e4f9a74ada5cf7f645f3b8dbbfab53d0f861e9a51db395ce233bf5b0", "size": 568},
     {"name": "repo-discoverer", "version": "2.0.0", "description": "Repo discovery", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/repo-discoverer/tool.yaml", "checksum": "sha256:c597133d95ce253b9b2fcf6bd5d69fe89d17e58001362d9df1ffb401cdace26b", "size": 507},
-    {"name": "sync", "version": "3.0.0", "description": "Sync project", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/sync/tool.yaml", "checksum": "sha256:f2d638f413a49a4ab1ce85ee89b076eef284dd91a5f08bd5246987a28ef81203", "size": 268}
+    {"name": "sync-project", "version": "3.0.0", "description": "Sync project", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/sync-project/tool.yaml", "checksum": "sha256:f2d638f413a49a4ab1ce85ee89b076eef284dd91a5f08bd5246987a28ef81203", "size": 268}
   ],
   "config": {"default_llm": {"provider": "anthropic", "model": "claude-opus-4-5"}}
 }
