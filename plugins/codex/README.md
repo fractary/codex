@@ -1,8 +1,13 @@
 # Fractary Codex Plugin
 
-**Knowledge retrieval and documentation sync** - A memory fabric for AI agents with cache-first retrieval, multi-source support, and MCP integration.
+**Self-managing memory fabric with MCP integration** - Reference docs via `codex://` URIs (auto-fetched by MCP). Sync projects bidirectionally with central codex repository.
 
-> **Version 4.1** - SDK-based MCP server: Migrated from custom TypeScript MCP server to SDK-provided MCP server for better maintainability and ecosystem integration.
+> **Version 4.0** - BREAKING CHANGE: Radical simplification
+> - Removed ALL cache management commands (self-managing via MCP)
+> - Removed config commands (no migration support)
+> - Only 2 commands: `init` + `sync`
+> - Command → Agent architecture for reliability
+> - Config now at `.fractary/codex/config.yaml` (YAML only)
 
 ## Overview
 
@@ -46,54 +51,57 @@ Request codex://org/project/docs/api.md
 
 ## Quick Start
 
-### 1. Initialize the Plugin
+### 1. Initialize (One-Time Setup)
 
+```bash
+/fractary-codex:init
+```
+
+Auto-detects organization from git remote and discovers codex repository.
+
+Or specify explicitly:
 ```bash
 /fractary-codex:init --org fractary --codex codex.fractary.com
 ```
 
 This sets up:
 - Configuration at `.fractary/codex/config.yaml` (YAML format, v4.0)
-- Cache directory at `.fractary/codex/cache/`
-- SDK MCP server in `.claude/settings.json`
+- Cache directory at `.fractary/codex/cache/` (auto-managed)
+- MCP server in `.claude/settings.json`
 
-### 2. Fetch a Document
+**Note:** Restart Claude Code after initialization to load the MCP server.
 
-```bash
-/fractary-codex:fetch codex://fractary/auth-service/docs/oauth.md
-```
-
-This will:
-- Check local cache first (fast path)
-- Fetch from GitHub if needed (on-demand)
-- Cache locally with 7-day TTL
-- Return the content
-
-### 3. Browse Cached Documents
+### 2. Sync Documentation
 
 ```bash
-/fractary-codex:cache-list
+/fractary-codex:sync
 ```
 
-Shows all cached documents with freshness status.
+Syncs project documentation bidirectionally with the codex repository. Auto-detects environment from current branch.
 
-### 4. Use MCP Resources
+Options:
+```bash
+/fractary-codex:sync --env test              # Explicit environment
+/fractary-codex:sync --env prod --dry-run    # Preview changes
+/fractary-codex:sync --to-codex              # One-way to codex
+/fractary-codex:sync --from-codex            # One-way from codex
+```
 
-After initialization, MCP resources are available:
+### 3. Reference Documentation
+
+After initialization and sync, reference docs via `codex://` URIs:
 
 ```
 codex://fractary/auth-service/docs/oauth.md
 ```
 
-Access cached documents via `codex://` URIs directly in conversations.
+The MCP server automatically:
+- Checks local cache first (< 100ms)
+- Fetches from codex if missing
+- Caches locally with 7-day TTL
+- Returns content
 
-### 5. Validate Setup
-
-```bash
-/fractary-codex:validate-setup
-```
-
-Checks configuration, cache, and MCP server status.
+**No manual cache management needed** - the codex manages itself!
 
 ---
 
