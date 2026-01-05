@@ -119,11 +119,11 @@ This returns:
 
 ### Case A: YAML Config Already Exists
 
-If `.fractary/codex.yaml` exists:
+If `.fractary/codex/config.yaml` exists:
 ```
 ✅ Configuration already exists!
 
-Location: .fractary/codex.yaml (YAML)
+Location: .fractary/codex/config.yaml (YAML)
 Status: Up to date (v4.0)
 
 Would you like to:
@@ -195,8 +195,8 @@ Show what will be created:
 Output:
 ```
 Will create/configure:
-  ✓ Project config: .fractary/codex.yaml (YAML format, v4.0)
-  ✓ Cache directory: .fractary/plugins/codex/cache/
+  ✓ Project config: .fractary/codex/config.yaml (YAML format, v4.0)
+  ✓ Cache directory: .fractary/codex/cache/
   ✓ MCP server: .claude/settings.json (mcpServers.fractary-codex)
 
 Configuration:
@@ -222,14 +222,14 @@ Parameters:
     "--org", "{organization}",
     "--codex", "{codex_repo}",
     "--format", "yaml",
-    "--output", ".fractary/codex.yaml"
+    "--output", ".fractary/codex/config.yaml"
   ],
   "parse_output": true
 }
 ```
 
 The CLI will:
-1. Create YAML config at `.fractary/codex.yaml`
+1. Create YAML config at `.fractary/codex/config.yaml`
 2. Set version to "4.0"
 3. Populate with provided values
 4. Validate against schema
@@ -246,13 +246,13 @@ Use the @agent-fractary-codex:codex-manager agent with the following request:
   "parameters": {
     "setup_cache": true,
     "install_mcp": true,
-    "config_path": ".fractary/codex.yaml"
+    "config_path": ".fractary/codex/config.yaml"
   }
 }
 ```
 
 The agent will:
-1. **Create cache directory** at `.fractary/plugins/codex/cache/`
+1. **Create cache directory** at `.fractary/codex/cache/`
    - Run `scripts/setup-cache-dir.sh`
    - Creates `.gitignore` and `.cache-index.json`
    - Updates project `.gitignore`
@@ -276,8 +276,8 @@ Example output:
 ✅ Codex plugin initialized successfully!
 
 Created:
-  - Project config: .fractary/codex.yaml (YAML, v4.0)
-  - Cache directory: .fractary/plugins/codex/cache/
+  - Project config: .fractary/codex/config.yaml (YAML, v4.0)
+  - Cache directory: .fractary/codex/cache/
   - MCP server: .claude/settings.json (fractary-codex)
 
 Configuration:
@@ -289,7 +289,7 @@ Configuration:
 
 Next steps:
   1. Restart Claude Code to load the MCP server
-  2. Review and customize: cat .fractary/codex.yaml
+  2. Review and customize: cat .fractary/codex/config.yaml
   3. Validate setup: fractary codex health
   4. Run first sync: /fractary-codex:sync --dry-run
   5. Use codex:// URIs to reference documents
@@ -306,11 +306,11 @@ If migrated from JSON:
 
 Migrated:
   From: .fractary/plugins/codex/config.json (JSON, v3.0)
-  To: .fractary/codex.yaml (YAML, v4.0)
+  To: .fractary/codex/config.yaml (YAML, v4.0)
   Status: Settings preserved, format updated
 
 Created:
-  - Cache directory: .fractary/plugins/codex/cache/
+  - Cache directory: .fractary/codex/cache/
   - MCP server: .claude/settings.json (fractary-codex)
 
 Configuration:
@@ -321,7 +321,7 @@ Configuration:
 
 Next steps:
   1. Restart Claude Code to load the MCP server
-  2. Review new config: cat .fractary/codex.yaml
+  2. Review new config: cat .fractary/codex/config.yaml
   3. Test setup: fractary codex health
   4. Remove old config (optional): rm .fractary/plugins/codex/config.json
 ```
@@ -413,13 +413,13 @@ Run /fractary-codex:config-init again when ready.
 After successful initialization, guide the user:
 
 1. **What was created**:
-   - Configuration file at `.fractary/codex.yaml` (YAML format, v4.0)
-   - Cache directory at `.fractary/plugins/codex/cache/`
+   - Configuration file at `.fractary/codex/config.yaml` (YAML format, v4.0)
+   - Cache directory at `.fractary/codex/cache/`
    - MCP server in `.claude/settings.json`
    - Show key configuration values
 
 2. **How to customize**:
-   - **Project config**: `.fractary/codex.yaml`
+   - **Project config**: `.fractary/codex/config.yaml`
      - `organization`: Organization name
      - `codex_repo`: Codex repository name
      - `project_name`: Current project name (for URI resolution)

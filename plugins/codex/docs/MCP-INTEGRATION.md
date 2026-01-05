@@ -44,7 +44,7 @@ The easiest way to set up the MCP server is via the init command:
 
 This will:
 1. Create configuration at `.fractary/plugins/codex/config.json`
-2. Set up cache directory at `.fractary/plugins/codex/cache/`
+2. Set up cache directory at `.fractary/codex/cache/`
 3. Install MCP server in `.claude/settings.json`
 4. Initialize cache index
 
@@ -324,7 +324,7 @@ The MCP server is registered in `.claude/settings.json`:
 ```
 
 The server reads `CODEX_CONFIG_PATH` to find:
-- Cache location (`.fractary/plugins/codex/cache/`)
+- Cache location (`.fractary/codex/cache/`)
 - Source configuration
 - TTL and offline settings
 

@@ -708,7 +708,7 @@ jobs:
 - [ ] Passes `mypy --strict` type checking
 - [ ] Reference parsing/building matches JS SDK behavior
 - [ ] Type registry with built-in types and TTLs
-- [ ] Configuration loading from `.fractary/codex.yaml`
+- [ ] Configuration loading from `.fractary/codex/config.yaml`
 - [ ] Local storage provider working
 - [ ] HTTP storage provider working
 - [ ] Cache manager with TTL support

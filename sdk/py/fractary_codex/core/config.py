@@ -2,7 +2,7 @@
 Configuration loading and management.
 
 This module provides functions for loading and managing Codex configuration
-from .fractary/codex.yaml files.
+from .fractary/codex/config.yaml files (v4.0 standard).
 """
 
 import os
@@ -57,13 +57,12 @@ def load_config(
     *,
     allow_missing: bool = True,
 ) -> Optional[CodexConfig]:
-    """Load Codex configuration from .fractary/codex.yaml.
+    """Load Codex configuration from .fractary/codex/config.yaml (v4.0 standard).
 
     This function searches for configuration files in the following order:
-    1. start_path/.fractary/codex.yaml
-    2. start_path/.codex/codex.yaml
-    3. Parent directories (walking up to root)
-    4. User home directory (~/.fractary/codex.yaml)
+    1. start_path/.fractary/codex/config.yaml
+    2. Parent directories (walking up to root)
+    3. Not found - returns None or raises error
 
     Args:
         start_path: Starting directory for config search (defaults to cwd)

@@ -16,14 +16,14 @@ Complete reference for configuring the Fractary Codex SDK.
 
 ## Configuration File
 
-The Codex SDK uses a YAML configuration file located at `.fractary/codex.yaml` in your project root.
+The Codex SDK uses a YAML configuration file located at `.fractary/codex/config.yaml` in your project root.
 
 ### File Location
 
 The SDK searches for configuration in the following order:
 
-1. `.fractary/codex.yaml` (project-specific)
-2. `~/.fractary/codex.yaml` (user-wide)
+1. `.fractary/codex/config.yaml` (project-specific)
+2. `~/.fractary/codex/config.yaml` (user-wide)
 3. Environment variables
 4. Default values
 
@@ -42,9 +42,9 @@ python -m fractary_codex init
 **Manual creation:**
 
 ```yaml
-# .fractary/codex.yaml
+# .fractary/codex/config.yaml
 organization: fractary
-cacheDir: .codex-cache
+cacheDir: .fractary/codex/cache
 
 storage:
   - type: local
@@ -75,7 +75,7 @@ permissions:
 # Organization name (auto-detected from git if not specified)
 organization: string
 
-# Cache directory path (default: .codex-cache)
+# Cache directory path (default: .fractary/codex/cache)
 cacheDir: string
 
 # Storage provider configurations
@@ -122,7 +122,7 @@ interface CodexConfig {
 @dataclass
 class CodexConfig:
     organization: Optional[str] = None
-    cache_dir: str = ".codex-cache"
+    cache_dir: str = ".fractary/codex/cache"
     storage: Optional[List[StorageProviderConfig]] = None
     types: Optional[Dict[str, ArtifactType]] = None
     permissions: Optional[PermissionConfig] = None
@@ -466,15 +466,15 @@ storage:
       Authorization: Bearer ${API_TOKEN}
 
 # Or use with defaults
-cacheDir: ${CODEX_CACHE_DIR:-.codex-cache}
+cacheDir: ${CODEX_CACHE_DIR:-.fractary/codex/cache}
 ```
 
 ### SDK-Specific Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CODEX_CONFIG_PATH` | Path to config file | `.fractary/codex.yaml` |
-| `CODEX_CACHE_DIR` | Cache directory | `.codex-cache` |
+| `CODEX_CONFIG_PATH` | Path to config file | `.fractary/codex/config.yaml` |
+| `CODEX_CACHE_DIR` | Cache directory | `.fractary/codex/cache` |
 | `CODEX_ORGANIZATION` | Organization name | (auto-detect) |
 | `GITHUB_TOKEN` | GitHub access token | - |
 | `CODEX_LOG_LEVEL` | Log level (debug/info/warn/error) | `info` |
@@ -502,9 +502,9 @@ storage:
 ### 2. Organize by Environment
 
 ```yaml
-# .fractary/codex.yaml (base config)
+# .fractary/codex/config.yaml (base config)
 organization: fractary
-cacheDir: .codex-cache
+cacheDir: .fractary/codex/cache
 
 # .fractary/codex.dev.yaml (development)
 storage:
@@ -531,8 +531,8 @@ const config = loadConfig(`.fractary/codex.${env}.yaml`)
 Use multiple configs for different scopes:
 
 ```
-~/.fractary/codex.yaml     # User-wide defaults
-.fractary/codex.yaml       # Project-specific
+~/.fractary/codex/config.yaml     # User-wide defaults
+.fractary/codex/config.yaml       # Project-specific
 .fractary/codex.local.yaml # Local overrides (gitignored)
 ```
 
@@ -596,7 +596,7 @@ permissions:
 
 ```yaml
 organization: fractary
-cacheDir: .codex-cache
+cacheDir: .fractary/codex/cache
 
 storage:
   - type: local
@@ -607,7 +607,7 @@ storage:
 
 ```yaml
 organization: fractary
-cacheDir: .codex-cache
+cacheDir: .fractary/codex/cache
 
 storage:
   - type: local
@@ -675,7 +675,7 @@ sync:
 
 ```yaml
 organization: fractary
-cacheDir: .codex-cache
+cacheDir: .fractary/codex/cache
 
 storage:
   # Primary region (US)

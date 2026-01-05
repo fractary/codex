@@ -99,9 +99,9 @@ if (!config) {
   const path = require('path')
 
   const paths = [
-    '.fractary/codex.yaml',
+    '.fractary/codex/config.yaml',
     '.fractary/codex.yml',
-    path.join(process.env.HOME, '.fractary/codex.yaml')
+    path.join(process.env.HOME, '.fractary/codex/config.yaml')
   ]
 
   paths.forEach(p => {
@@ -115,7 +115,7 @@ if (!config) {
 1. Create config file:
    ```bash
    mkdir -p .fractary
-   touch .fractary/codex.yaml
+   touch .fractary/codex/config.yaml
    ```
 
 2. Use absolute path:
@@ -143,13 +143,13 @@ Validate YAML syntax:
 
 ```bash
 # Using yamllint
-yamllint .fractary/codex.yaml
+yamllint .fractary/codex/config.yaml
 
 # Using Python
-python -c "import yaml; yaml.safe_load(open('.fractary/codex.yaml'))"
+python -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))"
 
 # Using Node.js
-node -e "const yaml = require('js-yaml'); const fs = require('fs'); yaml.load(fs.readFileSync('.fractary/codex.yaml'))"
+node -e "const yaml = require('js-yaml'); const fs = require('fs'); yaml.load(fs.readFileSync('.fractary/codex/config.yaml'))"
 ```
 
 Common YAML mistakes:
@@ -391,19 +391,19 @@ StorageError: EACCES: permission denied, open '/path/to/file.md'
 **Diagnostic:**
 
 ```typescript
-const cache = CacheManager.create({ cacheDir: '.codex-cache' })
+const cache = CacheManager.create({ cacheDir: '.fractary/codex/cache' })
 const stats = await cache.getStats()
 console.log('Hit rate:', stats.hitRate)
 console.log('Total entries:', stats.totalEntries)
-console.log('Cache dir exists:', fs.existsSync('.codex-cache'))
+console.log('Cache dir exists:', fs.existsSync('.fractary/codex/cache'))
 ```
 
 **Solutions:**
 
 1. Check cache directory exists and is writable:
    ```bash
-   ls -la .codex-cache
-   chmod 755 .codex-cache
+   ls -la .fractary/codex/cache
+   chmod 755 .fractary/codex/cache
    ```
 
 2. Verify TTL is not too short:
@@ -702,7 +702,7 @@ import fs from 'fs/promises'
 import path from 'path'
 
 async function inspectCache() {
-  const cacheDir = '.codex-cache'
+  const cacheDir = '.fractary/codex/cache'
 
   async function walkDir(dir: string, depth = 0) {
     const entries = await fs.readdir(dir, { withFileTypes: true })

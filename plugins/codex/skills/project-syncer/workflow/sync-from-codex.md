@@ -3,7 +3,7 @@
 **Purpose**: Sync documentation from codex repository to local cache (codex → cache)
 
 > **Note**: As of v3.0, sync-from-codex writes to the ephemeral cache directory at
-> `.fractary/plugins/codex/cache/` instead of the project root. This cache is
+> `.fractary/codex/cache/` instead of the project root. This cache is
 > gitignored and serves as the source for MCP server `codex://` resource access.
 
 ## Steps
@@ -20,7 +20,7 @@ Set up variables:
 - `EXCLUDE_PATTERNS`: From analyze-patterns workflow
 - `DRY_RUN`: From input
 - `CACHE_MODE`: true (always enabled for sync-from-codex in v3.0)
-- `CACHE_PATH`: `.fractary/plugins/codex/cache/{org}/{project}`
+- `CACHE_PATH`: `.fractary/codex/cache/{org}/{project}`
 
 Ensure cache directory exists:
 ```bash
@@ -36,7 +36,7 @@ USE SKILL: handler-sync-github
 Operation: sync-docs
 Arguments: {
   "source_repo": "<org>/<codex>",
-  "target_path": ".fractary/plugins/codex/cache/<org>/<project>",
+  "target_path": ".fractary/codex/cache/<org>/<project>",
   "direction": "to-cache",
   "patterns": {
     "include": <INCLUDE_PATTERNS>,
@@ -71,7 +71,7 @@ Handler returns:
   "files_modified": 8,
   "files_added": 7,
   "deletion_threshold_exceeded": false,
-  "cache_path": ".fractary/plugins/codex/cache/org/project",
+  "cache_path": ".fractary/codex/cache/org/project",
   "cache_index_updated": true,
   "dry_run": false
 }
@@ -129,7 +129,7 @@ Return to parent skill:
   "files_deleted": 0,
   "files_modified": 8,
   "files_added": 7,
-  "cache_path": ".fractary/plugins/codex/cache/org/project",
+  "cache_path": ".fractary/codex/cache/org/project",
   "cache_index_updated": true,
   "dry_run": false,
   "duration_seconds": 6.5
@@ -190,7 +190,7 @@ The handler must understand this structure to copy files correctly to the cache.
 ### Cache Mode (v3.0)
 
 In v3.0, sync-from-codex always uses cache mode:
-- Files are written to `.fractary/plugins/codex/cache/{org}/{project}/`
+- Files are written to `.fractary/codex/cache/{org}/{project}/`
 - Cache index is updated with file metadata and TTL
 - No git commit/push (cache is ephemeral, gitignored)
 - MCP server reads from cache using `codex://` URIs
@@ -210,7 +210,7 @@ This approach:
   "mode": "cache",
   "files_synced": 15,
   "files_deleted": 0,
-  "cache_path": ".fractary/plugins/codex/cache/org/project",
+  "cache_path": ".fractary/codex/cache/org/project",
   "cache_index_updated": true,
   "dry_run": false
 }

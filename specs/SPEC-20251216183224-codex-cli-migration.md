@@ -210,7 +210,7 @@ export default defineConfig({
 - [ ] CLI builds successfully with `npm run build`
 - [ ] All 7 commands accessible via `fractary-codex <command>`
 - [ ] `fractary-codex --help` displays all commands
-- [ ] `fractary-codex init` creates `.fractary/codex.yaml`
+- [ ] `fractary-codex init` creates `.fractary/codex/config.yaml`
 - [ ] `fractary-codex fetch` retrieves documents via SDK
 - [ ] `fractary-codex cache list/clear/stats` manage cache
 - [ ] `fractary-codex sync project/org` synchronize files

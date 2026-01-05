@@ -37,7 +37,7 @@ Add to your `.claude/settings.json`:
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
     }
   }
 }
@@ -46,7 +46,7 @@ Add to your `.claude/settings.json`:
 ### Stdio Mode (Default)
 
 ```bash
-fractary-codex-mcp --config .fractary/codex.yaml
+fractary-codex-mcp --config .fractary/codex/config.yaml
 ```
 
 The server communicates via stdin/stdout using the MCP protocol.
@@ -61,11 +61,11 @@ The server exposes an SSE (Server-Sent Events) endpoint for HTTP clients.
 
 ## Configuration
 
-Create a `.fractary/codex.yaml` configuration file:
+Create a `.fractary/codex/config.yaml` configuration file:
 
 ```yaml
 cache:
-  dir: .codex-cache
+  dir: .fractary/codex/cache
   maxMemorySize: 104857600  # 100 MB
   defaultTtl: 3600          # 1 hour
 
@@ -79,7 +79,7 @@ storage:
 
 ### Environment Variables
 
-- `FRACTARY_CONFIG`: Path to configuration file (default: `.fractary/codex.yaml`)
+- `FRACTARY_CONFIG`: Path to configuration file (default: `.fractary/codex/config.yaml`)
 - `GITHUB_TOKEN`: GitHub personal access token for GitHub storage provider
 
 ## Available Tools
@@ -241,7 +241,7 @@ If you were using the MCP server from `@fractary/codex` (versions ≤0.1.x), upd
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex.yaml"]
+      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex/config.yaml"]
     }
   }
 }
@@ -253,7 +253,7 @@ If you were using the MCP server from `@fractary/codex` (versions ≤0.1.x), upd
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
     }
   }
 }

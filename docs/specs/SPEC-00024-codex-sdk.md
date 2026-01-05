@@ -611,7 +611,7 @@ class DriveStorage implements StorageProvider {
     "providers": {
       "local": {
         "type": "local",
-        "basePath": ".fractary/plugins/codex/cache"
+        "basePath": ".fractary/codex/cache"
       },
       "archive": {
         "type": "s3",
@@ -645,7 +645,7 @@ class DriveStorage implements StorageProvider {
 ### 6.1 Cache Architecture
 
 ```
-.fractary/plugins/codex/cache/
+.fractary/codex/cache/
 ├── index.json           # Cache index with metadata
 └── {org}/
     └── {project}/
@@ -1503,8 +1503,8 @@ interface CodexConfig {
 
 ```
 Project configuration:    .fractary/plugins/codex/config.json
-Cache directory:          .fractary/plugins/codex/cache/
-Cache index:              .fractary/plugins/codex/cache/index.json
+Cache directory:          .fractary/codex/cache/
+Cache index:              .fractary/codex/cache/index.json
 Logs:                     .fractary/plugins/codex/logs/
 ```
 
@@ -1559,7 +1559,7 @@ Logs:                     .fractary/plugins/codex/logs/
     "providers": {
       "local": {
         "type": "local",
-        "basePath": ".fractary/plugins/codex/cache"
+        "basePath": ".fractary/codex/cache"
       },
       "archive": {
         "type": "s3",

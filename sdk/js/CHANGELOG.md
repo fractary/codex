@@ -33,7 +33,7 @@ Before:
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex.yaml"]
+      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex/config.yaml"]
     }
   }
 }
@@ -45,7 +45,7 @@ After:
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
     }
   }
 }

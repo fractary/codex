@@ -198,7 +198,7 @@ Response
 
 ### Storage
 - Cache Directory: ~/.fractary/codex/cache (existing)
-- Config Files: .fractary/codex.yaml per project (existing)
+- Config Files: .fractary/codex/config.yaml per project (existing)
 
 ### Network
 - MCP: StdIO/HTTP transport (local only)
@@ -219,7 +219,7 @@ Response
 No additional secrets required. Uses existing GitHub token from environment.
 
 ### Configuration Files
-- `.fractary/codex.yaml`: Project configuration (existing)
+- `.fractary/codex/config.yaml`: Project configuration (existing)
 - `~/.fractary/codex/config.yaml`: Global configuration (existing)
 
 ## Implementation Plan

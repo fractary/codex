@@ -34,13 +34,13 @@ This specification addresses the fragmentation of codex configuration and cache 
 Multiple conflicting locations exist for codex config and cache files:
 
 **Config locations:**
-- `.fractary/codex.yaml` - Current CLI (YAML)
+- `.fractary/codex/config.yaml` - Current CLI (YAML)
 - `.fractary/plugins/codex/config.json` - Old plugin (JSON)
 - Inconsistent documentation
 
 **Cache locations:**
-- `.codex-cache/` - New CLI default (pollutes project root)
-- `.fractary/plugins/codex/cache/` - Old plugin/SDK default
+- `.fractary/codex/cache/` - New CLI default (pollutes project root)
+- `.fractary/codex/cache/` - Old plugin/SDK default
 
 This inconsistency causes:
 1. **User confusion**: Unclear which location to use
@@ -61,7 +61,7 @@ Consolidate everything under `.fractary/codex/`:
 
 **Benefits:**
 - ✅ Single namespace for all codex files
-- ✅ No project root pollution (`.codex-cache/`)
+- ✅ No project root pollution (`.fractary/codex/cache/`)
 - ✅ Not overly nested (`.fractary/plugins/codex/`)
 - ✅ Clear organization and ownership
 - ✅ Future-proof for additional codex metadata
@@ -84,12 +84,12 @@ Consolidate everything under `.fractary/codex/`:
 
 **Config:**
 1. `.fractary/plugins/codex/config.json` (v3.0 plugin)
-2. `.fractary/codex.yaml` (v3.5 CLI intermediate)
+2. `.fractary/codex/config.yaml` (v3.5 CLI intermediate)
 3. `~/.config/fractary/codex/config.json` (deprecated global)
 
 **Cache:**
-1. `.codex-cache/` (v3.5 CLI)
-2. `.fractary/plugins/codex/cache/` (v3.0 plugin)
+1. `.fractary/codex/cache/` (v3.5 CLI)
+2. `.fractary/codex/cache/` (v3.0 plugin)
 
 ### No Backward Compatibility (Breaking Change)
 
@@ -98,10 +98,10 @@ Consolidate everything under `.fractary/codex/`:
 - Cache: `.fractary/codex/cache/`
 
 **Legacy locations will NOT work:**
-- ❌ `.fractary/codex.yaml`
+- ❌ `.fractary/codex/config.yaml`
 - ❌ `.fractary/plugins/codex/config.json`
-- ❌ `.codex-cache/`
-- ❌ `.fractary/plugins/codex/cache/`
+- ❌ `.fractary/codex/cache/`
+- ❌ `.fractary/codex/cache/`
 - ❌ `~/.config/fractary/codex/config.json`
 
 **Migration is REQUIRED** before v4.0 will function. Users with v3.x configs must run `fractary codex migrate` or `fractary codex init`.
@@ -115,15 +115,15 @@ Consolidate everything under `.fractary/codex/`:
 
 ```typescript
 // BEFORE
-export const DEFAULT_CACHE_DIR = '.fractary/plugins/codex/cache'
+export const DEFAULT_CACHE_DIR = '.fractary/codex/cache'
 
 // AFTER
 export const DEFAULT_CACHE_DIR = '.fractary/codex/cache'
 
 // ADD
 export const LEGACY_CACHE_DIRS = [
-  '.codex-cache',
-  '.fractary/plugins/codex/cache',
+  '.fractary/codex/cache',
+  '.fractary/codex/cache',
 ] as const;
 ```
 
@@ -134,7 +134,7 @@ export const LEGACY_CACHE_DIRS = [
 # BEFORE
 CONFIG_FILENAMES = ["codex.yaml", "codex.yml"]
 CONFIG_DIRS = [".fractary", ".codex"]
-DEFAULT_CACHE_DIR = ".codex-cache"
+DEFAULT_CACHE_DIR = ".fractary/codex/cache"
 
 # AFTER
 CONFIG_FILENAMES = ["config.yaml", "config.yml", "codex.yaml"]
@@ -143,7 +143,7 @@ DEFAULT_CACHE_DIR = ".fractary/codex/cache"
 
 # ADD
 LEGACY_CONFIG_DIRS = [".fractary/plugins/codex", ".fractary"]
-LEGACY_CACHE_DIRS = [".codex-cache", ".fractary/plugins/codex/cache"]
+LEGACY_CACHE_DIRS = [".fractary/codex/cache", ".fractary/codex/cache"]
 ```
 
 #### Priority 3: CLI Init
@@ -162,7 +162,7 @@ const configPath = path.join(configDir, 'config.yaml');
 **Line 114**: Update directory creation
 ```typescript
 // BEFORE
-const dirs = ['.fractary', '.codex-cache'];
+const dirs = ['.fractary', '.fractary/codex/cache'];
 
 // AFTER
 const dirs = ['.fractary/codex', '.fractary/codex/cache'];
@@ -171,7 +171,7 @@ const dirs = ['.fractary/codex', '.fractary/codex/cache'];
 **Line 141**: Update output message
 ```typescript
 // BEFORE
-console.log(chalk.dim(`  Cache: .codex-cache/`));
+console.log(chalk.dim(`  Cache: .fractary/codex/cache/`));
 
 // AFTER
 console.log(chalk.dim(`  Cache: .fractary/codex/cache/`));
@@ -183,7 +183,7 @@ console.log(chalk.dim(`  Cache: .fractary/codex/cache/`));
 **Line 80**: Update default cache directory
 ```typescript
 // BEFORE
-yamlConfig.cacheDir = legacy.cache.directory || '.codex-cache';
+yamlConfig.cacheDir = legacy.cache.directory || '.fractary/codex/cache';
 
 // AFTER
 yamlConfig.cacheDir = legacy.cache.directory || '.fractary/codex/cache';
@@ -192,7 +192,7 @@ yamlConfig.cacheDir = legacy.cache.directory || '.fractary/codex/cache';
 **Line 223**: Update default in getDefaultYamlConfig
 ```typescript
 // BEFORE
-cacheDir: '.codex-cache',
+cacheDir: '.fractary/codex/cache',
 
 // AFTER
 cacheDir: '.fractary/codex/cache',
@@ -223,11 +223,11 @@ export async function migrateToV4Standard(
 ```bash
 # BEFORE
 PROJECT_JSON_CONFIG=".fractary/plugins/codex/config.json"
-PROJECT_YAML_CONFIG=".fractary/codex.yaml"
+PROJECT_YAML_CONFIG=".fractary/codex/config.yaml"
 
 # AFTER
 PROJECT_YAML_CONFIG=".fractary/codex/config.yaml"     # v4.0 standard
-LEGACY_CLI_CONFIG=".fractary/codex.yaml"              # v3.5
+LEGACY_CLI_CONFIG=".fractary/codex/config.yaml"              # v3.5
 LEGACY_PLUGIN_CONFIG=".fractary/plugins/codex/config.json"  # v3.0
 ```
 
@@ -236,7 +236,7 @@ LEGACY_PLUGIN_CONFIG=".fractary/plugins/codex/config.json"  # v3.0
 **File**: `plugins/codex/lib/resolve-uri.sh:20`
 ```bash
 # BEFORE
-cache_path="${CODEX_CACHE_PATH:-.fractary/plugins/codex/cache}"
+cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
 
 # AFTER
 cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
@@ -245,7 +245,7 @@ cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
 **File**: `plugins/codex/lib/cache-manager.sh:15-16`
 ```bash
 # BEFORE
-cache_path="${CODEX_CACHE_PATH:-.fractary/plugins/codex/cache}"
+cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
 config_path="${CODEX_CONFIG_PATH:-.fractary/plugins/codex/config.json}"
 
 # AFTER
@@ -291,8 +291,8 @@ config_path="${CODEX_CONFIG_PATH:-.fractary/codex/config.yaml}"
 .fractary/codex/cache/
 
 # Legacy cache locations (if still present)
-.codex-cache/
-.fractary/plugins/codex/cache/
+.fractary/codex/cache/
+.fractary/codex/cache/
 ```
 
 ## Migration Strategy
@@ -303,8 +303,8 @@ config_path="${CODEX_CONFIG_PATH:-.fractary/codex/config.yaml}"
 User runs: fractary codex init OR fractary codex migrate
   ↓
 Detect all legacy locations
-  - Configs: .fractary/codex.yaml, .fractary/plugins/codex/config.json
-  - Caches: .codex-cache/, .fractary/plugins/codex/cache/
+  - Configs: .fractary/codex/config.yaml, .fractary/plugins/codex/config.json
+  - Caches: .fractary/codex/cache/, .fractary/codex/cache/
   ↓
 Create .fractary/codex/ directory structure
   ↓
@@ -348,7 +348,7 @@ Commands will auto-detect legacy locations and prompt:
 ```
 ⚠️  Legacy configuration detected
 
-Your config is at: .fractary/codex.yaml
+Your config is at: .fractary/codex/config.yaml
 Standard location: .fractary/codex/config.yaml
 
 Run 'fractary codex migrate' to update (takes ~5 seconds)

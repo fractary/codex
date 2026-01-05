@@ -40,7 +40,7 @@ console.log(ref.path)     // 'docs/api-guide.md'
 
 // Create storage and cache managers
 const storage = StorageManager.create()
-const cache = CacheManager.create({ cacheDir: '.codex-cache' })
+const cache = CacheManager.create({ cacheDir: '.fractary/codex/cache' })
 
 // Fetch content with caching
 const content = await cache.get('codex://myorg/docs/api-guide.md')
@@ -80,7 +80,7 @@ const result = await storage.fetch('codex://org/project/file.md')
 import { createCacheManager } from '@fractary/codex'
 
 const cache = createCacheManager({
-  cacheDir: '.codex-cache',
+  cacheDir: '.fractary/codex/cache',
   maxMemorySize: 50 * 1024 * 1024,
   defaultTtl: 3600
 })
@@ -96,7 +96,7 @@ import { createMcpServer } from '@fractary/codex'
 const server = createMcpServer({
   name: 'codex',
   version: '1.0.0',
-  cacheDir: '.codex-cache'
+  cacheDir: '.fractary/codex/cache'
 })
 
 await server.start()
