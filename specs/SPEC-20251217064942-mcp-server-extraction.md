@@ -195,7 +195,7 @@ fractary/codex/
 
 ### Configuration Files
 
-- `.fractary/codex.yaml`: Codex configuration (unchanged)
+- `.fractary/codex/config.yaml`: Codex configuration (unchanged)
 - `.claude/settings.json`: MCP server configuration (updated)
 
 ### MCP Server Configuration (Updated)
@@ -206,7 +206,7 @@ fractary/codex/
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex.yaml"]
+      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex/config.yaml"]
     }
   }
 }
@@ -218,7 +218,7 @@ fractary/codex/
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
     }
   }
 }
@@ -422,7 +422,7 @@ program
   .name('fractary-codex-mcp')
   .description('MCP server for Fractary Codex knowledge management')
   .version('0.1.0')
-  .option('--config <path>', 'Path to config file', '.fractary/codex.yaml')
+  .option('--config <path>', 'Path to config file', '.fractary/codex/config.yaml')
   .option('--stdio', 'Use stdio transport (default)')
   .option('--port <number>', 'HTTP server port (alternative to stdio)')
   .option('--host <string>', 'HTTP server host', 'localhost')
@@ -439,7 +439,7 @@ program
     // Initialize SDK managers
     const storage = StorageManager.create(config.storage)
     const cache = CacheManager.create({
-      cacheDir: (config.cache as Record<string, unknown>)?.dir as string ?? '.codex-cache',
+      cacheDir: (config.cache as Record<string, unknown>)?.dir as string ?? '.fractary/codex/cache',
       ...config.cache as Record<string, unknown>
     })
     cache.setStorageManager(storage)

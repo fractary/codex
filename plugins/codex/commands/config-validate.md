@@ -101,7 +101,7 @@ MCP Server:
      Run: /fractary-codex:config-init to install
 
 Issues (2):
-  • Cache: Directory not found at .fractary/plugins/codex/cache
+  • Cache: Directory not found at .fractary/codex/cache
   • MCP: Server not found in .claude/settings.json
 
 Next Steps:
@@ -125,7 +125,7 @@ MCP Server:
 
 Issues (3):
   • Config: File not found at .fractary/plugins/codex/config.json
-  • Cache: Directory not found at .fractary/plugins/codex/cache
+  • Cache: Directory not found at .fractary/codex/cache
   • MCP: Server not found in .claude/settings.json
 
 Next Steps:

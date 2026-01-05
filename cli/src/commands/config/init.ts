@@ -86,32 +86,23 @@ export function initCommand(): Command {
           console.log(chalk.dim(`Organization: ${chalk.cyan(org)}\n`));
         }
 
-        // Config path (v3.0 YAML location)
-        const configDir = path.join(process.cwd(), '.fractary');
-        const configPath = path.join(configDir, 'codex.yaml');
+        // Config path (v4.0 standard)
+        const configDir = path.join(process.cwd(), '.fractary', 'codex');
+        const configPath = path.join(configDir, 'config.yaml');
         const configExists = await fileExists(configPath);
 
-        // Check for legacy config
-        const legacyConfigPath = path.join(process.cwd(), '.fractary', 'plugins', 'codex', 'config.json');
-        const legacyExists = await fileExists(legacyConfigPath);
-
         if (configExists && !options.force) {
-          console.log(chalk.yellow('⚠ Configuration already exists at .fractary/codex.yaml'));
+          console.log(chalk.yellow('⚠ Configuration already exists at .fractary/codex/config.yaml'));
           console.log(chalk.dim('Use --force to overwrite'));
           process.exit(1);
-        }
-
-        if (legacyExists && !configExists) {
-          console.log(chalk.yellow('⚠ Legacy configuration detected at .fractary/plugins/codex/config.json'));
-          console.log(chalk.dim('Run "fractary codex migrate" to upgrade to YAML format\n'));
         }
 
         // Create directory structure
         console.log('Creating directory structure...');
 
         const dirs = [
-          '.fractary',
-          '.codex-cache'
+          '.fractary/codex',
+          '.fractary/codex/cache'
         ];
 
         for (const dir of dirs) {
@@ -131,15 +122,15 @@ export function initCommand(): Command {
 
         // Write YAML config
         await writeYamlConfig(config, configPath);
-        console.log(chalk.green('✓'), chalk.dim('.fractary/codex.yaml'));
+        console.log(chalk.green('✓'), chalk.dim('.fractary/codex/config.yaml'));
 
         // Success message
-        console.log(chalk.green('\n✓ Codex v3.0 initialized successfully!\n'));
+        console.log(chalk.green('\n✓ Codex v4.0 initialized successfully!\n'));
 
         console.log(chalk.bold('Configuration:'));
         console.log(chalk.dim(`  Organization: ${org}`));
-        console.log(chalk.dim(`  Cache: .codex-cache/`));
-        console.log(chalk.dim(`  Config: .fractary/codex.yaml`));
+        console.log(chalk.dim(`  Cache: .fractary/codex/cache/`));
+        console.log(chalk.dim(`  Config: .fractary/codex/config.yaml`));
         if (options.mcp) {
           console.log(chalk.dim(`  MCP Server: Enabled (port 3000)`));
         }
@@ -151,14 +142,9 @@ export function initCommand(): Command {
 
         console.log(chalk.bold('\nNext steps:'));
         console.log(chalk.dim('  1. Set your GitHub token: export GITHUB_TOKEN="your_token"'));
-        console.log(chalk.dim('  2. Edit .fractary/codex.yaml to configure storage providers'));
+        console.log(chalk.dim('  2. Edit .fractary/codex/config.yaml to configure storage providers'));
         console.log(chalk.dim('  3. Fetch a document: fractary codex fetch codex://org/project/path'));
         console.log(chalk.dim('  4. Check cache: fractary codex cache list'));
-
-        if (legacyExists) {
-          console.log(chalk.yellow('\n⚠ Legacy config detected:'));
-          console.log(chalk.dim('  Run "fractary codex migrate" to convert your existing config'));
-        }
 
       } catch (error: any) {
         console.error(chalk.red('Error:'), error.message);

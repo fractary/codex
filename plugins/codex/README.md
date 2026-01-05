@@ -53,8 +53,8 @@ Request codex://org/project/docs/api.md
 ```
 
 This sets up:
-- Configuration at `.fractary/codex.yaml` (YAML format, v4.0)
-- Cache directory at `.fractary/plugins/codex/cache/`
+- Configuration at `.fractary/codex/config.yaml` (YAML format, v4.0)
+- Cache directory at `.fractary/codex/cache/`
 - SDK MCP server in `.claude/settings.json`
 
 ### 2. Fetch a Document
@@ -175,7 +175,7 @@ Examples:
   codex://partner-org/shared/standards/api-design.md
 ```
 
-Path alignment: `codex://org/project/path` → `.fractary/plugins/codex/cache/org/project/path`
+Path alignment: `codex://org/project/path` → `.fractary/codex/cache/org/project/path`
 
 **Cache-First Strategy:**
 1. Check local cache (< 100ms if fresh)
@@ -627,7 +627,7 @@ The codex plugin uses the SDK-provided MCP server from `@fractary/codex` to expo
 ```
 
 This automatically:
-1. Creates YAML configuration at `.fractary/codex.yaml`
+1. Creates YAML configuration at `.fractary/codex/config.yaml`
 2. Sets up cache directory
 3. Registers SDK MCP server in `.claude/settings.json`
 4. Detects and migrates legacy custom MCP server (if present)
@@ -638,9 +638,9 @@ This automatically:
 ./scripts/install-mcp.sh
 
 # This configures:
-# - npx @fractary/codex mcp --config .fractary/codex.yaml
+# - npx @fractary/codex mcp --config .fractary/codex/config.yaml
 # OR
-# - fractary codex mcp --config .fractary/codex.yaml (if global CLI installed)
+# - fractary codex mcp --config .fractary/codex/config.yaml (if global CLI installed)
 ```
 
 **Verify:**
@@ -886,7 +886,7 @@ Configure MCP server for seamless integration in Claude Desktop/Code conversatio
 ```bash
 /fractary-codex:validate-setup
 /fractary-codex:cache-list
-ls -la .fractary/plugins/codex/cache/index.json
+ls -la .fractary/codex/cache/index.json
 ```
 
 **Fix:** Run `/fractary-codex:init` to set up the cache directory.
@@ -1010,7 +1010,7 @@ Follows [Fractary Plugin Standards](../../docs/standards/FRACTARY-PLUGIN-STANDAR
 ### v4.0.0 - CLI Integration
 
 **Phase 4: Configuration Migration**
-- YAML configuration format (`.fractary/codex.yaml`)
+- YAML configuration format (`.fractary/codex/config.yaml`)
 - JSON→YAML migration tooling
 - Version detection and automatic migration
 - CLI delegation via @fractary/cli

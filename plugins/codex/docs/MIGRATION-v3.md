@@ -10,7 +10,7 @@ This guide covers migrating from codex v2.0 (push-based sync) to v3.0 (pull-base
 |--------|------|------|
 | **Architecture** | Push-based sync | Pull-based retrieval |
 | **URI Format** | `@codex/project/path` | `codex://org/project/path` |
-| **Cache Location** | `codex/` in project root | `.fractary/plugins/codex/cache/` |
+| **Cache Location** | `codex/` in project root | `.fractary/codex/cache/` |
 | **Cache Index** | `.cache-index.json` | `cache/index.json` |
 | **TTL Format** | Days (`ttl_days: 7`) | Seconds (`default_ttl: 604800`) |
 | **Sources** | Array format | Object format (keyed by org) |
@@ -201,7 +201,7 @@ project-root/
 ### Cache Migration
 
 The migration command handles cache relocation:
-1. Moves files from `codex/` to `.fractary/plugins/codex/cache/`
+1. Moves files from `codex/` to `.fractary/codex/cache/`
 2. Updates cache index format
 3. Adds organization prefix to paths
 4. Updates `.gitignore` entries
@@ -283,8 +283,8 @@ cat codex/.cache-index.json
 ls codex/project/
 
 # New
-cat .fractary/plugins/codex/cache/index.json
-ls .fractary/plugins/codex/cache/org/project/
+cat .fractary/codex/cache/index.json
+ls .fractary/codex/cache/org/project/
 ```
 
 ### 2. CI/CD Pipelines
@@ -300,7 +300,7 @@ cache:
 # New
 cache:
   paths:
-    - .fractary/plugins/codex/cache/
+    - .fractary/codex/cache/
 ```
 
 ### 3. Git Configuration
@@ -312,7 +312,7 @@ The migration updates `.gitignore`:
 codex/
 
 # New entry (added by migration)
-.fractary/plugins/codex/cache/
+.fractary/codex/cache/
 ```
 
 ### 4. Environment Variables
@@ -333,7 +333,7 @@ If you need to rollback:
 
 2. **Restore cache location:**
    ```bash
-   mv .fractary/plugins/codex/cache codex
+   mv .fractary/codex/cache codex
    ```
 
 3. **Update `.gitignore`** to use old entries

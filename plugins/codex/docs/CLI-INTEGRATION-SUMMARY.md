@@ -90,7 +90,7 @@ This document summarizes the migration of the codex plugin from custom bash scri
 
 **Configuration Evolution**:
 - **v3.0** (deprecated): JSON at `.fractary/plugins/codex/config.json` or global
-- **v4.0** (current): YAML at `.fractary/codex.yaml` (project-level only)
+- **v4.0** (current): YAML at `.fractary/codex/config.yaml` (project-level only)
 
 **Migration Features**:
 - Automatic detection (JSON/YAML, project/global)
@@ -132,7 +132,7 @@ This document summarizes the migration of the codex plugin from custom bash scri
 
 **Changes**:
 - **Before**: Custom TypeScript MCP server using `node mcp-server/dist/index.js`
-- **After**: SDK MCP server using `npx @fractary/codex mcp --config .fractary/codex.yaml`
+- **After**: SDK MCP server using `npx @fractary/codex mcp --config .fractary/codex/config.yaml`
 
 **Migration**:
 - Automatic detection of legacy custom server
@@ -225,7 +225,7 @@ Note: Negative numbers indicate additions (new infrastructure or expanded functi
    /fractary-codex:init
    ```
 
-   This automatically creates YAML config at `.fractary/codex.yaml`
+   This automatically creates YAML config at `.fractary/codex/config.yaml`
 
 ## Technical Decisions
 
@@ -277,7 +277,7 @@ No regressions observed in functionality.
 
 1. **Config location changed**:
    - Old: `.fractary/plugins/codex/config.json`
-   - New: `.fractary/codex.yaml`
+   - New: `.fractary/codex/config.yaml`
    - Migration: Automatic via config-helper
 
 2. **URI format changed**:
@@ -304,7 +304,7 @@ If issues arise, rollback to v3.0:
 cp .fractary/plugins/codex/config.json.backup .fractary/plugins/codex/config.json
 
 # 2. Remove YAML config
-rm .fractary/codex.yaml
+rm .fractary/codex/config.yaml
 
 # 3. Checkout v3.0 skills
 git checkout v3.0.1 -- plugins/codex/skills/

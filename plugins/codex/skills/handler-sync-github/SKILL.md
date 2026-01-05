@@ -60,7 +60,7 @@ You receive sync operation requests in this format:
 {
   "operation": "sync-docs",
   "source_repo": "<org>/<codex-repo>",
-  "target_path": ".fractary/plugins/codex/cache/<org>/<project>",
+  "target_path": ".fractary/codex/cache/<org>/<project>",
   "target_branch": "test",
   "direction": "to-cache",
   "patterns": {
@@ -284,7 +284,7 @@ This skill is complete when:
   "files_modified": 15,
   "files_added": 10,
   "deletion_threshold_exceeded": false,
-  "cache_path": ".fractary/plugins/codex/cache/org/project",
+  "cache_path": ".fractary/codex/cache/org/project",
   "cache_index_updated": true,
   "files_list": {
     "added": [...],

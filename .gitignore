@@ -60,3 +60,10 @@ yarn-error.log*
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Codex cache (v4.0 standard)
+.fractary/codex/cache/
+
+# Legacy codex cache locations
+.codex-cache/
+.fractary/plugins/codex/cache/

@@ -365,7 +365,7 @@ Parameters: {
 
 If fetch fails:
 1. Check CLI installation: `fractary --version`
-2. Check config: `.fractary/codex.yaml`
+2. Check config: `.fractary/codex/config.yaml`
 3. Test CLI directly: `fractary codex fetch <uri>`
 4. Check cache: `fractary codex cache list`
 5. Run health check: `fractary codex health`

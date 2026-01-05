@@ -1,7 +1,7 @@
 {
   "$schema": "https://fractary.com/schemas/plugin-manifest-v1.json",
   "name": "@fractary/codex-plugin",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Memory and knowledge management - Organizational knowledge base with cache and sync",
   "author": "Fractary Team",
   "homepage": "https://github.com/fractary/plugins",

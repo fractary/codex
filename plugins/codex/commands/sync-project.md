@@ -200,21 +200,19 @@ If you want to sync files outside the configured patterns, you must update the c
 
 ## Step 3: Load Configuration
 
-Check that configuration exists at `.fractary/plugins/codex/config.json`
+Check that configuration exists at `.fractary/codex/config.yaml`
 
 If not found:
 ```
 ⚠️ Configuration not found
 
 The codex plugin requires configuration at:
-.fractary/plugins/codex/config.json
+.fractary/codex/config.yaml
 
 Run: /fractary-codex:config-init
 
 This will set up your organization and codex repository settings.
 ```
-
-Note: Do NOT look for or use global config at `~/.config/...`. Only use project-level config.
 
 If configuration exists:
 - Read organization name

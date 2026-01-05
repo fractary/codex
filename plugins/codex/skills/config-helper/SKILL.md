@@ -15,7 +15,7 @@ Your responsibility is to detect configuration format, provide deprecation warni
 
 **Configuration Evolution**:
 - **v3.0 (deprecated)**: JSON at `.fractary/plugins/codex/config.json` or `~/.config/fractary/codex/config.json`
-- **v4.0 (current)**: YAML at `.fractary/codex.yaml` (project-level only)
+- **v4.0 (current)**: YAML at `.fractary/codex/config.yaml` (project-level only)
 
 **Key Changes**:
 - Global config deprecated (project-level only)
@@ -38,7 +38,7 @@ Your responsibility is to detect configuration format, provide deprecation warni
   - "migrate" - Migrate from JSON to YAML
   - "validate" - Validate configuration format
 - **source_path**: string - Source config path (for migrate)
-- **target_path**: string - Target config path (default: `.fractary/codex.yaml`)
+- **target_path**: string - Target config path (default: `.fractary/codex/config.yaml`)
 - **dry_run**: boolean - Preview migration without changes (default: false)
 - **remove_source**: boolean - Remove source after migration (default: false)
 </INPUTS>
@@ -75,9 +75,9 @@ No codex configuration detected.
 
 Next Steps:
 1. Run: /fractary-codex:init
-2. This will create: .fractary/codex.yaml
+2. This will create: .fractary/codex/config.yaml
 
-Preferred format: YAML at .fractary/codex.yaml
+Preferred format: YAML at .fractary/codex/config.yaml
 ```
 
 IF format == "yaml" AND location == "project":
@@ -85,7 +85,7 @@ IF format == "yaml" AND location == "project":
 ✅ Configuration Status: OK
 
 Format: YAML (preferred)
-Location: .fractary/codex.yaml
+Location: .fractary/codex/config.yaml
 Status: Up to date
 
 No migration needed.
@@ -105,7 +105,7 @@ JSON format is deprecated. Please migrate to YAML format.
 To migrate:
 1. Preview: USE SKILL: config-helper with operation="migrate" and dry_run=true
 2. Execute: USE SKILL: config-helper with operation="migrate"
-3. This creates: .fractary/codex.yaml (version 4.0)
+3. This creates: .fractary/codex/config.yaml (version 4.0)
 ```
 
 IF format == "json" AND location == "global":
@@ -123,7 +123,7 @@ To migrate:
 1. cd to your project directory
 2. Preview: USE SKILL: config-helper with operation="migrate" and dry_run=true
 3. Execute: USE SKILL: config-helper with operation="migrate" and remove_source=true
-4. This creates: .fractary/codex.yaml (version 4.0)
+4. This creates: .fractary/codex/config.yaml (version 4.0)
 ```
 
 ## Operation: migrate
@@ -179,14 +179,14 @@ IF dry_run == true:
 🔍 Migration Preview (Dry Run)
 
 Source: .fractary/plugins/codex/config.json (JSON)
-Target: .fractary/codex.yaml (YAML)
+Target: .fractary/codex/config.yaml (YAML)
 
 Changes:
 - Format: JSON → YAML
 - Version: 3.0 → 4.0 (CLI compatible)
 - Location: .fractary/plugins/codex/ → .fractary/
 
-Preview of .fractary/codex.yaml:
+Preview of .fractary/codex/config.yaml:
 ───────────────────────────────────────
 {yaml_preview}
 ───────────────────────────────────────
@@ -200,16 +200,16 @@ IF dry_run == false:
 ✅ Configuration Migrated Successfully
 
 Source: .fractary/plugins/codex/config.json
-Target: .fractary/codex.yaml
+Target: .fractary/codex/config.yaml
 
 Actions taken:
 ✓ Converted JSON → YAML
 ✓ Updated version: 3.0 → 4.0
-✓ Created: .fractary/codex.yaml
+✓ Created: .fractary/codex/config.yaml
 {remove_source ? "✓ Removed source JSON config" : "○ Source JSON config preserved"}
 
 Next Steps:
-1. Review new config: cat .fractary/codex.yaml
+1. Review new config: cat .fractary/codex/config.yaml
 2. Test CLI: fractary codex health
 3. Update any scripts referencing old path
 {!remove_source ? "4. Remove old config: rm .fractary/plugins/codex/config.json" : ""}
@@ -307,7 +307,7 @@ Return operation results with clear guidance.
 ```
 ✅ Configuration Status: OK
 Format: YAML (preferred)
-Location: .fractary/codex.yaml
+Location: .fractary/codex/config.yaml
 No migration needed.
 ```
 
@@ -331,7 +331,7 @@ Preview of changes: {...}
 ## Success: migrate (execute)
 ```
 ✅ Configuration Migrated
-Created: .fractary/codex.yaml (version 4.0)
+Created: .fractary/codex/config.yaml (version 4.0)
 Next: Test with fractary codex health
 ```
 
@@ -345,7 +345,7 @@ Install: brew install yq (macOS) or snap install yq (Ubuntu)
 ## Failure: target exists
 ```
 ❌ Migration Failed
-Error: Target .fractary/codex.yaml already exists
+Error: Target .fractary/codex/config.yaml already exists
 Use --dry-run to preview or remove existing file first
 ```
 
@@ -441,7 +441,7 @@ Resolution: {suggested_fixes}
 ## Version Compatibility
 
 - **v3.0**: JSON format (plugins/codex/config.json)
-- **v4.0**: YAML format (.fractary/codex.yaml)
+- **v4.0**: YAML format (.fractary/codex/config.yaml)
 
 Both formats supported by SDK, but CLI prefers YAML.
 

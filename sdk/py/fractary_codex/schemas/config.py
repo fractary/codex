@@ -90,7 +90,7 @@ class CacheConfig:
         persist: Whether to persist cache to disk
     """
 
-    directory: str = ".codex-cache"
+    directory: str = ".fractary/codex/cache"
     default_ttl: int = 86400  # 1 day
     max_memory_size: int = 50 * 1024 * 1024  # 50MB
     max_disk_size: int = 500 * 1024 * 1024  # 500MB

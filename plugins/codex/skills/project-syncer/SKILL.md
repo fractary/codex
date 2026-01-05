@@ -72,7 +72,7 @@ All via the TypeScript SDK.
   - Added to config excludes
   - Examples: ["docs/private/**"], ["**/*.draft.md"]
 - **config**: object - Handler configuration (optional)
-  - Default: from `.fractary/codex.yaml`
+  - Default: from `.fractary/codex/config.yaml`
 </INPUTS>
 
 <WORKFLOW>
@@ -679,7 +679,7 @@ Parameters: {
 
 If sync fails:
 1. Check CLI installation: `fractary --version`
-2. Check config: `.fractary/codex.yaml`
+2. Check config: `.fractary/codex/config.yaml`
 3. Test CLI directly: `fractary codex sync project <name> --dry-run`
 4. Verify branch exists: `git ls-remote origin <branch>`
 5. Check credentials: Can you clone both repos?

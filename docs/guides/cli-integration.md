@@ -157,7 +157,7 @@ export class CodexClient {
 
     // Create cache manager
     const cache = CacheManager.create({
-      cacheDir: options?.cacheDir || config.cacheDir || '.codex-cache',
+      cacheDir: options?.cacheDir || config.cacheDir || '.fractary/codex/cache',
       typeRegistry: types
     })
     cache.setStorageManager(storage)
@@ -244,7 +244,7 @@ class CodexClient:
                 pass
 
         # Create cache manager
-        cache_dir_path = cache_dir or config.cache_dir or ".codex-cache"
+        cache_dir_path = cache_dir or config.cache_dir or ".fractary/codex/cache"
         async with CacheManager(cache_dir=cache_dir_path) as cache:
             cache.set_storage_manager(storage)
 
@@ -475,7 +475,7 @@ export function createConfigCommand(): Command {
 
       const config = {
         organization: org,
-        cacheDir: '.codex-cache',
+        cacheDir: '.fractary/codex/cache',
         storage: [
           { type: 'local', basePath: './knowledge' },
           { type: 'github' }
@@ -672,7 +672,7 @@ async function fetchWithFallback(uri: string): Promise<string> {
 ### Loading Configuration
 
 ```typescript
-// Load from default location (.fractary/codex.yaml)
+// Load from default location (.fractary/codex/config.yaml)
 const config = loadConfig()
 
 // Load from custom path
@@ -697,7 +697,7 @@ if (process.env.GITHUB_TOKEN) {
 import { resolveOrganization } from '@fractary/codex'
 
 // Auto-detect organization from:
-// 1. .fractary/codex.yaml config
+// 1. .fractary/codex/config.yaml config
 // 2. Git remote URL
 // 3. Current directory name (fallback)
 const org = resolveOrganization()

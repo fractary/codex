@@ -151,7 +151,7 @@ class ResolvedReference(ParsedReference):
 
 ```typescript
 const resolved = resolveReference('codex://fractary/codex/docs/api.md', {
-  cacheDir: '.codex-cache',
+  cacheDir: '.fractary/codex/cache',
   workingDir: '/home/user/projects/codex'
 })
 // {
@@ -159,7 +159,7 @@ const resolved = resolveReference('codex://fractary/codex/docs/api.md', {
 //   org: 'fractary',
 //   project: 'codex',
 //   path: 'docs/api.md',
-//   cachePath: '/home/user/projects/codex/.codex-cache/fractary/codex/docs/api.md',
+//   cachePath: '/home/user/projects/codex/.fractary/codex/cache/fractary/codex/docs/api.md',
 //   isLocal: true,
 //   localPath: '/home/user/projects/codex/docs/api.md'
 // }
@@ -169,7 +169,7 @@ const external = resolveReference('codex://other-org/other-project/file.md')
 // {
 //   isLocal: false,
 //   localPath: undefined,
-//   cachePath: '.codex-cache/other-org/other-project/file.md'
+//   cachePath: '.fractary/codex/cache/other-org/other-project/file.md'
 // }
 ```
 
@@ -426,7 +426,7 @@ interface CacheStats {
 class CacheManager:
     def __init__(
         self,
-        cache_dir: str = ".codex-cache",
+        cache_dir: str = ".fractary/codex/cache",
         max_memory_size: int = 50 * 1024 * 1024,
         default_ttl: int = 3600,
         type_registry: Optional[TypeRegistry] = None
@@ -459,7 +459,7 @@ const types = new TypeRegistry()
 const storage = StorageManager.create()
 
 const cache = CacheManager.create({
-  cacheDir: '.codex-cache',
+  cacheDir: '.fractary/codex/cache',
   maxMemorySize: 50 * 1024 * 1024, // 50 MB
   defaultTtl: 3600, // 1 hour
   typeRegistry: types
@@ -628,7 +628,7 @@ Configuration loading and management.
 
 ### loadConfig
 
-Load configuration from `.fractary/codex.yaml`.
+Load configuration from `.fractary/codex/config.yaml`.
 
 **TypeScript:**
 ```typescript
@@ -656,7 +656,7 @@ def load_config(path: Optional[Path] = None) -> CodexConfig
 @dataclass
 class CodexConfig:
     organization: Optional[str] = None
-    cache_dir: str = ".codex-cache"
+    cache_dir: str = ".fractary/codex/cache"
     storage: Optional[List[StorageProviderConfig]] = None
     types: Optional[Dict[str, ArtifactType]] = None
     permissions: Optional[PermissionConfig] = None
@@ -673,18 +673,18 @@ class StorageProviderConfig:
 ```typescript
 import { loadConfig } from '@fractary/codex'
 
-// Load from default location (.fractary/codex.yaml)
+// Load from default location (.fractary/codex/config.yaml)
 const config = loadConfig()
 
 // Load from custom path
 const customConfig = loadConfig('/path/to/codex.yaml')
 
-// Example configuration file (.fractary/codex.yaml):
+// Example configuration file (.fractary/codex/config.yaml):
 ```
 
 ```yaml
 organization: fractary
-cacheDir: .codex-cache
+cacheDir: .fractary/codex/cache
 
 storage:
   - type: local
@@ -743,7 +743,7 @@ def resolve_organization(working_dir: Optional[Path] = None) -> Optional[str]
 import { resolveOrganization } from '@fractary/codex'
 
 // Auto-detect from:
-// 1. .fractary/codex.yaml config
+// 1. .fractary/codex/config.yaml config
 // 2. Git remote URL (e.g., git@github.com:fractary/codex.git -> 'fractary')
 // 3. Current directory name (fallback)
 const org = resolveOrganization()
@@ -1038,15 +1038,15 @@ class MigrationResult:
 import { migrateConfig } from '@fractary/codex'
 
 // Dry run
-const result = migrateConfig('.fractary/codex.yaml')
+const result = migrateConfig('.fractary/codex/config.yaml')
 console.log(result.changes)
 
 // Migrate with backup
-const migrated = migrateConfig('.fractary/codex.yaml', {
+const migrated = migrateConfig('.fractary/codex/config.yaml', {
   backup: true,
   write: true
 })
-// Creates .fractary/codex.yaml.backup
+// Creates .fractary/codex/config.yaml.backup
 ```
 
 ### convertLegacyReferences

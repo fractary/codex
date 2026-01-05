@@ -4,7 +4,7 @@
 
 > **Note (v3.0)**: This workflow now supports `cache_mode` which writes to the local cache directory
 > instead of a target git repository. When `cache_mode: true`, no git operations are performed
-> on the target side - files are written directly to `.fractary/plugins/codex/cache/`.
+> on the target side - files are written directly to `.fractary/codex/cache/`.
 
 ## Steps
 
@@ -16,7 +16,7 @@ Determine mode and prepare workspace:
 ```bash
 SYNC_WORKSPACE=$(mktemp -d /tmp/codex-sync.XXXXXX)
 SOURCE_DIR="$SYNC_WORKSPACE/source"
-TARGET_DIR="<target_path>"  # e.g., .fractary/plugins/codex/cache/org/project
+TARGET_DIR="<target_path>"  # e.g., .fractary/codex/cache/org/project
 CACHE_MODE=true
 ```
 
@@ -164,7 +164,7 @@ Return the parsed JSON results to handler skill:
   "status": "success",
   "files_synced": 25,
   "files_deleted": 2,
-  "cache_path": ".fractary/plugins/codex/cache/org/project",
+  "cache_path": ".fractary/codex/cache/org/project",
   "cache_index_updated": true,
   "dry_run": false
 }
@@ -262,7 +262,7 @@ If deletion threshold exceeded:
   "files_deleted": 2,
   "deletion_threshold_exceeded": false,
   "files_list": {...},
-  "cache_path": ".fractary/plugins/codex/cache/org/project",
+  "cache_path": ".fractary/codex/cache/org/project",
   "cache_index_updated": true,
   "dry_run": false
 }

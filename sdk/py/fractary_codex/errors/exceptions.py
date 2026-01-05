@@ -57,9 +57,9 @@ class ConfigurationError(CodexError):
 
     Example:
         raise ConfigurationError(
-            "Missing required key 'organization' in codex.yaml",
+            "Missing required key 'organization' in config.yaml",
             code="CONFIG_MISSING_KEY",
-            details={"key": "organization", "file": ".fractary/codex.yaml"}
+            details={"key": "organization", "file": ".fractary/codex/config.yaml"}
         )
     """
 

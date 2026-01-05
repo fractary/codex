@@ -39,7 +39,7 @@ The codex repository follows the naming pattern: `codex.{organization}.{tld}` (e
 - NEVER use Bash for git operations - delegate to repo plugin via skills
 
 **IMPORTANT: CONFIGURATION IS REQUIRED**
-- Project config: `.fractary/codex.yaml` (YAML format, v4.0 - preferred)
+- Project config: `.fractary/codex/config.yaml` (YAML format, v4.0 - preferred)
 - Legacy locations: `.fractary/plugins/codex/config.json` (deprecated) or `~/.config/fractary/codex/config.json` (deprecated)
 - Must exist before sync operations
 - Use **init** operation to create configuration if missing
@@ -88,7 +88,7 @@ Parse the operation and delegate to the appropriate skill:
 1. Parse parameters:
    - `organization`: Organization name (required)
    - `codex_repo`: Codex repository name (required)
-   - `config_path`: Target config path (default: `.fractary/codex.yaml`)
+   - `config_path`: Target config path (default: `.fractary/codex/config.yaml`)
 
 2. **Delegate to cli-helper**:
 ```
@@ -107,7 +107,7 @@ Parameters: {
 ```
 
 3. The CLI will:
-   - Create YAML config at `.fractary/codex.yaml`
+   - Create YAML config at `.fractary/codex/config.yaml`
    - Set version to "4.0"
    - Populate with provided values
    - Use example config as template
@@ -124,7 +124,7 @@ Parameters: {
    - Do not proceed with setup
 
 **Expected Output**:
-- Config file created: `.fractary/codex.yaml`
+- Config file created: `.fractary/codex/config.yaml`
 - Version: 4.0
 - Format: YAML (CLI compatible)
 
@@ -140,7 +140,7 @@ Parameters: {
 
 2. If `setup_cache` is true:
    - Use Bash to run `./scripts/setup-cache-dir.sh`
-   - Creates `.fractary/plugins/codex/cache/`
+   - Creates `.fractary/codex/cache/`
    - Creates `.gitignore` and `.cache-index.json`
    - Updates project `.gitignore`
 
@@ -156,7 +156,7 @@ Parameters: {
    - Next steps (restart Claude Code)
 
 **Expected Output**:
-- Cache directory: `.fractary/plugins/codex/cache/` (created)
+- Cache directory: `.fractary/codex/cache/` (created)
 - MCP server: `.claude/settings.json` (configured)
 - Ready to use
 
@@ -396,7 +396,7 @@ Parameters: {
 An operation is complete when:
 
 ✅ **For init operation**:
-- Configuration file created at `.fractary/codex.yaml` (YAML, v4.0)
+- Configuration file created at `.fractary/codex/config.yaml` (YAML, v4.0)
 - CLI validation passed
 - File path reported to user
 - No errors occurred
@@ -549,7 +549,7 @@ Please specify: <what to provide>
   </SKILL_FAILURE>
 
   <MISSING_CONFIG>
-  If configuration is missing at `.fractary/codex.yaml`:
+  If configuration is missing at `.fractary/codex/config.yaml`:
   1. Check for legacy configs (JSON format or global location)
   2. If legacy config found: suggest migration via config-helper
   3. If no config found: suggest running `/fractary-codex:init`
@@ -560,7 +560,7 @@ Please specify: <what to provide>
   ⚠️ CONFIGURATION REQUIRED
 
   The codex plugin requires configuration at:
-  .fractary/codex.yaml (YAML format, v4.0)
+  .fractary/codex/config.yaml (YAML format, v4.0)
 
   Please run: /fractary-codex:init
 
