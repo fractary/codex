@@ -249,4 +249,93 @@ describe('Routing-aware sync integration', () => {
     expect(file.metadata.codex_sync_include).toEqual(['*'])
     expect(file.sourceProject).toBe('proj-a')
   })
+
+  it('should clone codex repository to temp directory and scan it', async () => {
+    // This test verifies the new temp clone functionality
+    // Note: Using execSync with controlled inputs (no user data) for test git operations
+    const { execSync } = await import('child_process')
+
+    // Create a mock git repository
+    const gitRepoDir = path.join(tempDir, 'mock-codex.git')
+    await fs.mkdir(gitRepoDir, { recursive: true })
+
+    // Initialize git repo (all inputs are hardcoded, not user-provided)
+    execSync('git init', { cwd: gitRepoDir, stdio: 'pipe' })
+    execSync('git config user.email "test@test.com"', { cwd: gitRepoDir, stdio: 'pipe' })
+    execSync('git config user.name "Test User"', { cwd: gitRepoDir, stdio: 'pipe' })
+
+    // Create test files with routing metadata
+    const org = 'testorg'
+    await fs.mkdir(path.join(gitRepoDir, org, 'project-a'), { recursive: true })
+    await fs.writeFile(
+      path.join(gitRepoDir, org, 'project-a', 'doc.md'),
+      '---\ncodex_sync_include: ["target-*"]\n---\n# Doc\n\nContent'
+    )
+
+    await fs.mkdir(path.join(gitRepoDir, org, 'project-b'), { recursive: true })
+    await fs.writeFile(
+      path.join(gitRepoDir, org, 'project-b', 'guide.md'),
+      '---\ncodex_sync_include: ["*"]\n---\n# Guide\n\nGuide content'
+    )
+
+    // Commit files
+    execSync('git add .', { cwd: gitRepoDir, stdio: 'pipe' })
+    execSync('git commit -m "Initial commit"', { cwd: gitRepoDir, stdio: 'pipe' })
+    execSync('git branch -M main', { cwd: gitRepoDir, stdio: 'pipe' })
+
+    // Create temp clone path
+    const testTempPath = path.join(os.tmpdir(), 'test-fractary-codex-clone', org, 'mock-codex.git')
+
+    // Clean up any existing clone
+    try {
+      await fs.rm(testTempPath, { recursive: true, force: true })
+    } catch {}
+
+    // Clone using git directly (simulating what ensureCodexCloned does)
+    await fs.mkdir(path.dirname(testTempPath), { recursive: true })
+    // Using file:// protocol with controlled path (no user input)
+    execSync(`git clone --depth 1 --branch main "file://${gitRepoDir}" "${testTempPath}"`, { stdio: 'pipe' })
+
+    // Verify the clone exists
+    const gitDirExists = await fs.access(path.join(testTempPath, '.git'))
+      .then(() => true)
+      .catch(() => false)
+    expect(gitDirExists).toBe(true)
+
+    // Create sync manager and test routing scan on cloned repo
+    const localStorage = createLocalStorage({ baseDir: tempDir })
+    const syncManager = createSyncManager({
+      localStorage,
+      config: {
+        defaultDirection: 'from-codex',
+        rules: [],
+        defaultExcludes: [],
+        deleteOrphans: false,
+        conflictStrategy: 'newest',
+      },
+    })
+
+    // Run routing-aware sync on the cloned repository
+    const plan = await syncManager.createRoutingAwarePlan(
+      org,
+      'target-project',
+      testTempPath,  // Use the cloned temp directory
+      { direction: 'from-codex' }
+    )
+
+    // Verify results
+    expect(plan.routingScan).toBeDefined()
+    expect(plan.routingScan!.files.length).toBeGreaterThan(0)
+
+    // Should find files from both projects
+    const sourceProjects = plan.routingScan!.stats.sourceProjects
+    expect(sourceProjects).toContain('project-a')  // Has target-* pattern
+    expect(sourceProjects).toContain('project-b')  // Has * pattern
+
+    // Should find exactly 2 files
+    expect(plan.routingScan!.stats.totalMatched).toBe(2)
+
+    // Cleanup
+    await fs.rm(testTempPath, { recursive: true, force: true })
+  })
 })

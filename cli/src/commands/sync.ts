@@ -172,20 +172,40 @@ export function syncCommand(): Command {
 
         // Use routing-aware sync for from-codex direction
         if (direction === 'from-codex') {
-          // Get codex repository path from config or use default location
-          // The cacheDir from config or default to .fractary/codex-cache
-          const codexRepoPath = config.cacheDir || path.join(process.cwd(), '.fractary', 'codex-cache');
+          let codexRepoPath: string;
 
-          if (options.json) {
-            console.log(JSON.stringify({
-              info: 'Routing-aware sync: scanning entire codex repository for files targeting this project',
-              codexPath: codexRepoPath
-            }, null, 2));
-          } else {
-            console.log(chalk.blue('ℹ Using routing-aware sync'));
-            console.log(chalk.dim('  Scanning entire codex for files routing to this project...\n'));
+          try {
+            const { ensureCodexCloned } = await import('../utils/codex-repository.js');
+
+            if (!options.json) {
+              console.log(chalk.blue('ℹ Cloning/updating codex repository...'));
+            }
+
+            // Clone codex to temp directory
+            codexRepoPath = await ensureCodexCloned(config, {
+              branch: targetBranch
+            });
+
+            if (!options.json) {
+              console.log(chalk.dim(`  Codex cloned to: ${codexRepoPath}`));
+              console.log(chalk.dim('  Scanning for files routing to this project...\n'));
+            } else {
+              console.log(JSON.stringify({
+                info: 'Routing-aware sync: cloned codex repository and scanning for files targeting this project',
+                codexPath: codexRepoPath
+              }, null, 2));
+            }
+          } catch (error: any) {
+            console.error(chalk.red('Error:'), 'Failed to clone codex repository');
+            console.error(chalk.dim(`  ${error.message}`));
+            console.log(chalk.yellow('\nTroubleshooting:'));
+            console.log(chalk.dim('  1. Ensure git is installed: git --version'));
+            console.log(chalk.dim('  2. Check GitHub auth: gh auth status'));
+            console.log(chalk.dim(`  3. Verify repo exists: ${config.organization}/${(config as any).codex_repository || 'codex'}`));
+            process.exit(1);
           }
 
+          // Use temp clone path for routing scan
           const planWithRouting = await syncManager.createRoutingAwarePlan(
             config.organization,
             projectName,
