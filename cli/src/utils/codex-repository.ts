@@ -62,18 +62,25 @@ export function getCodexRepoUrl(config: CodexConfigWithRepo): string {
  */
 async function execGit(repoPath: string, command: string): Promise<string> {
   try {
-    const { stdout, stderr } = await execAsync(command, {
+    const { stdout } = await execAsync(command, {
       cwd: repoPath,
       env: { ...process.env },
     });
 
-    if (stderr && !stderr.includes('Cloning into') && !stderr.includes('From ')) {
-      throw new Error(stderr);
-    }
-
     return stdout;
   } catch (error: any) {
-    throw new Error(`Git command failed: ${error.message}`);
+    // Provide specific error messages based on error code
+    if (error.code === 'ENOENT') {
+      throw new Error(`Git command not found. Ensure git is installed and in PATH.`);
+    }
+    if (error.code === 'EACCES') {
+      throw new Error(`Permission denied accessing repository at ${repoPath}`);
+    }
+    if (error.code === 128) {
+      throw new Error(`Git authentication failed. Check your credentials and repository access.`);
+    }
+    // For other errors, include the original message
+    throw error;
   }
 }
 
@@ -109,14 +116,23 @@ async function gitClone(
 /**
  * Fetch updates from remote
  */
-async function gitFetch(repoPath: string): Promise<void> {
-  await execGit(repoPath, 'git fetch origin');
+async function gitFetch(repoPath: string, branch?: string): Promise<void> {
+  // For shallow clones, fetch the specific branch if provided
+  if (branch) {
+    await execGit(repoPath, `git fetch origin ${branch}:${branch}`);
+  } else {
+    await execGit(repoPath, 'git fetch origin');
+  }
 }
 
 /**
  * Checkout a branch
  */
 async function gitCheckout(repoPath: string, branch: string): Promise<void> {
+  // Validate branch name to prevent command injection
+  if (!/^[\w\-./]+$/.test(branch)) {
+    throw new Error(`Invalid branch name: ${branch}`);
+  }
   await execGit(repoPath, `git checkout ${branch}`);
 }
 
@@ -150,7 +166,7 @@ export async function ensureCodexCloned(
   // If already exists and not forcing a fresh clone, update it
   if (await isValidGitRepo(tempPath) && !options?.force) {
     try {
-      await gitFetch(tempPath);
+      await gitFetch(tempPath, branch);
       await gitCheckout(tempPath, branch);
       await gitPull(tempPath);
       return tempPath;
@@ -168,8 +184,9 @@ export async function ensureCodexCloned(
   // Remove existing directory if present
   try {
     await fs.rm(tempPath, { recursive: true, force: true });
-  } catch {
-    // Ignore errors
+  } catch (error: any) {
+    // Log but don't fail - directory might not exist yet
+    console.warn(`Could not remove existing directory ${tempPath}: ${error.message}`);
   }
 
   await gitClone(repoUrl, tempPath, {
