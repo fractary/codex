@@ -7,13 +7,13 @@
         "source": "github",
         "repo": "fractary/core"
       }
-    }, 
+    },
     "fractary-codex": {
       "source": {
         "source": "github",
         "repo": "fractary/codex"
       }
-    }, 
+    },
     "fractary-faber": {
       "source": {
         "source": "github",
@@ -29,7 +29,7 @@
     "fractary-spec@fractary-core": true,
     "fractary-logs@fractary-core": true,
     "fractary-file@fractary-core": true,
-    "fractary-faber@fractary-faber": true, 
+    "fractary-faber@fractary-faber": true,
     "fractary-faber-cloud@fractary-faber": true
   },
   "permissions": {
@@ -150,5 +150,17 @@
   "statusLine": {
     "type": "command",
     "command": "~/.claude/plugins/marketplaces/fractary/plugins/status/scripts/status-line.sh"
+  },
+  "mcpServers": {
+    "fractary-codex": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@fractary/codex-mcp-server",
+        "--config",
+        ".fractary/codex.yaml"
+      ],
+      "env": {}
+    }
   }
 }
