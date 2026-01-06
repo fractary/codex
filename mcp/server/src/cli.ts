@@ -16,8 +16,8 @@ const program = new Command()
 program
   .name('fractary-codex-mcp')
   .description('MCP server for Fractary Codex knowledge management')
-  .version('0.1.0')
-  .option('--config <path>', 'Path to config file', '.fractary/codex.yaml')
+  .version('0.3.1')
+  .option('--config <path>', 'Path to config file', '.fractary/codex/config.yaml')
   .action(async (options) => {
     // Load configuration
     let config: Record<string, unknown> = {}
@@ -26,7 +26,7 @@ program
       config = yaml.load(configFile) as Record<string, unknown>
     } catch (error) {
       // Config file is optional - continue with defaults
-      if (options.config !== '.fractary/codex.yaml') {
+      if (options.config !== '.fractary/codex/config.yaml') {
         console.error(`Warning: Could not load config file: ${options.config}`)
       }
     }
@@ -41,7 +41,7 @@ program
     // Create MCP server
     const server = new McpServer({
       name: 'fractary-codex',
-      version: '0.1.0',
+      version: '0.3.1',
       cache,
       storage,
     })
