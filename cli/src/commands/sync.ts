@@ -165,13 +165,43 @@ export function syncCommand(): Command {
           exclude: excludePatterns
         };
 
-        const plan = await syncManager.createPlan(
-          config.organization,
-          projectName,
-          sourceDir,
-          targetFiles,
-          syncOptions
-        );
+        let plan;
+        let routingScan;
+
+        // Use routing-aware sync for from-codex direction
+        if (direction === 'from-codex') {
+          // TODO: Get codex repository path from config or clone it
+          // For now, assume it's at a standard location or needs to be cloned
+          const codexRepoPath = config.codex_repo_path || path.join(process.cwd(), '.fractary', 'codex-cache');
+
+          if (options.json) {
+            console.log(JSON.stringify({
+              info: 'Routing-aware sync: scanning entire codex repository for files targeting this project',
+              codexPath: codexRepoPath
+            }, null, 2));
+          } else {
+            console.log(chalk.blue('ℹ Using routing-aware sync'));
+            console.log(chalk.dim('  Scanning entire codex for files routing to this project...\n'));
+          }
+
+          const planWithRouting = await syncManager.createRoutingAwarePlan(
+            config.organization,
+            projectName,
+            codexRepoPath,
+            syncOptions
+          );
+
+          plan = planWithRouting;
+          routingScan = planWithRouting.routingScan;
+        } else {
+          plan = await syncManager.createPlan(
+            config.organization,
+            projectName,
+            sourceDir,
+            targetFiles,
+            syncOptions
+          );
+        }
 
         if (plan.totalFiles === 0) {
           if (options.json) {
@@ -241,6 +271,23 @@ export function syncCommand(): Command {
         if (plan.estimatedTime) {
           console.log(`  Est. time:    ${chalk.dim(formatDuration(plan.estimatedTime))}`);
         }
+
+        // Display routing statistics if using routing-aware sync
+        if (routingScan) {
+          console.log('');
+          console.log(chalk.bold('Routing Statistics\n'));
+          console.log(`  Scanned:      ${chalk.cyan(routingScan.stats.totalScanned.toString())} files`);
+          console.log(`  Matched:      ${chalk.cyan(routingScan.stats.totalMatched.toString())} files`);
+          console.log(`  Source projects: ${chalk.cyan(routingScan.stats.sourceProjects.length.toString())}`);
+          if (routingScan.stats.sourceProjects.length > 0) {
+            console.log(chalk.dim(`    ${routingScan.stats.sourceProjects.slice(0, 5).join(', ')}`));
+            if (routingScan.stats.sourceProjects.length > 5) {
+              console.log(chalk.dim(`    ... and ${routingScan.stats.sourceProjects.length - 5} more`));
+            }
+          }
+          console.log(`  Scan time:    ${chalk.dim(formatDuration(routingScan.stats.durationMs))}`);
+        }
+
         console.log('');
 
         if (plan.conflicts.length > 0) {

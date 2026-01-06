@@ -17,6 +17,7 @@ import type {
 import { DEFAULT_SYNC_CONFIG } from './types.js'
 import { createSyncPlan, estimateSyncTime, type FileInfo } from './planner.js'
 import { calculateContentHash } from '../cache/entry.js'
+import { scanCodexWithRouting, type RoutingScanResult } from './routing-scanner.js'
 
 /**
  * Sync manager configuration
@@ -143,6 +144,71 @@ export class SyncManager {
     plan.estimatedTime = estimateSyncTime(plan)
 
     return plan
+  }
+
+  /**
+   * Create a routing-aware sync plan
+   *
+   * Scans entire codex repository and evaluates routing rules to find all files
+   * that should sync to the target project based on codex_sync_include patterns.
+   *
+   * This enables cross-project knowledge sharing where files from multiple
+   * projects can be synced to the target based on their frontmatter metadata.
+   *
+   * @param org - Organization name (e.g., "corthosai")
+   * @param project - Target project name (e.g., "lake.corthonomy.ai")
+   * @param codexDir - Path to codex repository directory
+   * @param options - Sync options
+   * @returns Sync plan with routing metadata
+   *
+   * @example
+   * ```typescript
+   * const plan = await manager.createRoutingAwarePlan(
+   *   'corthosai',
+   *   'lake.corthonomy.ai',
+   *   '/path/to/codex.corthos.ai',
+   *   { direction: 'from-codex' }
+   * )
+   *
+   * console.log(`Found ${plan.totalFiles} files from ${plan.metadata.scannedProjects.length} projects`)
+   * ```
+   */
+  async createRoutingAwarePlan(
+    org: string,
+    project: string,
+    codexDir: string,
+    options?: SyncOptions
+  ): Promise<SyncPlan & { routingScan?: RoutingScanResult }> {
+    // Step 1: Scan entire codex with routing evaluation
+    const routingScan = await scanCodexWithRouting({
+      codexDir,
+      targetProject: project,
+      org,
+      rules: undefined, // Use default routing rules (preventSelfSync, preventCodexSync, etc.)
+      storage: this.localStorage,
+    })
+
+    // Step 2: Convert routed files to FileInfo format expected by planner
+    const sourceFiles: FileInfo[] = routingScan.files.map((rf) => ({
+      path: rf.path,
+      size: rf.size,
+      mtime: rf.mtime,
+      hash: rf.hash,
+    }))
+
+    // Step 3: Get current local files for comparison
+    const targetFiles = await this.listLocalFiles(process.cwd())
+
+    // Step 4: Create sync plan using existing planner logic
+    const plan = createSyncPlan(sourceFiles, targetFiles, options ?? {}, this.config)
+
+    plan.estimatedTime = estimateSyncTime(plan)
+
+    // Step 5: Enhance plan with routing metadata
+    return {
+      ...plan,
+      routingScan,
+    }
   }
 
   /**
