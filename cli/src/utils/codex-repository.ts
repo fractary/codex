@@ -7,11 +7,45 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs/promises';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 import type { CodexYamlConfig } from '../config/config-types';
 
-const execAsync = promisify(exec);
+/**
+ * Execute a command using spawn (safer than exec)
+ */
+function spawnAsync(command: string, args: string[], options: { cwd: string }): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      ...options,
+      env: process.env,
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+
+    child.on('close', (code) => {
+      if (code !== 0) {
+        const error: any = new Error(stderr || `Command exited with code ${code}`);
+        error.code = code;
+        reject(error);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
 
 /**
  * Extended config interface with codex_repository field
@@ -21,15 +55,63 @@ interface CodexConfigWithRepo extends CodexYamlConfig {
 }
 
 /**
+ * Sanitize a path component to prevent path traversal attacks
+ * Removes dangerous sequences like ../ and path separators
+ */
+function sanitizePathComponent(component: string): string {
+  if (!component || typeof component !== 'string') {
+    throw new Error('Path component must be a non-empty string');
+  }
+
+  // Remove path traversal sequences and path separators
+  const sanitized = component
+    .replace(/\.\./g, '')
+    .replace(/[/\\]/g, '')
+    .trim();
+
+  if (!sanitized) {
+    throw new Error(`Invalid path component: ${component}`);
+  }
+
+  return sanitized;
+}
+
+/**
+ * Validate a GitHub organization or repository name
+ * Ensures it contains only safe characters
+ */
+function validateGitHubName(name: string, type: 'organization' | 'repository'): void {
+  if (!name || typeof name !== 'string') {
+    throw new Error(`GitHub ${type} name must be a non-empty string`);
+  }
+
+  // GitHub names can only contain alphanumeric characters, hyphens, underscores, and dots
+  if (!/^[a-zA-Z0-9._-]+$/.test(name)) {
+    throw new Error(`Invalid GitHub ${type} name: ${name}. Must contain only alphanumeric characters, hyphens, underscores, and dots.`);
+  }
+
+  // Additional checks
+  if (name.startsWith('.') || name.startsWith('-')) {
+    throw new Error(`GitHub ${type} name cannot start with a dot or hyphen: ${name}`);
+  }
+}
+
+/**
  * Get the temporary directory path for codex clone
+ * Includes process ID to prevent race conditions
  */
 export function getTempCodexPath(config: CodexConfigWithRepo): string {
   const codexRepo = config.codex_repository || 'codex';
+
+  // Sanitize path components to prevent path traversal
+  const sanitizedOrg = sanitizePathComponent(config.organization);
+  const sanitizedRepo = sanitizePathComponent(codexRepo);
+
+  // Include process ID to prevent concurrent sync conflicts
   return path.join(
     os.tmpdir(),
     'fractary-codex-clone',
-    config.organization,
-    codexRepo
+    `${sanitizedOrg}-${sanitizedRepo}-${process.pid}`
   );
 }
 
@@ -52,19 +134,22 @@ export async function isValidGitRepo(repoPath: string): Promise<boolean> {
 export function getCodexRepoUrl(config: CodexConfigWithRepo): string {
   const codexRepo = config.codex_repository || 'codex';
 
+  // Validate GitHub names to prevent URL injection
+  validateGitHubName(config.organization, 'organization');
+  validateGitHubName(codexRepo, 'repository');
+
   // Default to GitHub
   // Format: https://github.com/{org}/{repo}.git
   return `https://github.com/${config.organization}/${codexRepo}.git`;
 }
 
 /**
- * Execute a git command in a directory
+ * Execute a git command in a directory using spawn (safe from command injection)
  */
-async function execGit(repoPath: string, command: string): Promise<string> {
+async function execGit(repoPath: string, args: string[]): Promise<string> {
   try {
-    const { stdout } = await execAsync(command, {
+    const stdout = await spawnAsync('git', args, {
       cwd: repoPath,
-      env: { ...process.env },
     });
 
     return stdout;
@@ -85,7 +170,7 @@ async function execGit(repoPath: string, command: string): Promise<string> {
 }
 
 /**
- * Clone a git repository
+ * Clone a git repository using spawn (safe from command injection)
  */
 async function gitClone(
   url: string,
@@ -96,21 +181,32 @@ async function gitClone(
   const parentDir = path.dirname(targetPath);
   await fs.mkdir(parentDir, { recursive: true });
 
-  // Build clone command
-  let command = `git clone`;
+  // Build args array (safe from command injection)
+  const args = ['clone'];
 
   if (options?.depth) {
-    command += ` --depth ${options.depth}`;
+    // Validate depth is a positive integer
+    if (!Number.isInteger(options.depth) || options.depth <= 0) {
+      throw new Error(`Invalid depth parameter: ${options.depth}. Must be a positive integer.`);
+    }
+    args.push('--depth', String(options.depth));
   }
 
   if (options?.branch) {
-    command += ` --branch ${options.branch}`;
+    // Branch validation already done in gitCheckout, but validate here too
+    if (!/^[\w\-./]+$/.test(options.branch)) {
+      throw new Error(`Invalid branch name: ${options.branch}`);
+    }
+    args.push('--branch', options.branch);
   }
 
-  command += ` "${url}" "${targetPath}"`;
+  // Add single-branch flag for performance
+  args.push('--single-branch');
 
-  // Execute clone
-  await execAsync(command);
+  args.push(url, targetPath);
+
+  // Execute clone using spawn (parent directory is cwd)
+  await spawnAsync('git', args, { cwd: parentDir });
 }
 
 /**
@@ -119,9 +215,13 @@ async function gitClone(
 async function gitFetch(repoPath: string, branch?: string): Promise<void> {
   // For shallow clones, fetch the specific branch if provided
   if (branch) {
-    await execGit(repoPath, `git fetch origin ${branch}:${branch}`);
+    // Validate branch name
+    if (!/^[\w\-./]+$/.test(branch)) {
+      throw new Error(`Invalid branch name: ${branch}`);
+    }
+    await execGit(repoPath, ['fetch', 'origin', `${branch}:${branch}`]);
   } else {
-    await execGit(repoPath, 'git fetch origin');
+    await execGit(repoPath, ['fetch', 'origin']);
   }
 }
 
@@ -133,14 +233,14 @@ async function gitCheckout(repoPath: string, branch: string): Promise<void> {
   if (!/^[\w\-./]+$/.test(branch)) {
     throw new Error(`Invalid branch name: ${branch}`);
   }
-  await execGit(repoPath, `git checkout ${branch}`);
+  await execGit(repoPath, ['checkout', branch]);
 }
 
 /**
  * Pull latest changes
  */
 async function gitPull(repoPath: string): Promise<void> {
-  await execGit(repoPath, 'git pull');
+  await execGit(repoPath, ['pull']);
 }
 
 /**
