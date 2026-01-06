@@ -1,6 +1,6 @@
 {
   "name": "@fractary/codex",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Knowledge infrastructure SDK for AI agents - universal references, multi-tier caching, storage abstraction, and sync",
   "keywords": [
     "codex",
