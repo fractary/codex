@@ -87,6 +87,19 @@ Options:
 /fractary-codex:sync --from-codex            # One-way from codex
 ```
 
+**Routing-Aware Sync (v4.1+):**
+
+When using `--from-codex`, the sync uses **cross-project routing** to automatically discover all files that should sync to your project:
+
+- Clones entire codex repository to temporary directory
+- Scans ALL markdown files across all projects
+- Evaluates `codex_sync_include` frontmatter patterns
+- Returns files that match your project name or pattern
+
+This enables **cross-project knowledge sharing** where standards from core projects, API specs from ETL projects, and shared guides automatically sync to your project.
+
+**Note:** This approach clones the entire codex (inefficient but correct). For daily workflows, prefer using `codex://` URI references and cache purging instead of frequent syncing.
+
 ### 3. Reference Documentation
 
 After initialization and sync, reference docs via `codex://` URIs:

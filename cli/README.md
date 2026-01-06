@@ -153,6 +153,41 @@ Options:
   --parallel <n>       Number of parallel sync operations (default: 3)
 ```
 
+**Routing-Aware Sync (v4.1+):**
+
+When using `--from-codex` direction, the sync command uses **routing-aware file discovery** to find all files across the entire codex that should sync to your project based on `codex_sync_include` frontmatter patterns.
+
+How it works:
+1. Clones the entire codex repository to a temporary directory (`/tmp/fractary-codex-clone/`)
+2. Scans ALL markdown files in the codex recursively
+3. Evaluates `codex_sync_include` patterns in each file's frontmatter
+4. Returns only files that match your project name or pattern
+
+**Example frontmatter in source files:**
+```yaml
+---
+codex_sync_include: ['*']                  # Syncs to ALL projects
+codex_sync_include: ['lake-*', 'api-*']    # Syncs to lake-* and api-* projects
+codex_sync_exclude: ['*-test']             # Except *-test projects
+---
+```
+
+**Trade-offs:**
+- **Efficient for discovery**: Finds all relevant files across hundreds of projects
+- **Inefficient for execution**: Clones entire codex repository (uses shallow clone for speed)
+- **Best practice**: Use `codex://` URI references + cache purging for most workflows; use sync occasionally when needed
+
+**Recommended workflow:**
+```bash
+# Primary: Reference files via codex:// URIs (no sync needed)
+fractary-codex fetch codex://org/project/path/file.md
+
+# When you need latest versions: Purge cache
+fractary-codex cache clear --pattern "codex://org/project/*"
+
+# Then MCP will re-fetch fresh content automatically
+```
+
 ### `types` - Type Registry Management
 
 Manage custom artifact types for classification and caching.
