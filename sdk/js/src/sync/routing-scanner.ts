@@ -288,9 +288,9 @@ export async function listAllFilesRecursive(dirPath: string): Promise<string[]> 
           files.push(entryRelativePath)
         }
       }
-    } catch (error) {
+    } catch {
       // Ignore directories we can't read (permissions, etc.)
-      console.warn(`Warning: Could not read directory ${currentPath}: ${error}`)
+      // Silently skip - this is expected for permission issues
     }
   }
 

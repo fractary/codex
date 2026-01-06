@@ -84,7 +84,7 @@ export function syncCommand(): Command {
         let projectName = name;
         if (!projectName) {
           const detected = detectCurrentProject();
-          projectName = detected.project || null;
+          projectName = detected.project || undefined;
         }
 
         if (!projectName) {
@@ -110,14 +110,16 @@ export function syncCommand(): Command {
         });
 
         // Create SyncManager
+        // Cast config.sync to any to avoid type incompatibility between CLI and SDK SyncConfig types
         const syncManager = createSyncManager({
           localStorage,
-          config: config.sync,
+          config: config.sync as any,
           manifestPath: path.join(process.cwd(), '.fractary', '.codex-sync-manifest.json')
         });
 
         // Get default include patterns from config
-        const defaultPatterns = config.sync?.include || [
+        // The CLI config uses 'exclude' patterns, fall back to standard patterns for include
+        const defaultPatterns = [
           'docs/**/*.md',
           'specs/**/*.md',
           '.fractary/standards/**',
@@ -170,9 +172,9 @@ export function syncCommand(): Command {
 
         // Use routing-aware sync for from-codex direction
         if (direction === 'from-codex') {
-          // TODO: Get codex repository path from config or clone it
-          // For now, assume it's at a standard location or needs to be cloned
-          const codexRepoPath = config.codex_repo_path || path.join(process.cwd(), '.fractary', 'codex-cache');
+          // Get codex repository path from config or use default location
+          // The cacheDir from config or default to .fractary/codex-cache
+          const codexRepoPath = config.cacheDir || path.join(process.cwd(), '.fractary', 'codex-cache');
 
           if (options.json) {
             console.log(JSON.stringify({

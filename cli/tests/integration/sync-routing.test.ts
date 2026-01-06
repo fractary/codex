@@ -95,8 +95,9 @@ describe('Routing-aware sync integration', () => {
     expect(sourceProjects).toContain('project-b')
     expect(sourceProjects).not.toContain('project-c')
 
-    // Should find at least 3 files (standard.md, api.md, readme.md)
-    expect(plan.routingScan!.stats.totalMatched).toBeGreaterThanOrEqual(3)
+    // Should find exactly 2 files (standard.md from project-a, api.md from project-b)
+    // Note: readme.md from target-project is excluded due to preventSelfSync rule
+    expect(plan.routingScan!.stats.totalMatched).toBe(2)
 
     // Verify scan statistics
     expect(plan.routingScan!.stats.totalScanned).toBeGreaterThan(0)
