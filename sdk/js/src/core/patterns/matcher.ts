@@ -1,4 +1,4 @@
-import { isMatch } from 'micromatch'
+import micromatch from 'micromatch'
 
 /**
  * Match a pattern against a value using glob syntax
@@ -14,7 +14,7 @@ export function matchPattern(pattern: string, value: string): boolean {
   if (pattern === value) return true
 
   // Use micromatch for glob pattern matching
-  return isMatch(value, pattern)
+  return micromatch.isMatch(value, pattern)
 }
 
 /**
