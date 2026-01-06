@@ -156,9 +156,9 @@
       "command": "npx",
       "args": [
         "-y",
-        "@fractary/codex-mcp-server",
+        "@fractary/codex-mcp",
         "--config",
-        ".fractary/codex.yaml"
+        ".fractary/codex/config.yaml"
       ],
       "env": {}
     }
