@@ -30,6 +30,14 @@ This provides bidirectional synchronization with:
 - Branch-specific syncing
 - Dry-run preview
 - Automatic commit creation
+- **Routing-aware sync (v4.1+)** - from-codex scans entire codex repository
+
+**Routing-aware sync (v4.1+):**
+When syncing FROM codex, the system uses routing-aware file discovery that:
+- Scans ENTIRE codex repository (not just this project's directory)
+- Evaluates `codex_sync_include` patterns in file frontmatter
+- Returns files from ANY project that route to the target project
+- Enables cross-project knowledge sharing (hundreds of files vs ~5)
 
 All via the TypeScript SDK.
 </CONTEXT>

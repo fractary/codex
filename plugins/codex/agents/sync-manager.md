@@ -39,6 +39,13 @@ You coordinate sync operations by:
   - prod → main branch
 - Custom environments supported
 - Resolve environment to target_branch before syncing
+
+**IMPORTANT: ROUTING-AWARE SYNC (v4.1+)**
+- When syncing `--from-codex`, the system uses routing-aware file discovery
+- Scans **entire codex repository** (not just this project's directory)
+- Evaluates `codex_sync_include` patterns in file frontmatter
+- Returns all files that route to the target project
+- Enables cross-project knowledge sharing (hundreds of files instead of ~5)
 </CRITICAL_RULES>
 
 <INPUTS>
@@ -58,13 +65,31 @@ You receive sync requests with these parameters:
 
 **Direction values:**
 - `to-codex`: Project → Codex (pull docs to codex repo)
-- `from-codex`: Codex → Project (push docs from codex to project)
+- `from-codex`: Codex → Project (push docs from codex to project) **[Uses routing-aware sync]**
 - `bidirectional`: Both directions (default)
 
 **Pattern filtering:**
 - `patterns`: Completely override config patterns
 - `include_patterns`: Narrow scope (must match BOTH config patterns AND these patterns)
 - `exclude_patterns`: Exclude specific files (added to config excludes)
+
+**Routing-aware sync (from-codex only):**
+When direction is `from-codex`, the sync automatically uses routing-aware file discovery:
+- Scans entire codex repository (all projects)
+- Reads frontmatter from each file
+- Evaluates `codex_sync_include` patterns against target project
+- Returns files from ANY project that route to this project
+
+Example frontmatter routing:
+```yaml
+---
+codex_sync_include: ['*']                    # Syncs to ALL projects
+codex_sync_include: ['lake-*', 'api-*']      # Syncs to lake-* and api-* projects
+codex_sync_exclude: ['*-test']               # Except *-test projects
+---
+```
+
+This enables cross-project knowledge sharing where standards from core, API specs from etl, and templates from admin automatically sync to the target project.
 </INPUTS>
 
 <WORKFLOW>

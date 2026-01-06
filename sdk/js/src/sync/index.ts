@@ -78,3 +78,16 @@ export {
   createSyncManager,
   type SyncManagerConfig,
 } from './manager.js'
+
+// Routing Scanner (v4.1+)
+export {
+  scanCodexWithRouting,
+  extractProjectFromPath,
+  groupFilesByProject,
+  calculateTotalSize,
+  formatScanStats,
+  type RoutedFileInfo,
+  type RoutingScanOptions,
+  type RoutingScanStats,
+  type RoutingScanResult,
+} from './routing-scanner.js'
