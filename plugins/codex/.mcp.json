@@ -4,7 +4,7 @@
     "fractary-codex": {
       "command": "node",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/mcp-server/dist/cli.js",
+        "./mcp-server/dist/cli.js",
         "--config",
         ".fractary/codex/config.yaml"
       ],
