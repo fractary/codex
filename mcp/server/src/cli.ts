@@ -16,7 +16,7 @@ const program = new Command()
 program
   .name('fractary-codex-mcp')
   .description('MCP server for Fractary Codex knowledge management')
-  .version('0.3.1')
+  .version('0.3.3')
   .option('--config <path>', 'Path to config file', '.fractary/codex/config.yaml')
   .action(async (options) => {
     // Load configuration
@@ -34,14 +34,14 @@ program
     // Initialize storage and cache managers
     const storage = createStorageManager(config.storage as Record<string, unknown> | undefined)
     const cache = createCacheManager({
-      cacheDir: (config.cache as Record<string, unknown>)?.cacheDir as string || '.fractary/cache',
+      cacheDir: (config.cache as Record<string, unknown>)?.cacheDir as string || '.fractary/codex/cache',
       ...(config.cache as Record<string, unknown>),
     })
 
     // Create MCP server
     const server = new McpServer({
       name: 'fractary-codex',
-      version: '0.3.1',
+      version: '0.3.3',
       cache,
       storage,
     })
