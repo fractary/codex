@@ -5,9 +5,7 @@
       "type": "stdio",
       "command": "node",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/mcp-server/dist/cli.js",
-        "--config",
-        ".fractary/codex/config.yaml"
+        "${CLAUDE_PLUGIN_ROOT}/mcp-server/dist/cli.js"
       ],
       "env": {}
     }
