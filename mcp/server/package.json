@@ -1,6 +1,6 @@
 {
   "name": "@fractary/codex-mcp",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "MCP server for Fractary Codex knowledge management",
   "keywords": [
     "codex",
@@ -23,7 +23,7 @@
   "author": "Fractary Engineering",
   "type": "module",
   "bin": {
-    "fractary-codex-mcp": "./dist/cli.js"
+    "fractary-codex-mcp": "./dist/cli.cjs"
   },
   "exports": {
     ".": {
