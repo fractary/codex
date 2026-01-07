@@ -223,6 +223,11 @@ Configuration:
   Format: YAML (CLI compatible)
   Version: 4.0
 
+MCP Server:
+  Package: @fractary/codex-mcp@0.3.3 (npm registry)
+  Method: npx (no local installation required)
+  Config: .fractary/codex/config.yaml
+
 Next steps:
   1. Restart Claude Code to load the MCP server
   2. Review config: cat .fractary/codex/config.yaml

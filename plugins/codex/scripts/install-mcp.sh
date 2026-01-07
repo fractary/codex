@@ -10,7 +10,7 @@
 #   --no-backup            Skip backup creation
 #
 # Adds mcpServers.fractary-codex configuration to .claude/settings.json
-# Uses standalone MCP server from @fractary/codex-mcp-server package
+# Uses standalone MCP server from @fractary/codex-mcp package
 
 set -euo pipefail
 
@@ -76,7 +76,7 @@ if echo "$existing_settings" | jq -e '.mcpServers["fractary-codex"]' >/dev/null 
   elif [[ "$existing_args" == "@fractary/codex" ]]; then
     # Old SDK-embedded format (@fractary/codex package) - will migrate
     migration_performed="true"
-  elif [[ "$existing_args" == "@fractary/codex-mcp-server" ]]; then
+  elif [[ "$existing_args" == "@fractary/codex-mcp" ]]; then
     # Already using standalone MCP server
     jq -n \
       --arg command "$existing_command" \
@@ -98,7 +98,7 @@ fi
 mcp_config=$(jq -n \
   '{
     command: "npx",
-    args: ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"],
+    args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"],
     env: {}
   }')
 
@@ -123,8 +123,8 @@ jq -n \
     message: (if $migrated then "Migrated to standalone MCP server successfully" else "MCP server configured successfully" end),
     details: {
       mcp_command: $command,
-      mcp_package: "@fractary/codex-mcp-server",
-      config_path: ".fractary/codex.yaml",
+      mcp_package: "@fractary/codex-mcp",
+      config_path: ".fractary/codex/config.yaml",
       settings: $settings,
       backup: (if $backup == "" then null else $backup end),
       updated_existing: $had_existing,

@@ -14,7 +14,7 @@
 set -euo pipefail
 
 # Default paths
-cache_path="${CODEX_CACHE_PATH:-.fractary/plugins/codex/cache}"
+cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
