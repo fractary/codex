@@ -2,8 +2,9 @@
   "$schema": "https://claude.ai/schemas/mcp-config.json",
   "mcpServers": {
     "fractary-codex": {
-      "command": "fractary-codex-mcp",
+      "command": "node",
       "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp-server/dist/cli.js",
         "--config",
         ".fractary/codex/config.yaml"
       ],
