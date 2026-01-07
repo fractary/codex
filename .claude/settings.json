@@ -150,5 +150,18 @@
   "statusLine": {
     "type": "command",
     "command": "~/.claude/plugins/marketplaces/fractary/plugins/status/scripts/status-line.sh"
+  },
+  "mcpServers": {
+    "fractary-codex": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@fractary/codex-mcp",
+        "--config",
+        ".fractary/codex/config.yaml"
+      ],
+      "env": {}
+    }
   }
 }

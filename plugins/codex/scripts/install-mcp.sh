@@ -97,6 +97,7 @@ fi
 # Build standalone MCP server configuration
 mcp_config=$(jq -n \
   '{
+    type: "stdio",
     command: "npx",
     args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"],
     env: {}
