@@ -215,7 +215,7 @@ Display results to user:
 Created:
   - Config: .fractary/codex/config.yaml (YAML, v4.0)
   - Cache: .fractary/codex/cache/
-  - MCP Server: .claude/settings.json (fractary-codex)
+  - MCP Server: .mcp.json (fractary-codex)
 
 Configuration:
   Organization: <organization>
@@ -288,7 +288,7 @@ Initialization is complete when:
 Created:
   - Config: .fractary/codex/config.yaml (YAML, v4.0)
   - Cache: .fractary/codex/cache/
-  - MCP Server: .claude/settings.json (fractary-codex)
+  - MCP Server: .mcp.json (fractary-codex)
 
 Configuration:
   Organization: fractary

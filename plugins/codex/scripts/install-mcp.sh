@@ -9,13 +9,13 @@
 #   --backup               Create backup of existing settings (default: true)
 #   --no-backup            Skip backup creation
 #
-# Adds mcpServers.fractary-codex configuration to .claude/settings.json
+# Adds mcpServers.fractary-codex configuration to .mcp.json
 # Uses standalone MCP server from @fractary/codex-mcp package
 
 set -euo pipefail
 
 # Default paths
-settings_path=".claude/settings.json"
+settings_path=".mcp.json"
 create_backup="true"
 
 # Parse arguments
@@ -43,11 +43,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Create .claude directory if needed
-settings_dir=$(dirname "$settings_path")
-if [[ ! -d "$settings_dir" ]]; then
-  mkdir -p "$settings_dir"
-fi
+# .mcp.json is in project root, no directory creation needed
 
 # Initialize or read existing settings
 existing_settings="{}"
@@ -97,10 +93,8 @@ fi
 # Build standalone MCP server configuration
 mcp_config=$(jq -n \
   '{
-    type: "stdio",
     command: "npx",
-    args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"],
-    env: {}
+    args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"]
   }')
 
 # Merge into existing settings
