@@ -2,10 +2,8 @@
   "$schema": "https://claude.ai/schemas/mcp-config.json",
   "mcpServers": {
     "fractary-codex": {
-      "command": "npx",
+      "command": "fractary-codex-mcp",
       "args": [
-        "-y",
-        "@fractary/codex-mcp",
         "--config",
         ".fractary/codex/config.yaml"
       ],
