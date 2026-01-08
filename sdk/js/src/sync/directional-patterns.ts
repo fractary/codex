@@ -39,15 +39,27 @@ export function matchFromCodexPattern(
 
   return patterns.some((pattern) => {
     // Check if pattern includes a project prefix
+    // Project names contain dots (e.g., "etl.corthion.ai")
+    // Path segments don't (e.g., "docs")
     const projectSeparatorIndex = pattern.indexOf('/')
 
     if (projectSeparatorIndex === -1) {
-      // No project prefix - pattern applies to target project only
+      // No slash - pattern applies to target project only
       const fullPattern = `${targetProject}/${pattern}`
       return matchPattern(fullPattern, codexFilePath)
-    } else {
-      // Has project prefix - match directly
+    }
+
+    // Extract first segment before slash
+    const firstSegment = pattern.substring(0, projectSeparatorIndex)
+
+    // Check if first segment looks like a project name (contains dots)
+    if (firstSegment.includes('.')) {
+      // Has dots - likely a project name, match directly
       return matchPattern(pattern, codexFilePath)
+    } else {
+      // No dots - likely a path segment, prepend target project
+      const fullPattern = `${targetProject}/${pattern}`
+      return matchPattern(fullPattern, codexFilePath)
     }
   })
 }
