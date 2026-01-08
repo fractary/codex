@@ -115,17 +115,22 @@ function mergeConfigs(
         override.rules?.defaultExclude ?? base.rules?.defaultExclude,
     },
 
-    sync: {
-      ...base.sync,
-      ...override.sync,
+    // Only include sync if either base or override has sync config
+    ...(base.sync || override.sync
+      ? {
+          sync: {
+            ...base.sync,
+            ...override.sync,
 
-      // Arrays are replaced, not merged
-      to_codex: override.sync?.to_codex ?? base.sync?.to_codex,
-      from_codex: override.sync?.from_codex ?? base.sync?.from_codex,
-      default_to_codex:
-        override.sync?.default_to_codex ?? base.sync?.default_to_codex,
-      default_from_codex:
-        override.sync?.default_from_codex ?? base.sync?.default_from_codex,
-    },
+            // Arrays are replaced, not merged
+            to_codex: override.sync?.to_codex ?? base.sync?.to_codex,
+            from_codex: override.sync?.from_codex ?? base.sync?.from_codex,
+            default_to_codex:
+              override.sync?.default_to_codex ?? base.sync?.default_to_codex,
+            default_from_codex:
+              override.sync?.default_from_codex ?? base.sync?.default_from_codex,
+          },
+        }
+      : {}),
   }
 }

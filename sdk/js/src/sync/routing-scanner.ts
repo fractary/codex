@@ -130,11 +130,16 @@ export async function scanCodexWithRouting(
   let totalScanned = 0
   let totalSkipped = 0
 
-  // Import directional pattern matcher if using from_codex patterns
-  const { matchFromCodexPattern } =
-    fromCodexPatterns && fromCodexPatterns.length > 0
-      ? await import('./directional-patterns.js')
-      : { matchFromCodexPattern: null }
+  // Import directional pattern matcher and expand placeholders if using from_codex patterns
+  let expandedFromCodexPatterns = fromCodexPatterns
+  let matchFromCodexPattern: ((filePath: string, patterns: string[], targetProject: string) => boolean) | null = null
+
+  if (fromCodexPatterns && fromCodexPatterns.length > 0) {
+    const module = await import('./directional-patterns.js')
+    matchFromCodexPattern = module.matchFromCodexPattern
+    // Expand {project} placeholder in patterns
+    expandedFromCodexPatterns = module.expandPlaceholders(fromCodexPatterns, targetProject)
+  }
 
   // Step 1: List ALL files recursively in entire codex repository
   const allFiles = await listAllFilesRecursive(codexDir)
@@ -179,9 +184,9 @@ export async function scanCodexWithRouting(
       // Determine if file should sync using either directional patterns or frontmatter routing
       let shouldSync = false
 
-      if (matchFromCodexPattern && fromCodexPatterns && fromCodexPatterns.length > 0) {
+      if (matchFromCodexPattern && expandedFromCodexPatterns && expandedFromCodexPatterns.length > 0) {
         // Use directional from_codex patterns (takes precedence)
-        shouldSync = matchFromCodexPattern(filePath, fromCodexPatterns, targetProject)
+        shouldSync = matchFromCodexPattern(filePath, expandedFromCodexPatterns, targetProject)
       } else {
         // Fall back to frontmatter-based routing
         shouldSync = shouldSyncToRepo({

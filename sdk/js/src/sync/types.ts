@@ -166,6 +166,16 @@ export interface SyncConfig {
   deleteOrphans: boolean
   /** Conflict resolution strategy */
   conflictStrategy: 'newest' | 'local' | 'remote' | 'manual'
+  /** Directional sync: patterns for files to push to codex */
+  to_codex?: string[]
+  /** Directional sync: patterns for files to pull from codex */
+  from_codex?: string[]
+  /** Org-level defaults for pushing to codex */
+  default_to_codex?: string[]
+  /** Org-level defaults for pulling from codex */
+  default_from_codex?: string[]
+  /** Exclude patterns (applied to both directions) */
+  exclude?: string[]
 }
 
 /**

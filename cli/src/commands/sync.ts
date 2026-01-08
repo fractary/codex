@@ -128,12 +128,14 @@ export function syncCommand(): Command {
         ];
 
         // Use to_codex config if available, otherwise fall back to defaults
-        const configIncludePatterns = config.sync?.to_codex || defaultToCodexPatterns;
+        // Cast to any to handle type differences between CLI and SDK config types
+        const syncConfig = config.sync as any;
+        const configIncludePatterns = syncConfig?.to_codex || defaultToCodexPatterns;
 
         // CLI options override config
         const includePatterns = options.include.length > 0 ? options.include : configIncludePatterns;
         const excludePatterns = [
-          ...(config.sync?.exclude || []),
+          ...(syncConfig?.exclude || []),
           ...options.exclude
         ];
 

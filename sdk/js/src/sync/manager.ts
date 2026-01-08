@@ -138,7 +138,7 @@ export class SyncManager {
     // Use project config if available, otherwise fall back to org defaults
     if (options?.direction === 'to-codex') {
       const toCodexPatterns =
-        this.config.sync?.to_codex || this.config.sync?.default_to_codex
+        this.config.to_codex || this.config.default_to_codex
 
       if (toCodexPatterns) {
         const { matchToCodexPattern } = await import('./directional-patterns.js')
@@ -198,7 +198,7 @@ export class SyncManager {
     // Use project config if available, otherwise fall back to org defaults
     // If neither exist, use frontmatter routing
     const fromCodexPatterns =
-      this.config.sync?.from_codex || this.config.sync?.default_from_codex
+      this.config.from_codex || this.config.default_from_codex
 
     const routingScan = await scanCodexWithRouting({
       codexDir,
