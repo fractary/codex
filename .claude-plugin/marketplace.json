@@ -15,7 +15,7 @@
         "name": "fractary-codex",
         "source": "./plugins/codex",
         "description": "Project documentation and org-wide synchronization to and from organization central codex",
-        "version": "5.0.0",
+        "version": "5.1.0",
         "author": {
           "name": "The Fractary",
           "url": "https://github.com/fractary"
