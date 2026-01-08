@@ -91,6 +91,8 @@ export function parseMetadata(
  * Handles:
  * - Nested codex.includes → codex_sync_include
  * - Nested codex.excludes → codex_sync_exclude
+ * - Flat plural codex_sync_includes → codex_sync_include
+ * - Flat plural codex_sync_excludes → codex_sync_exclude
  */
 function normalizeLegacyMetadata(parsed: any): any {
   const normalized: any = { ...parsed }
@@ -103,6 +105,16 @@ function normalizeLegacyMetadata(parsed: any): any {
   // Handle nested codex.excludes → codex_sync_exclude
   if (parsed.codex?.excludes && !parsed.codex_sync_exclude) {
     normalized.codex_sync_exclude = parsed.codex.excludes
+  }
+
+  // Handle flat plural codex_sync_includes → codex_sync_include
+  if (parsed.codex_sync_includes && !normalized.codex_sync_include) {
+    normalized.codex_sync_include = parsed.codex_sync_includes
+  }
+
+  // Handle flat plural codex_sync_excludes → codex_sync_exclude
+  if (parsed.codex_sync_excludes && !normalized.codex_sync_exclude) {
+    normalized.codex_sync_exclude = parsed.codex_sync_excludes
   }
 
   return normalized

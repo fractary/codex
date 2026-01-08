@@ -278,7 +278,7 @@ describe('sync/routing-scanner', () => {
       expect(result.stats.totalSkipped).toBeGreaterThan(0)
     })
 
-    it('should skip files without frontmatter by default', async () => {
+    it('should evaluate files without frontmatter by default', async () => {
       await fs.mkdir(path.join(tempDir, 'org', 'proj-a'), { recursive: true })
 
       await fs.writeFile(
@@ -291,7 +291,28 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
-        skipNoFrontmatter: true,
+        // skipNoFrontmatter defaults to false now
+      })
+
+      // File is evaluated but not matched (no routing rules)
+      expect(result.files.length).toBe(0)
+      expect(result.stats.totalScanned).toBeGreaterThan(0)
+    })
+
+    it('should skip files without frontmatter when skipNoFrontmatter=true', async () => {
+      await fs.mkdir(path.join(tempDir, 'org', 'proj-a'), { recursive: true })
+
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'no-frontmatter.md'),
+        'Just plain content without frontmatter'
+      )
+
+      const result = await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target-project',
+        org: 'org',
+        storage,
+        skipNoFrontmatter: true, // Explicitly skip
       })
 
       expect(result.files.length).toBe(0)
@@ -318,9 +339,37 @@ describe('sync/routing-scanner', () => {
       expect(result.stats.totalSkipped).toBeGreaterThan(0)
     })
 
-    it('should skip non-markdown files', async () => {
+    it('should scan non-markdown files with frontmatter', async () => {
       await fs.mkdir(path.join(tempDir, 'org', 'proj-a'), { recursive: true })
 
+      // Create non-markdown files WITH frontmatter
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'schema.json'),
+        '---\ncodex_sync_include: ["*"]\n---\n{}'
+      )
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'config.yaml'),
+        '---\ncodex_sync_include: ["*"]\n---\nkey: value'
+      )
+
+      const result = await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target-project',
+        org: 'org',
+        storage,
+      })
+
+      // Should find both non-markdown files
+      expect(result.files.length).toBe(2)
+      const paths = result.files.map((f) => path.basename(f.path))
+      expect(paths).toContain('schema.json')
+      expect(paths).toContain('config.yaml')
+    })
+
+    it('should skip non-markdown files WITHOUT frontmatter', async () => {
+      await fs.mkdir(path.join(tempDir, 'org', 'proj-a'), { recursive: true })
+
+      // Files without frontmatter should be skipped
       await fs.writeFile(path.join(tempDir, 'org', 'proj-a', 'file.txt'), 'Text file')
       await fs.writeFile(path.join(tempDir, 'org', 'proj-a', 'file.js'), '// JS file')
 
@@ -333,6 +382,38 @@ describe('sync/routing-scanner', () => {
 
       expect(result.files.length).toBe(0)
       expect(result.stats.totalSkipped).toBeGreaterThan(0)
+    })
+
+    it('should handle mixed markdown and non-markdown files', async () => {
+      await fs.mkdir(path.join(tempDir, 'org', 'proj-a'), { recursive: true })
+
+      // Mix of file types with frontmatter
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'doc.md'),
+        '---\ncodex_sync_include: ["*"]\n---\n# Markdown'
+      )
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'schema.json'),
+        '---\ncodex_sync_include: ["*"]\n---\n{}'
+      )
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'config.yaml'),
+        '---\ncodex_sync_include: ["*"]\n---\nkey: value'
+      )
+
+      const result = await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target-project',
+        org: 'org',
+        storage,
+      })
+
+      // Should find all three files
+      expect(result.files.length).toBe(3)
+      const extensions = result.files.map((f) => path.extname(f.path))
+      expect(extensions).toContain('.md')
+      expect(extensions).toContain('.json')
+      expect(extensions).toContain('.yaml')
     })
 
     it('should calculate file metadata correctly', async () => {

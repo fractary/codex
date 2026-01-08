@@ -116,7 +116,7 @@ export async function scanCodexWithRouting(
     org,
     rules,
     storage,
-    skipNoFrontmatter = true,
+    skipNoFrontmatter = false,
     maxFileSize = 10 * 1024 * 1024, // 10MB default
   } = options
 
@@ -135,11 +135,8 @@ export async function scanCodexWithRouting(
     totalScanned++
 
     try {
-      // Skip non-markdown files for now (optimization)
-      if (!filePath.endsWith('.md')) {
-        totalSkipped++
-        continue
-      }
+      // Check all file types for frontmatter (not just markdown)
+      // This enables syncing of JSON schemas, YAML configs, and other files with routing metadata
 
       // Get full path for reading
       const fullPath = path.join(codexDir, filePath)
