@@ -52,6 +52,8 @@ export interface RoutingScanOptions {
   skipNoFrontmatter?: boolean
   /** Maximum file size to process in bytes (default: 10MB) */
   maxFileSize?: number
+  /** Directional from_codex patterns (takes precedence over frontmatter routing) */
+  fromCodexPatterns?: string[]
 }
 
 /**
@@ -118,6 +120,7 @@ export async function scanCodexWithRouting(
     storage,
     skipNoFrontmatter = false,
     maxFileSize = 10 * 1024 * 1024, // 10MB default
+    fromCodexPatterns,
   } = options
 
   const startTime = Date.now()
@@ -126,6 +129,17 @@ export async function scanCodexWithRouting(
   const errors: Array<{ path: string; error: string }> = []
   let totalScanned = 0
   let totalSkipped = 0
+
+  // Import directional pattern matcher and expand placeholders if using from_codex patterns
+  let expandedFromCodexPatterns = fromCodexPatterns
+  let matchFromCodexPattern: ((filePath: string, patterns: string[], targetProject: string) => boolean) | null = null
+
+  if (fromCodexPatterns && fromCodexPatterns.length > 0) {
+    const module = await import('./directional-patterns.js')
+    matchFromCodexPattern = module.matchFromCodexPattern
+    // Expand {project} placeholder in patterns
+    expandedFromCodexPatterns = module.expandPlaceholders(fromCodexPatterns, targetProject)
+  }
 
   // Step 1: List ALL files recursively in entire codex repository
   const allFiles = await listAllFilesRecursive(codexDir)
@@ -158,8 +172,8 @@ export async function scanCodexWithRouting(
       // Parse frontmatter metadata
       const parseResult = parseMetadata(content, { strict: false })
 
-      // Skip files without frontmatter if configured
-      if (skipNoFrontmatter && Object.keys(parseResult.metadata).length === 0) {
+      // Skip files without frontmatter if configured (only when using frontmatter-based routing)
+      if (!matchFromCodexPattern && skipNoFrontmatter && Object.keys(parseResult.metadata).length === 0) {
         totalSkipped++
         continue
       }
@@ -167,14 +181,22 @@ export async function scanCodexWithRouting(
       // Extract source project from path
       const sourceProject = extractProjectFromPath(filePath, org)
 
-      // Check if file should sync to target project using routing evaluator
-      const shouldSync = shouldSyncToRepo({
-        filePath,
-        fileMetadata: parseResult.metadata,
-        targetRepo: targetProject,
-        sourceRepo: sourceProject,
-        rules,
-      })
+      // Determine if file should sync using either directional patterns or frontmatter routing
+      let shouldSync = false
+
+      if (matchFromCodexPattern && expandedFromCodexPatterns && expandedFromCodexPatterns.length > 0) {
+        // Use directional from_codex patterns (takes precedence)
+        shouldSync = matchFromCodexPattern(filePath, expandedFromCodexPatterns, targetProject)
+      } else {
+        // Fall back to frontmatter-based routing
+        shouldSync = shouldSyncToRepo({
+          filePath,
+          fileMetadata: parseResult.metadata,
+          targetRepo: targetProject,
+          sourceRepo: sourceProject,
+          rules,
+        })
+      }
 
       if (shouldSync) {
         // Calculate file metadata
