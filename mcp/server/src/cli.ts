@@ -11,12 +11,35 @@ import { readFileSync } from 'fs'
 import * as yaml from 'js-yaml'
 import { McpServer } from './server.js'
 
+/**
+ * Recursively expand environment variables in config object
+ * Supports ${VAR_NAME} syntax
+ */
+function expandEnvVars(obj: any): any {
+  if (typeof obj === 'string') {
+    return obj.replace(/\$\{([^}]+)\}/g, (_, varName) => {
+      return process.env[varName] || `\${${varName}}`
+    })
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => expandEnvVars(item))
+  }
+  if (obj !== null && typeof obj === 'object') {
+    const result: Record<string, any> = {}
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = expandEnvVars(value)
+    }
+    return result
+  }
+  return obj
+}
+
 const program = new Command()
 
 program
   .name('fractary-codex-mcp')
   .description('MCP server for Fractary Codex knowledge management')
-  .version('0.3.4')
+  .version('0.4.0')
   .option('--config <path>', 'Path to config file', '.fractary/codex/config.yaml')
   .action(async (options) => {
     // Load configuration
@@ -24,6 +47,9 @@ program
     try {
       const configFile = readFileSync(options.config, 'utf-8')
       config = yaml.load(configFile) as Record<string, unknown>
+
+      // Expand environment variables in config (${VAR_NAME} syntax)
+      config = expandEnvVars(config)
     } catch (error) {
       // Config file is optional - continue with defaults
       if (options.config !== '.fractary/codex/config.yaml') {
@@ -38,10 +64,15 @@ program
       ...(config.cache as Record<string, unknown>),
     })
 
+    // Set storage manager on cache
+    if (storage) {
+      cache.setStorageManager(storage)
+    }
+
     // Create MCP server
     const server = new McpServer({
       name: 'fractary-codex',
-      version: '0.3.4',
+      version: '0.4.0',
       cache,
       storage,
     })

@@ -38,6 +38,59 @@ describe('parseMetadata', () => {
     expect(result.metadata.codex_sync_exclude).toEqual(['*-test'])
   })
 
+  test('normalizes plural codex_sync_includes to singular', () => {
+    const content = `---
+codex_sync_includes: [lake.corthonomy.ai, api.*]
+org: corthos
+---
+# Content`
+    const result = parseMetadata(content)
+
+    // Plural form should be normalized to singular
+    expect(result.metadata.codex_sync_include).toEqual([
+      'lake.corthonomy.ai',
+      'api.*',
+    ])
+    expect(result.metadata.org).toBe('corthos')
+  })
+
+  test('normalizes plural codex_sync_excludes to singular', () => {
+    const content = `---
+codex_sync_excludes: ['*-test', '*-dev']
+---
+# Content`
+    const result = parseMetadata(content)
+
+    // Plural form should be normalized to singular
+    expect(result.metadata.codex_sync_exclude).toEqual(['*-test', '*-dev'])
+  })
+
+  test('singular codex_sync_include takes precedence over plural', () => {
+    const content = `---
+codex_sync_include: [singular-value]
+codex_sync_includes: [plural-value]
+---
+# Content`
+    const result = parseMetadata(content)
+
+    // Singular should win
+    expect(result.metadata.codex_sync_include).toEqual(['singular-value'])
+  })
+
+  test('handles both plural includes and excludes', () => {
+    const content = `---
+codex_sync_includes: ['lake.*', 'api.*']
+codex_sync_excludes: ['*-test']
+org: corthos
+---
+# Content`
+    const result = parseMetadata(content)
+
+    expect(result.metadata.codex_sync_include).toEqual(['lake.*', 'api.*'])
+    expect(result.metadata.codex_sync_exclude).toEqual(['*-test'])
+    expect(result.metadata.org).toBe('corthos')
+  })
+
   test('returns empty metadata for no frontmatter', () => {
     const content = readFixture('no-frontmatter.md')
     const result = parseMetadata(content)

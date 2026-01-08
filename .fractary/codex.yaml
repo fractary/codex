@@ -1,0 +1,36 @@
+organization: codex
+cacheDir: .codex-cache
+storage:
+  - type: local
+    basePath: ./knowledge
+    followSymlinks: false
+    priority: 10
+  - type: github
+    token: ${GITHUB_TOKEN}
+    apiBaseUrl: https://api.github.com
+    branch: main
+    priority: 50
+  - type: http
+    baseUrl: https://codex.example.com
+    timeout: 30000
+    priority: 100
+types:
+  custom: {}
+permissions:
+  default: read
+  rules:
+    - pattern: internal/**
+      permission: none
+    - pattern: public/**
+      permission: read
+sync:
+  bidirectional: true
+  conflictResolution: prompt
+  exclude:
+    - node_modules/**
+    - .git/**
+    - '**/*.log'
+    - .env
+mcp:
+  enabled: false
+  port: 3000
