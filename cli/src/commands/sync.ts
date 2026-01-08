@@ -117,17 +117,21 @@ export function syncCommand(): Command {
           manifestPath: path.join(process.cwd(), '.fractary', '.codex-sync-manifest.json')
         });
 
-        // Get default include patterns from config
-        // The CLI config uses 'exclude' patterns, fall back to standard patterns for include
-        const defaultPatterns = [
+        // Get include patterns from config or use defaults
+        // For to-codex: use config.sync.to_codex if available
+        // For from-codex: config.sync.from_codex is handled by routing scanner
+        const defaultToCodexPatterns = [
           'docs/**/*.md',
           'specs/**/*.md',
           '.fractary/standards/**',
           '.fractary/templates/**'
         ];
 
-        // Combine config patterns with CLI options
-        const includePatterns = options.include.length > 0 ? options.include : defaultPatterns;
+        // Use to_codex config if available, otherwise fall back to defaults
+        const configIncludePatterns = config.sync?.to_codex || defaultToCodexPatterns;
+
+        // CLI options override config
+        const includePatterns = options.include.length > 0 ? options.include : configIncludePatterns;
         const excludePatterns = [
           ...(config.sync?.exclude || []),
           ...options.exclude
@@ -158,7 +162,10 @@ export function syncCommand(): Command {
           return false;
         });
 
-        // Create sync plan
+        // Create sync plan with options
+        // Note: include/exclude patterns are used for to-codex direction.
+        // For from-codex (routing-aware), these patterns are ignored to avoid
+        // double filtering, since routing rules already determine which files sync.
         const syncOptions: SyncOptions = {
           direction,
           dryRun: options.dryRun,

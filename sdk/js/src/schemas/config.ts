@@ -30,6 +30,26 @@ export const SyncRulesSchema = z.object({
 export type SyncRules = z.infer<typeof SyncRulesSchema>
 
 /**
+ * Schema for directional sync configuration
+ *
+ * Defines what files sync TO codex (push) and FROM codex (pull)
+ */
+export const DirectionalSyncSchema = z.object({
+  // Patterns for files to push from this project to codex
+  to_codex: z.array(z.string()).optional(),
+
+  // Patterns for files to pull from codex to this project
+  // Format: "project-name/path/pattern" or "project-name/**"
+  from_codex: z.array(z.string()).optional(),
+
+  // Org-level defaults (only in codex repository config)
+  default_to_codex: z.array(z.string()).optional(),
+  default_from_codex: z.array(z.string()).optional(),
+})
+
+export type DirectionalSync = z.infer<typeof DirectionalSyncSchema>
+
+/**
  * Schema for Codex configuration
  *
  * Based on SPEC-00005: Configuration System
@@ -47,6 +67,9 @@ export const CodexConfigSchema = z
       .optional(),
 
     rules: SyncRulesSchema.optional(),
+
+    // Directional sync configuration
+    sync: DirectionalSyncSchema.optional(),
   })
   .strict()
 

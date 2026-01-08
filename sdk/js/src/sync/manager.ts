@@ -132,7 +132,22 @@ export class SyncManager {
     targetFiles: FileInfo[],
     options?: SyncOptions
   ): Promise<SyncPlan> {
-    const sourceFiles = await this.listLocalFiles(sourceDir)
+    let sourceFiles = await this.listLocalFiles(sourceDir)
+
+    // For to-codex direction, filter files based on to_codex config patterns
+    // Use project config if available, otherwise fall back to org defaults
+    if (options?.direction === 'to-codex') {
+      const toCodexPatterns =
+        this.config.sync?.to_codex || this.config.sync?.default_to_codex
+
+      if (toCodexPatterns) {
+        const { matchToCodexPattern } = await import('./directional-patterns.js')
+
+        sourceFiles = sourceFiles.filter((file) =>
+          matchToCodexPattern(file.path, toCodexPatterns)
+        )
+      }
+    }
 
     const plan = createSyncPlan(
       sourceFiles,
@@ -180,12 +195,18 @@ export class SyncManager {
     options?: SyncOptions
   ): Promise<SyncPlan & { routingScan?: RoutingScanResult }> {
     // Step 1: Scan entire codex with routing evaluation
+    // Use project config if available, otherwise fall back to org defaults
+    // If neither exist, use frontmatter routing
+    const fromCodexPatterns =
+      this.config.sync?.from_codex || this.config.sync?.default_from_codex
+
     const routingScan = await scanCodexWithRouting({
       codexDir,
       targetProject: project,
       org,
       rules: undefined, // Use default routing rules (preventSelfSync, preventCodexSync, etc.)
       storage: this.localStorage,
+      fromCodexPatterns, // Use directional patterns if configured
     })
 
     // Step 2: Convert routed files to FileInfo format expected by planner
@@ -200,7 +221,18 @@ export class SyncManager {
     const targetFiles = await this.listLocalFiles(process.cwd())
 
     // Step 4: Create sync plan using existing planner logic
-    const plan = createSyncPlan(sourceFiles, targetFiles, options ?? {}, this.config)
+    // IMPORTANT: Strip include/exclude patterns from options because routing scanner
+    // has already filtered files based on routing rules (codex_sync_include frontmatter).
+    // We only keep execution options (force, dryRun) to avoid double filtering.
+    const planOptions: SyncOptions = {
+      direction: options?.direction,
+      force: options?.force,
+      dryRun: options?.dryRun,
+      // Explicitly exclude include/exclude to prevent double filtering
+      // include: undefined,
+      // exclude: undefined,
+    }
+    const plan = createSyncPlan(sourceFiles, targetFiles, planOptions, this.config)
 
     plan.estimatedTime = estimateSyncTime(plan)
 
