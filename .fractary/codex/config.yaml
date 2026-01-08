@@ -77,10 +77,18 @@ logging:
 
 # Cache configuration (managed by @fractary/codex SDK)
 cache:
+  dir: .fractary/codex/cache
   ttl_days: 7
   max_size_mb: 0  # 0 = unlimited
   auto_cleanup: true
   cleanup_interval_days: 7
+
+# Storage configuration for MCP server
+# Token loaded from .env file (gitignored, project-specific)
+storage:
+  providers:
+    - type: github
+      token: ${GITHUB_TOKEN}
 
 # CLI-specific settings
 cli:
