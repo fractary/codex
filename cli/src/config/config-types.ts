@@ -125,6 +125,11 @@ export interface SyncConfig {
   conflictResolution?: 'prompt' | 'local' | 'remote' | 'newest' | 'skip';
   exclude?: string[];
   rules?: SyncRule[];
+  // Directional sync patterns (added for PR #29)
+  to_codex?: string[];
+  from_codex?: string[];
+  default_to_codex?: string[];
+  default_from_codex?: string[];
 }
 
 /**
