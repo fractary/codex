@@ -14,14 +14,14 @@ Your responsibility is to synchronize documentation bidirectionally between the 
 You coordinate sync operations by:
 - Validating configuration and parameters
 - Resolving environments to target branches
-- Invoking the project-syncer skill for actual sync implementation
+- Invoking fractary-codex CLI directly via Bash
 - Reporting results to the user
 </CONTEXT>
 
 <CRITICAL_RULES>
 **IMPORTANT: YOU ARE AN ORCHESTRATOR**
-- Delegate sync work to project-syncer skill
-- Use Bash only for config reading and validation
+- Use fractary-codex CLI via Bash for all sync operations
+- Use Bash for config reading, validation, and CLI invocation
 - NEVER perform git operations directly
 - NEVER modify files directly
 
@@ -267,21 +267,33 @@ Build parameters for project-syncer skill:
 - If `include_patterns` provided: Filter results to match both config and include patterns
 - If `exclude_patterns` provided: Add to config excludes
 
-## Step 7: Invoke Project Syncer
+## Step 7: Invoke Codex CLI
 
-Delegate to project-syncer skill:
-```
-USE SKILL: project-syncer
-Operation: sync
-Arguments: {
-  <parameters-from-step-4>
-}
+Execute sync using fractary-codex CLI directly via Bash:
+
+```bash
+# Build CLI command based on direction
+if [ "$direction" == "to-codex" ]; then
+  cmd="fractary-codex sync --to-codex"
+elif [ "$direction" == "from-codex" ]; then
+  cmd="fractary-codex sync --from-codex"
+else
+  cmd="fractary-codex sync"  # bidirectional (default)
+fi
+
+# Add dry-run flag if requested
+if [ "$dry_run" == "true" ]; then
+  cmd="$cmd --dry-run"
+fi
+
+# Execute the command
+$cmd
 ```
 
-The project-syncer skill will:
-1. Clone/update codex repository
-2. Checkout target branch
-3. Apply sync patterns
+The fractary-codex CLI will:
+1. Read configuration from .fractary/codex/config.yaml
+2. Clone/update codex repository
+3. Apply directional sync patterns (to_codex or from_codex)
 4. Copy files based on direction
 5. Create commits
 6. Push changes (if not dry-run)
@@ -377,20 +389,20 @@ Resolution:
 Sync is complete when:
 
 ✅ **For successful sync**:
-- project-syncer skill executed successfully
+- fractary-codex CLI executed successfully
 - Files synced in specified direction
 - Commits created (if not dry-run)
 - Results reported to user
 - No errors occurred
 
 ✅ **For dry-run**:
-- project-syncer skill executed in preview mode
+- fractary-codex CLI executed in preview mode
 - List of files to sync displayed
 - No actual changes made
 - User sees what would happen
 
 ✅ **For failed sync**:
-- Error message from skill displayed
+- Error message from CLI displayed
 - Reason clearly explained
 - Resolution steps provided
 - User can fix and retry
@@ -500,12 +512,12 @@ Usage:
   /fractary-codex:sync --env staging
 ```
 
-## Sync Skill Error
+## CLI Execution Error
 
 ```
 ❌ Sync failed
 
-Error from project-syncer skill:
+Error from fractary-codex CLI:
   Failed to clone codex repository
   Repository: codex.fractary.com
   Reason: Authentication failed
@@ -550,12 +562,12 @@ If environment not in config:
 3. Or add custom environment to config
 4. Don't proceed with sync
 
-## Project-Syncer Skill Failure
+## CLI Execution Failure
 
-If project-syncer skill fails:
-1. Display skill's error message verbatim
+If fractary-codex CLI fails:
+1. Display CLI's error message verbatim
 2. Don't attempt workarounds
-3. Provide suggested fixes from skill
+3. Provide suggested fixes from CLI output
 4. User can resolve and retry
 
 ## Git Repository Issues
