@@ -244,10 +244,13 @@ export async function scanCodexWithRouting(
 /**
  * Extract project name from codex file path
  *
- * Codex structure: {org}/{project}/{path/to/file.md}
- * Example: "corthosai/etl.corthion.ai/docs/api.md" → "etl.corthion.ai"
+ * Supports two codex structures:
+ * 1. Flat: {org}/{project}/{path/to/file.md}
+ *    Example: "corthosai/etl.corthion.ai/docs/api.md" → "etl.corthion.ai"
+ * 2. Projects dir: projects/{project}/{path/to/file.md}
+ *    Example: "projects/etl.corthion.ai/docs/api.md" → "etl.corthion.ai"
  *
- * @param filePath - File path like "corthosai/etl.corthion.ai/docs/api.md"
+ * @param filePath - File path like "corthosai/etl.corthion.ai/docs/api.md" or "projects/etl.corthion.ai/docs/api.md"
  * @param org - Organization name like "corthosai"
  * @returns Project name like "etl.corthion.ai"
  */
@@ -260,7 +263,19 @@ export function extractProjectFromPath(filePath: string, org: string): string {
     ? normalizedPath.slice(org.length + 1)
     : normalizedPath
 
-  // Extract first path segment as project name
+  // Check if using projects/ subdirectory structure
+  if (withoutOrg.startsWith('projects/')) {
+    // Extract project name from projects/{project}/...
+    const afterProjects = withoutOrg.slice('projects/'.length)
+    const firstSlash = afterProjects.indexOf('/')
+    if (firstSlash === -1) {
+      // No further path segments, use entire remainder as project
+      return afterProjects
+    }
+    return afterProjects.slice(0, firstSlash)
+  }
+
+  // Flat structure: extract first path segment as project name
   const firstSlash = withoutOrg.indexOf('/')
   if (firstSlash === -1) {
     // File is at root level, use entire path as project

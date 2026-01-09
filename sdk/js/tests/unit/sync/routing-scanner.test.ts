@@ -39,6 +39,21 @@ describe('sync/routing-scanner', () => {
       const result = extractProjectFromPath('fractary/codex/docs/spec.md', 'fractary')
       expect(result).toBe('codex')
     })
+
+    it('should extract project from projects/ subdirectory structure', () => {
+      const result = extractProjectFromPath('projects/etl.corthion.ai/docs/schema/file.json', 'corthosai')
+      expect(result).toBe('etl.corthion.ai')
+    })
+
+    it('should handle projects/ structure without further path', () => {
+      const result = extractProjectFromPath('projects/lake.corthonomy.ai', 'corthosai')
+      expect(result).toBe('lake.corthonomy.ai')
+    })
+
+    it('should handle projects/ structure with nested paths', () => {
+      const result = extractProjectFromPath('projects/core.corthodex.ai/docs/standards/coding.md', 'corthosai')
+      expect(result).toBe('core.corthodex.ai')
+    })
   })
 
   describe('groupFilesByProject', () => {
