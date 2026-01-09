@@ -239,6 +239,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       })
 
       expect(result.files.length).toBe(2)
@@ -266,6 +267,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       // Only proj-a should match (target-*)
@@ -372,6 +374,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       // Should find both non-markdown files
@@ -421,6 +424,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       // Should find all three files
@@ -442,6 +446,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       expect(result.files.length).toBe(1)
@@ -479,6 +484,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       expect(result.stats.totalScanned).toBe(3)

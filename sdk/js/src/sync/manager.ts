@@ -68,18 +68,6 @@ export class SyncManager {
   }
 
   /**
-   * Resolve from_codex exclude patterns (v0.7.0+)
-   */
-  private resolveFromCodexExcludes(): string[] {
-    if (this.config.from_codex?.exclude) {
-      return this.config.from_codex.exclude
-    }
-
-    // Legacy global excludes
-    return this.config.exclude || []
-  }
-
-  /**
    * Resolve to_codex include patterns (v0.7.0+)
    *
    * Supports both new format (to_codex.include) and legacy format (default_to_codex).
@@ -93,18 +81,6 @@ export class SyncManager {
 
     // Fall back to legacy format
     return this.config.default_to_codex || []
-  }
-
-  /**
-   * Resolve to_codex exclude patterns (v0.7.0+)
-   */
-  private resolveToCodexExcludes(): string[] {
-    if (this.config.to_codex?.exclude) {
-      return this.config.to_codex.exclude
-    }
-
-    // Legacy global excludes
-    return this.config.exclude || []
   }
 
   /**

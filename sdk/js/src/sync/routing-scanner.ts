@@ -179,7 +179,8 @@ export async function scanCodexWithRouting(
       let parseResult: ReturnType<typeof parseMetadata> | null = null
 
       // Check if we should use frontmatter routing (v0.7.0+)
-      const useFrontmatter = options.routing?.use_frontmatter !== false
+      // Default is FALSE - frontmatter routing is deprecated
+      const useFrontmatter = options.routing?.use_frontmatter === true
 
       if (matchFromCodexPattern && expandedFromCodexPatterns && expandedFromCodexPatterns.length > 0) {
         // Use directional from_codex patterns (takes precedence, no frontmatter needed)
@@ -229,7 +230,7 @@ export async function scanCodexWithRouting(
           size: buffer.length,
           mtime: stats.mtimeMs,
           hash,
-          metadata: parseResult!.metadata,
+          metadata: parseResult?.metadata ?? {},
           sourceProject,
         })
 
