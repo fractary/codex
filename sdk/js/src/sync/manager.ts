@@ -236,6 +236,11 @@ export class SyncManager {
 
     plan.estimatedTime = estimateSyncTime(plan)
 
+    // Override source/target paths for from-codex routing-aware sync
+    // Files should be copied from codex to cache directory preserving full paths
+    plan.source = codexDir
+    plan.target = '.fractary/codex/cache'
+
     // Step 5: Enhance plan with routing metadata
     return {
       ...plan,
@@ -244,10 +249,11 @@ export class SyncManager {
   }
 
   /**
-   * Execute a sync plan (dry run)
+   * Execute a sync plan
    *
-   * In a real implementation, this would actually copy files.
-   * For the SDK, we provide the plan and let consumers execute.
+   * Copies files from source to target based on the plan.
+   * For from-codex syncs, files are copied to .fractary/codex/cache/ preserving full paths.
+   * For to-codex syncs, files are copied to the codex repository.
    */
   async executePlan(plan: SyncPlan, options?: SyncOptions): Promise<SyncResult> {
     const startTime = Date.now()
@@ -280,11 +286,39 @@ export class SyncManager {
           options.onProgress(i + 1, plan.totalFiles, file.path)
         }
 
-        // In a real implementation, we would:
-        // - For 'create' and 'update': copy file to target
-        // - For 'delete': remove file from target
-        // For now, we simulate success
-        synced++
+        // Execute the sync operation
+        if (file.operation === 'create' || file.operation === 'update') {
+          // Copy file from source to target
+          const sourcePath = `${plan.source}/${file.path}`
+          const targetPath = `${plan.target}/${file.path}`
+
+          // Ensure target directory exists
+          const fs = await import('fs/promises')
+          const path = await import('path')
+          const targetDir = path.dirname(targetPath)
+          await fs.mkdir(targetDir, { recursive: true })
+
+          // Copy the file
+          await fs.copyFile(sourcePath, targetPath)
+          synced++
+        } else if (file.operation === 'delete') {
+          // Delete file from target
+          const targetPath = `${plan.target}/${file.path}`
+          const fs = await import('fs/promises')
+          try {
+            await fs.unlink(targetPath)
+            synced++
+          } catch (error: any) {
+            // Ignore if file doesn't exist
+            if (error.code !== 'ENOENT') {
+              throw error
+            }
+            synced++
+          }
+        } else {
+          // Skip operation
+          synced++
+        }
       } catch (error) {
         failed++
         errors.push({
