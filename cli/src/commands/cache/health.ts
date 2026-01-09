@@ -40,7 +40,7 @@ async function fileExists(filePath: string): Promise<boolean> {
  * Check YAML configuration
  */
 async function checkConfiguration(): Promise<HealthCheck> {
-  const configPath = path.join(process.cwd(), '.fractary', 'codex.yaml');
+  const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
   const legacyConfigPath = path.join(process.cwd(), '.fractary', 'plugins', 'codex', 'config.json');
 
   try {
@@ -178,7 +178,7 @@ async function checkCache(): Promise<HealthCheck> {
  * Check storage providers
  */
 async function checkStorage(): Promise<HealthCheck> {
-  const configPath = path.join(process.cwd(), '.fractary', 'codex.yaml');
+  const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
 
   try {
     const config = await readYamlConfig(configPath);
@@ -189,7 +189,7 @@ async function checkStorage(): Promise<HealthCheck> {
         name: 'Storage',
         status: 'warn',
         message: 'No storage providers configured',
-        details: 'Configure at least one provider in .fractary/codex.yaml'
+        details: 'Configure at least one provider in .fractary/codex/config.yaml'
       };
     }
 

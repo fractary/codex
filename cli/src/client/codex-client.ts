@@ -109,7 +109,7 @@ export class CodexClient {
 
     try {
       // Load YAML configuration
-      const configPath = path.join(process.cwd(), '.fractary', 'codex.yaml');
+      const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
       let config;
 
       try {

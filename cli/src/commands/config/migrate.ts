@@ -5,7 +5,7 @@
  * - Detects legacy config at .fractary/plugins/codex/config.json
  * - Creates backup of old config
  * - Transforms to v3.0 YAML format
- * - Writes to .fractary/codex.yaml
+ * - Writes to .fractary/codex/config.yaml
  * - Validates migration result
  */
 
@@ -49,7 +49,7 @@ export function migrateCommand(): Command {
     .action(async (options) => {
       try {
         const legacyConfigPath = path.join(process.cwd(), '.fractary', 'plugins', 'codex', 'config.json');
-        const newConfigPath = path.join(process.cwd(), '.fractary', 'codex.yaml');
+        const newConfigPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
 
         // Check if legacy config exists
         if (!await fileExists(legacyConfigPath)) {
@@ -187,7 +187,7 @@ export function migrateCommand(): Command {
 
             console.log('');
             console.log(chalk.bold('Next Steps:'));
-            console.log(chalk.dim('  1. Review the new configuration: .fractary/codex.yaml'));
+            console.log(chalk.dim('  1. Review the new configuration: .fractary/codex/config.yaml'));
             console.log(chalk.dim('  2. Set your GitHub token: export GITHUB_TOKEN="your_token"'));
             console.log(chalk.dim('  3. Test fetching: fractary codex fetch codex://org/project/path'));
 
