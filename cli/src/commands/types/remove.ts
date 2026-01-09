@@ -42,7 +42,7 @@ export function typesRemoveCommand(): Command {
         const typeInfo = registry.get(name)!;
 
         // Load YAML configuration
-        const configPath = path.join(process.cwd(), '.fractary', 'codex.yaml');
+        const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
         const config = await readYamlConfig(configPath);
 
         // Check if custom type exists in config

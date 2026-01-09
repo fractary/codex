@@ -66,7 +66,7 @@ export function syncCommand(): Command {
     .action(async (name: string | undefined, options) => {
       try {
         // Load YAML config
-        const configPath = path.join(process.cwd(), '.fractary', 'codex.yaml');
+        const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
         let config;
 
         try {
@@ -139,30 +139,39 @@ export function syncCommand(): Command {
           ...options.exclude
         ];
 
-        // Scan local files
+        // Scan local files using proper glob pattern matching
         const sourceDir = process.cwd();
-        const allFiles = await syncManager.listLocalFiles(sourceDir);
+        const { glob: globSync } = await import('glob');
 
-        // Filter files by patterns (simple implementation)
-        const targetFiles = allFiles.filter(file => {
-          // Check exclude patterns first
-          for (const pattern of excludePatterns) {
-            const regex = new RegExp('^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$');
-            if (regex.test(file.path)) {
-              return false;
-            }
+        // Match files using glob patterns
+        const matchedFilePaths = new Set<string>();
+
+        for (const pattern of includePatterns) {
+          try {
+            const matches = await globSync(pattern, {
+              cwd: sourceDir,
+              dot: true,
+              nodir: true,
+              ignore: excludePatterns
+            });
+            matches.forEach(match => matchedFilePaths.add(match));
+          } catch (error: any) {
+            console.error(chalk.yellow(`Warning: Invalid pattern "${pattern}": ${error.message}`));
           }
+        }
 
-          // Check include patterns
-          for (const pattern of includePatterns) {
-            const regex = new RegExp('^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$');
-            if (regex.test(file.path)) {
-              return true;
-            }
-          }
-
-          return false;
-        });
+        // Convert matched paths to file objects with stat info
+        const targetFiles = await Promise.all(
+          Array.from(matchedFilePaths).map(async (filePath) => {
+            const fullPath = path.join(sourceDir, filePath);
+            const stats = await import('fs/promises').then(fs => fs.stat(fullPath));
+            return {
+              path: filePath,
+              size: stats.size,
+              mtime: stats.mtimeMs
+            };
+          })
+        );
 
         // Create sync plan with options
         // Note: include/exclude patterns are used for to-codex direction.
