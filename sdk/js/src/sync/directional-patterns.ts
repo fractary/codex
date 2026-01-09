@@ -38,6 +38,12 @@ export function matchFromCodexPattern(
   }
 
   return patterns.some((pattern) => {
+    // Special case: patterns starting with "projects/" should match directly
+    // This handles codex repositories with a projects/ subdirectory structure
+    if (pattern.startsWith('projects/')) {
+      return matchPattern(pattern, codexFilePath)
+    }
+
     // Check if pattern includes a project prefix
     // Project names contain dots (e.g., "etl.corthion.ai")
     // Path segments don't (e.g., "docs")

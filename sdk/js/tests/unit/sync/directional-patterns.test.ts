@@ -158,6 +158,48 @@ describe('matchFromCodexPattern', () => {
       ).toBe(true)
     })
   })
+
+  describe('projects/ subdirectory structure', () => {
+    it('should match patterns starting with projects/', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/etl.corthion.ai/docs/schema/data.json',
+          ['projects/etl.corthion.ai/docs/schema/**/*.json'],
+          'lake.corthonomy.ai'
+        )
+      ).toBe(true)
+    })
+
+    it('should match nested paths with projects/ prefix', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/core.corthodex.ai/docs/standards/coding.md',
+          ['projects/core.corthodex.ai/docs/standards/**/*.md'],
+          'lake.corthonomy.ai'
+        )
+      ).toBe(true)
+    })
+
+    it('should not match different project in projects/ structure', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/api.corthodex.ai/docs/schema/data.json',
+          ['projects/etl.corthion.ai/docs/schema/**/*.json'],
+          'lake.corthonomy.ai'
+        )
+      ).toBe(false)
+    })
+
+    it('should match wildcard patterns in projects/ structure', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/etl.corthion.ai/docs/guides/tutorial.md',
+          ['projects/etl.corthion.ai/docs/**/*.md'],
+          'lake.corthonomy.ai'
+        )
+      ).toBe(true)
+    })
+  })
 })
 
 describe('extractProjectFromCodexPath', () => {
