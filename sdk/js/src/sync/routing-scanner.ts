@@ -54,6 +54,8 @@ export interface RoutingScanOptions {
   maxFileSize?: number
   /** Directional from_codex patterns (takes precedence over frontmatter routing) */
   fromCodexPatterns?: string[]
+  /** Routing configuration (controls frontmatter parsing) */
+  routing?: { use_frontmatter?: boolean }
 }
 
 /**
@@ -169,25 +171,40 @@ export async function scanCodexWithRouting(
       // Read file content
       const content = await storage.readText(fullPath)
 
-      // Parse frontmatter metadata
-      const parseResult = parseMetadata(content, { strict: false })
-
-      // Skip files without frontmatter if configured (only when using frontmatter-based routing)
-      if (!matchFromCodexPattern && skipNoFrontmatter && Object.keys(parseResult.metadata).length === 0) {
-        totalSkipped++
-        continue
-      }
-
-      // Extract source project from path
+      // Extract source project from path (needed for both pattern matching and routing)
       const sourceProject = extractProjectFromPath(filePath, org)
 
       // Determine if file should sync using either directional patterns or frontmatter routing
       let shouldSync = false
+      let parseResult: ReturnType<typeof parseMetadata> | null = null
+
+      // Check if we should use frontmatter routing (v0.7.0+)
+      const useFrontmatter = options.routing?.use_frontmatter !== false
 
       if (matchFromCodexPattern && expandedFromCodexPatterns && expandedFromCodexPatterns.length > 0) {
-        // Use directional from_codex patterns (takes precedence)
+        // Use directional from_codex patterns (takes precedence, no frontmatter needed)
         shouldSync = matchFromCodexPattern(filePath, expandedFromCodexPatterns, targetProject)
-      } else {
+
+        // Still parse metadata for the file info, but don't use for routing
+        parseResult = parseMetadata(content, { strict: false })
+      } else if (useFrontmatter) {
+        // Parse frontmatter for routing (legacy behavior, deprecated)
+        parseResult = parseMetadata(content, { strict: false })
+
+        // Add deprecation warning if frontmatter routing is detected
+        if (parseResult.metadata.codex_sync_include) {
+          console.warn(
+            `[DEPRECATION] File ${filePath} uses codex_sync_include frontmatter. ` +
+            `This feature will be removed in v1.0. Use config.yaml patterns instead.`
+          )
+        }
+
+        // Skip files without frontmatter if configured
+        if (skipNoFrontmatter && Object.keys(parseResult.metadata).length === 0) {
+          totalSkipped++
+          continue
+        }
+
         // Fall back to frontmatter-based routing
         shouldSync = shouldSyncToRepo({
           filePath,
@@ -196,6 +213,10 @@ export async function scanCodexWithRouting(
           sourceRepo: sourceProject,
           rules,
         })
+      } else {
+        // Neither config patterns nor frontmatter routing enabled - skip
+        totalSkipped++
+        continue
       }
 
       if (shouldSync) {
@@ -208,7 +229,7 @@ export async function scanCodexWithRouting(
           size: buffer.length,
           mtime: stats.mtimeMs,
           hash,
-          metadata: parseResult.metadata,
+          metadata: parseResult!.metadata,
           sourceProject,
         })
 

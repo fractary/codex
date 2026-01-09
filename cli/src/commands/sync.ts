@@ -127,15 +127,33 @@ export function syncCommand(): Command {
           '.fractary/templates/**'
         ];
 
-        // Use to_codex config if available, otherwise fall back to defaults
         // Cast to any to handle type differences between CLI and SDK config types
         const syncConfig = config.sync as any;
-        const configIncludePatterns = syncConfig?.to_codex || defaultToCodexPatterns;
+
+        // Resolve to_codex patterns (supports both new and legacy formats)
+        let configIncludePatterns: string[];
+        let configExcludePatterns: string[] = [];
+
+        if (syncConfig?.to_codex) {
+          // Check if new format (object with include/exclude)
+          if (typeof syncConfig.to_codex === 'object' && !Array.isArray(syncConfig.to_codex)) {
+            configIncludePatterns = syncConfig.to_codex.include || defaultToCodexPatterns;
+            configExcludePatterns = syncConfig.to_codex.exclude || [];
+          } else {
+            // Legacy format (array of patterns)
+            configIncludePatterns = syncConfig.to_codex;
+            configExcludePatterns = syncConfig.exclude || [];
+          }
+        } else {
+          // No to_codex config, use defaults
+          configIncludePatterns = defaultToCodexPatterns;
+          configExcludePatterns = syncConfig?.exclude || [];
+        }
 
         // CLI options override config
         const includePatterns = options.include.length > 0 ? options.include : configIncludePatterns;
         const excludePatterns = [
-          ...(syncConfig?.exclude || []),
+          ...configExcludePatterns,
           ...options.exclude
         ];
 

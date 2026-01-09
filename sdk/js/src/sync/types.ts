@@ -153,6 +153,26 @@ export interface SyncRule {
 }
 
 /**
+ * Directional sync configuration (v0.7.0+)
+ *
+ * Provides explicit include/exclude patterns for a sync direction.
+ */
+export interface DirectionalSyncConfig {
+  /** Patterns to include (required) */
+  include: string[]
+  /** Patterns to exclude (optional) */
+  exclude?: string[]
+}
+
+/**
+ * Routing configuration
+ */
+export interface RoutingConfig {
+  /** Whether to use frontmatter-based routing (default: false in v0.7.0+) */
+  use_frontmatter?: boolean
+}
+
+/**
  * Sync configuration
  */
 export interface SyncConfig {
@@ -166,15 +186,21 @@ export interface SyncConfig {
   deleteOrphans: boolean
   /** Conflict resolution strategy */
   conflictStrategy: 'newest' | 'local' | 'remote' | 'manual'
-  /** Directional sync: patterns for files to push to codex */
-  to_codex?: string[]
-  /** Directional sync: patterns for files to pull from codex */
-  from_codex?: string[]
-  /** Org-level defaults for pushing to codex */
-  default_to_codex?: string[]
-  /** Org-level defaults for pulling from codex */
+
+  // New format (v0.7.0+) - Recommended
+  /** Configuration for pulling from codex (new format) */
+  from_codex?: DirectionalSyncConfig
+  /** Configuration for pushing to codex (new format) */
+  to_codex?: DirectionalSyncConfig
+  /** Routing configuration */
+  routing?: RoutingConfig
+
+  // Legacy format (deprecated, backward compatible)
+  /** @deprecated Use from_codex.include instead. Org-level defaults for pulling from codex */
   default_from_codex?: string[]
-  /** Exclude patterns (applied to both directions) */
+  /** @deprecated Use to_codex.include instead. Org-level defaults for pushing to codex */
+  default_to_codex?: string[]
+  /** @deprecated Use from_codex.exclude or to_codex.exclude instead. Global exclude patterns */
   exclude?: string[]
 }
 

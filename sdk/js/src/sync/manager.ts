@@ -52,6 +52,62 @@ export class SyncManager {
   }
 
   /**
+   * Resolve from_codex include patterns (v0.7.0+)
+   *
+   * Supports both new format (from_codex.include) and legacy format (default_from_codex).
+   * New format takes precedence.
+   */
+  private resolveFromCodexPatterns(): string[] {
+    // New format takes precedence
+    if (this.config.from_codex?.include) {
+      return this.config.from_codex.include
+    }
+
+    // Fall back to legacy format
+    return this.config.default_from_codex || []
+  }
+
+  /**
+   * Resolve from_codex exclude patterns (v0.7.0+)
+   */
+  private resolveFromCodexExcludes(): string[] {
+    if (this.config.from_codex?.exclude) {
+      return this.config.from_codex.exclude
+    }
+
+    // Legacy global excludes
+    return this.config.exclude || []
+  }
+
+  /**
+   * Resolve to_codex include patterns (v0.7.0+)
+   *
+   * Supports both new format (to_codex.include) and legacy format (default_to_codex).
+   * New format takes precedence.
+   */
+  private resolveToCodexPatterns(): string[] {
+    // New format takes precedence
+    if (this.config.to_codex?.include) {
+      return this.config.to_codex.include
+    }
+
+    // Fall back to legacy format
+    return this.config.default_to_codex || []
+  }
+
+  /**
+   * Resolve to_codex exclude patterns (v0.7.0+)
+   */
+  private resolveToCodexExcludes(): string[] {
+    if (this.config.to_codex?.exclude) {
+      return this.config.to_codex.exclude
+    }
+
+    // Legacy global excludes
+    return this.config.exclude || []
+  }
+
+  /**
    * Load the sync manifest
    */
   async loadManifest(): Promise<SyncManifest | null> {
@@ -135,12 +191,10 @@ export class SyncManager {
     let sourceFiles = await this.listLocalFiles(sourceDir)
 
     // For to-codex direction, filter files based on to_codex config patterns
-    // Use project config if available, otherwise fall back to org defaults
     if (options?.direction === 'to-codex') {
-      const toCodexPatterns =
-        this.config.to_codex || this.config.default_to_codex
+      const toCodexPatterns = this.resolveToCodexPatterns()
 
-      if (toCodexPatterns) {
+      if (toCodexPatterns.length > 0) {
         const { matchToCodexPattern } = await import('./directional-patterns.js')
 
         sourceFiles = sourceFiles.filter((file) =>
@@ -195,10 +249,8 @@ export class SyncManager {
     options?: SyncOptions
   ): Promise<SyncPlan & { routingScan?: RoutingScanResult }> {
     // Step 1: Scan entire codex with routing evaluation
-    // Use project config if available, otherwise fall back to org defaults
-    // If neither exist, use frontmatter routing
-    const fromCodexPatterns =
-      this.config.from_codex || this.config.default_from_codex
+    // Resolve patterns using new helper functions (supports both new and legacy formats)
+    const fromCodexPatterns = this.resolveFromCodexPatterns()
 
     const routingScan = await scanCodexWithRouting({
       codexDir,
@@ -206,7 +258,8 @@ export class SyncManager {
       org,
       rules: undefined, // Use default routing rules (preventSelfSync, preventCodexSync, etc.)
       storage: this.localStorage,
-      fromCodexPatterns, // Use directional patterns if configured
+      fromCodexPatterns: fromCodexPatterns.length > 0 ? fromCodexPatterns : undefined,
+      routing: this.config.routing, // Pass routing config for frontmatter control
     })
 
     // Step 2: Convert routed files to FileInfo format expected by planner
