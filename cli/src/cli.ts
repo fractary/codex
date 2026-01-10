@@ -12,6 +12,15 @@ import { configCommand } from './commands/config/index.js';
 import { cacheCommand } from './commands/cache/index.js';
 import { syncCommand } from './commands/sync.js';
 import { typesCommand } from './commands/types/index.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Read version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'));
+const VERSION = packageJson.version;
 
 /**
  * Create and configure the CLI
@@ -21,7 +30,7 @@ function createCLI(): Command {
 
   program
     .description('Centralized knowledge management and distribution for AI agents')
-    .version('0.3.0');
+    .version(VERSION);
 
   // Core commands (v3.0 - noun-verb pattern)
   program.addCommand(documentCommand());  // Document operations (fetch)

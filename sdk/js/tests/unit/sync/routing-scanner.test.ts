@@ -239,6 +239,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       })
 
       expect(result.files.length).toBe(2)
@@ -266,6 +267,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       // Only proj-a should match (target-*)
@@ -372,6 +374,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       // Should find both non-markdown files
@@ -421,6 +424,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       // Should find all three files
@@ -442,6 +446,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       expect(result.files.length).toBe(1)
@@ -479,6 +484,7 @@ describe('sync/routing-scanner', () => {
         targetProject: 'target-project',
         org: 'org',
         storage,
+        routing: { use_frontmatter: true }, // Enable frontmatter routing
       })
 
       expect(result.stats.totalScanned).toBe(3)
@@ -532,6 +538,136 @@ describe('sync/routing-scanner', () => {
 
       // Should not find files in hidden or node_modules
       expect(result.files.length).toBe(0)
+    })
+
+    it('should use config patterns when provided (v0.7.0+)', async () => {
+      await fs.mkdir(path.join(tempDir, 'etl.corthion.ai', 'docs'), { recursive: true })
+
+      // File WITH frontmatter
+      await fs.writeFile(
+        path.join(tempDir, 'etl.corthion.ai', 'docs', 'api.md'),
+        '---\ncodex_sync_include: ["other-*"]\n---\nAPI docs'
+      )
+
+      // Use config patterns (takes precedence over frontmatter)
+      const result = await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target.project.com',
+        org: 'org',
+        storage,
+        fromCodexPatterns: ['etl.corthion.ai/docs/**/*.md'],
+      })
+
+      // Config pattern matches, frontmatter ignored
+      expect(result.files.length).toBe(1)
+      expect(result.files[0]?.path).toContain('api.md')
+    })
+
+    it('should skip frontmatter parsing when use_frontmatter: false', async () => {
+      await fs.mkdir(path.join(tempDir, 'org', 'proj-a', 'docs'), { recursive: true })
+
+      // File with frontmatter
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'docs', 'api.md'),
+        '---\ncodex_sync_include: ["*"]\n---\nAPI docs'
+      )
+
+      // Disable frontmatter parsing, no config patterns
+      const result = await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target-project',
+        org: 'org',
+        storage,
+        routing: { use_frontmatter: false },
+      })
+
+      // Should skip file (no config patterns, frontmatter disabled)
+      expect(result.files.length).toBe(0)
+      expect(result.stats.totalSkipped).toBeGreaterThan(0)
+    })
+
+    it('should use frontmatter when use_frontmatter: true (legacy)', async () => {
+      await fs.mkdir(path.join(tempDir, 'org', 'proj-a', 'docs'), { recursive: true })
+
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'docs', 'api.md'),
+        '---\ncodex_sync_include: ["*"]\n---\nAPI docs'
+      )
+
+      // Explicitly enable frontmatter parsing
+      const result = await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target-project',
+        org: 'org',
+        storage,
+        routing: { use_frontmatter: true },
+      })
+
+      // Should match via frontmatter
+      expect(result.files.length).toBe(1)
+      expect(result.files[0]?.path).toContain('api.md')
+    })
+
+    it('should show deprecation warning for frontmatter routing', async () => {
+      await fs.mkdir(path.join(tempDir, 'org', 'proj-a'), { recursive: true })
+
+      await fs.writeFile(
+        path.join(tempDir, 'org', 'proj-a', 'file.md'),
+        '---\ncodex_sync_include: ["*"]\n---\nContent'
+      )
+
+      // Spy on console.warn
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target-project',
+        org: 'org',
+        storage,
+        routing: { use_frontmatter: true },
+      })
+
+      // Should have warned about deprecated frontmatter
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[DEPRECATION]')
+      )
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('codex_sync_include')
+      )
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('v1.0')
+      )
+
+      warnSpy.mockRestore()
+    })
+
+    it('should prefer config patterns over frontmatter', async () => {
+      await fs.mkdir(path.join(tempDir, 'etl.corthion.ai', 'docs'), { recursive: true })
+      await fs.mkdir(path.join(tempDir, 'api.corthodex.ai', 'docs'), { recursive: true })
+
+      // Both files have frontmatter
+      await fs.writeFile(
+        path.join(tempDir, 'etl.corthion.ai', 'docs', 'file1.md'),
+        '---\ncodex_sync_include: ["*"]\n---\nFile 1'
+      )
+      await fs.writeFile(
+        path.join(tempDir, 'api.corthodex.ai', 'docs', 'file2.md'),
+        '---\ncodex_sync_include: ["*"]\n---\nFile 2'
+      )
+
+      // Config pattern only matches etl.corthion.ai
+      const result = await scanCodexWithRouting({
+        codexDir: tempDir,
+        targetProject: 'target.project.com',
+        org: 'org',
+        storage,
+        fromCodexPatterns: ['etl.corthion.ai/**/*.md'],
+        routing: { use_frontmatter: true }, // Frontmatter enabled but ignored
+      })
+
+      // Only etl.corthion.ai file matches (config takes precedence)
+      expect(result.files.length).toBe(1)
+      expect(result.files[0]?.path).toContain('etl.corthion.ai')
     })
   })
 })
