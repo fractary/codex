@@ -73,6 +73,8 @@ describe('Routing-aware sync integration', () => {
         defaultExcludes: [],
         deleteOrphans: false,
         conflictStrategy: 'newest',
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       },
     })
 
@@ -125,6 +127,7 @@ describe('Routing-aware sync integration', () => {
         defaultExcludes: [],
         deleteOrphans: false,
         conflictStrategy: 'newest',
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       },
     })
 
@@ -161,6 +164,7 @@ describe('Routing-aware sync integration', () => {
         defaultExcludes: [],
         deleteOrphans: false,
         conflictStrategy: 'newest',
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       },
     })
 
@@ -197,6 +201,7 @@ describe('Routing-aware sync integration', () => {
         defaultExcludes: [],
         deleteOrphans: false,
         conflictStrategy: 'newest',
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       },
     })
 
@@ -230,6 +235,7 @@ describe('Routing-aware sync integration', () => {
         defaultExcludes: [],
         deleteOrphans: false,
         conflictStrategy: 'newest',
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       },
     })
 
@@ -312,6 +318,7 @@ describe('Routing-aware sync integration', () => {
         defaultExcludes: [],
         deleteOrphans: false,
         conflictStrategy: 'newest',
+        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       },
     })
 
