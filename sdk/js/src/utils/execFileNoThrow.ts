@@ -47,10 +47,13 @@ export async function execFileNoThrow(
     }
   } catch (error: any) {
     // execFile throws on non-zero exit codes
+    // error.code is a string (e.g., 'ENOENT'), error.exitCode is the numeric exit code
+    const exitCode = typeof error.exitCode === 'number' ? error.exitCode : 1
+
     return {
       stdout: error.stdout || '',
       stderr: error.stderr || error.message || '',
-      exitCode: error.code || 1,
+      exitCode,
     }
   }
 }

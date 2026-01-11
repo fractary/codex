@@ -183,8 +183,14 @@ export class S3ArchiveStorage implements StorageProvider {
     const type = this.detectType(reference.path)
     const prefix = config.prefix || 'archive/'
 
+    // Validate prefix is not empty or whitespace-only
+    const trimmedPrefix = prefix.trim()
+    if (!trimmedPrefix) {
+      throw new Error('Archive prefix cannot be empty or whitespace-only')
+    }
+
     // Ensure prefix ends with / for consistent path construction
-    const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`
+    const normalizedPrefix = trimmedPrefix.endsWith('/') ? trimmedPrefix : `${trimmedPrefix}/`
 
     return `${normalizedPrefix}${type}/${reference.org}/${reference.project}/${reference.path}`
   }
@@ -229,8 +235,9 @@ export class S3ArchiveStorage implements StorageProvider {
     const DOUBLE_STAR = '\x00DOUBLE_STAR\x00'
     let regexPattern = pattern.replace(/\*\*/g, DOUBLE_STAR)
 
-    // Step 2: Escape regex special chars (except our placeholder)
-    regexPattern = regexPattern.replace(/\./g, '\\.')
+    // Step 2: Escape regex special chars (except our placeholder and glob chars * ?)
+    // Escape: . [ ] ( ) { } + ^ $ | \
+    regexPattern = regexPattern.replace(/[.[\](){}+^$|\\]/g, '\\$&')
 
     // Step 3: Replace single * and ?
     regexPattern = regexPattern
