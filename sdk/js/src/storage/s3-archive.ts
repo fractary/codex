@@ -98,8 +98,8 @@ export class S3ArchiveStorage implements StorageProvider {
       throw new Error(`No archive config for project: ${projectKey}`)
     }
 
-    // Calculate archive path
-    const archivePath = this.calculateArchivePath(reference)
+    // Calculate archive path with project config
+    const archivePath = this.calculateArchivePath(reference, config)
 
     // Call fractary-file CLI to read from archive
     try {
@@ -144,10 +144,23 @@ export class S3ArchiveStorage implements StorageProvider {
 
   /**
    * Check if archived file exists
+   *
+   * Note: This currently downloads the file to check existence.
+   * TODO: Optimize by using fractary-file 'stat' or 'head' command when available
+   * to avoid downloading full file for existence checks.
    */
   async exists(reference: ResolvedReference, options?: FetchOptions): Promise<boolean> {
+    const projectKey = `${reference.org}/${reference.project}`
+    const config = this.projects[projectKey]
+
+    if (!config) {
+      return false
+    }
+
     try {
-      await this.fetch(reference, options)
+      // Use fetch with minimal options for existence check
+      // Note: This still downloads the file - requires fractary-file enhancement for true optimization
+      await this.fetch(reference, { ...options, timeout: 5000 })
       return true
     } catch {
       return false
@@ -157,15 +170,23 @@ export class S3ArchiveStorage implements StorageProvider {
   /**
    * Calculate archive path from reference
    *
-   * Pattern: archive/{type}/{org}/{project}/{original-path}
+   * Pattern: {prefix}/{type}/{org}/{project}/{original-path}
    *
-   * Examples:
+   * Examples (with default prefix "archive/"):
    *   specs/WORK-123.md → archive/specs/org/project/specs/WORK-123.md
    *   docs/api.md → archive/docs/org/project/docs/api.md
+   *
+   * Examples (with custom prefix "archived-docs/"):
+   *   specs/WORK-123.md → archived-docs/specs/org/project/specs/WORK-123.md
    */
-  private calculateArchivePath(reference: ResolvedReference): string {
+  private calculateArchivePath(reference: ResolvedReference, config: ArchiveProjectConfig): string {
     const type = this.detectType(reference.path)
-    return `archive/${type}/${reference.org}/${reference.project}/${reference.path}`
+    const prefix = config.prefix || 'archive/'
+
+    // Ensure prefix ends with / for consistent path construction
+    const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`
+
+    return `${normalizedPrefix}${type}/${reference.org}/${reference.project}/${reference.path}`
   }
 
   /**
@@ -201,15 +222,23 @@ export class S3ArchiveStorage implements StorageProvider {
    * Check if path matches a single pattern
    */
   private matchesPattern(path: string, pattern: string): boolean {
-    // Convert glob pattern to regex
-    // ** → .*
-    // * → [^/]*
-    // ? → [^/]
-    const regexPattern = pattern
-      .replace(/\*\*/g, '.*')
+    // Convert glob pattern to regex using placeholder approach
+    // to prevent ** replacement from being affected by * replacement
+
+    // Step 1: Protect ** with placeholder
+    const DOUBLE_STAR = '\x00DOUBLE_STAR\x00'
+    let regexPattern = pattern.replace(/\*\*/g, DOUBLE_STAR)
+
+    // Step 2: Escape regex special chars (except our placeholder)
+    regexPattern = regexPattern.replace(/\./g, '\\.')
+
+    // Step 3: Replace single * and ?
+    regexPattern = regexPattern
       .replace(/\*/g, '[^/]*')
       .replace(/\?/g, '[^/]')
-      .replace(/\./g, '\\.')
+
+    // Step 4: Replace placeholder with final regex
+    regexPattern = regexPattern.replace(new RegExp(DOUBLE_STAR, 'g'), '.*')
 
     const regex = new RegExp(`^${regexPattern}$`)
     return regex.test(path)

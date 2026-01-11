@@ -148,7 +148,7 @@ describe('storage/s3-archive', () => {
       expect(result.content.toString()).toBe('# Archive Content\n\nThis is archived.')
       expect(result.contentType).toBe('text/markdown')
       expect(result.source).toBe('s3-archive')
-      expect(result.size).toBe(39)
+      expect(result.size).toBe(36) // Actual length of the test string
       expect(result.metadata).toMatchObject({
         archivePath: 'archive/specs/fractary/auth-service/specs/WORK-123.md',
         bucket: 'test-bucket',
