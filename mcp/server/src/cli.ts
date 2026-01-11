@@ -58,7 +58,19 @@ program
     }
 
     // Initialize storage and cache managers
-    const storage = createStorageManager(config.storage as Record<string, unknown> | undefined)
+    const storageConfig: Record<string, unknown> = {
+      ...((config.storage as Record<string, unknown>) || {}),
+    }
+
+    // Add archive config if present
+    if (config.archive) {
+      storageConfig.s3Archive = {
+        projects: (config.archive as Record<string, unknown>).projects || {},
+        fractaryCli: process.env.FRACTARY_CLI || 'fractary',
+      }
+    }
+
+    const storage = createStorageManager(storageConfig)
     const cache = createCacheManager({
       cacheDir: (config.cache as Record<string, unknown>)?.cacheDir as string || '.fractary/codex/cache',
       ...(config.cache as Record<string, unknown>),
