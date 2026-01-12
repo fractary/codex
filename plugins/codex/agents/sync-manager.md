@@ -269,34 +269,51 @@ Build parameters for project-syncer skill:
 
 ## Step 7: Invoke Codex CLI
 
-Execute sync using fractary-codex CLI directly via Bash:
+**CRITICAL: Use Bash tool to execute fractary-codex CLI**
 
-```bash
-# Build CLI command based on direction
-if [ "$direction" == "to-codex" ]; then
-  cmd="fractary-codex sync --to-codex"
-elif [ "$direction" == "from-codex" ]; then
-  cmd="fractary-codex sync --from-codex"
-else
-  cmd="fractary-codex sync"  # bidirectional (default)
-fi
+Build the CLI command based on direction parameter:
+- If direction is "to-codex": `fractary-codex sync --to-codex`
+- If direction is "from-codex": `fractary-codex sync --from-codex`
+- If direction is "bidirectional" or not specified: `fractary-codex sync`
 
-# Add dry-run flag if requested
-if [ "$dry_run" == "true" ]; then
-  cmd="$cmd --dry-run"
-fi
+Add `--dry-run` flag if dry_run parameter is true.
 
-# Execute the command
-$cmd
+**Execute using Bash tool with debugging:**
+
+```
+USE TOOL: Bash
+Command:
+echo "=== SYNC DEBUG INFO ==="
+echo "Direction: [direction-value]"
+echo "Dry run: [dry-run-value]"
+echo "Config file: $(ls -la .fractary/codex/config.yaml)"
+echo "CLI version: $(fractary-codex --version)"
+echo "Executing: fractary-codex sync [--to-codex|--from-codex] [--dry-run]"
+echo "======================="
+fractary-codex sync [--from-codex|--to-codex] [--dry-run]
+```
+
+**Example for from-codex dry-run:**
+```
+USE TOOL: Bash
+Command:
+echo "=== SYNC DEBUG INFO ==="
+echo "Direction: from-codex"
+echo "Dry run: true"
+echo "Config: $(ls -la .fractary/codex/config.yaml)"
+echo "CLI: $(fractary-codex --version)"
+echo "Command: fractary-codex sync --from-codex --dry-run"
+echo "======================="
+fractary-codex sync --from-codex --dry-run
 ```
 
 The fractary-codex CLI will:
 1. Read configuration from .fractary/codex/config.yaml
-2. Clone/update codex repository
-3. Apply directional sync patterns (to_codex or from_codex)
-4. Copy files based on direction
-5. Create commits
-6. Push changes (if not dry-run)
+2. Use from_codex patterns from config
+3. Clone/update codex repository
+4. Apply directional sync patterns
+5. Copy matched files
+6. Create commits (if not dry-run)
 7. Return sync results
 
 ## Step 6: Report Results
