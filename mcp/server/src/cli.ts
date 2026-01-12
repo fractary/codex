@@ -39,7 +39,7 @@ const program = new Command()
 program
   .name('fractary-codex-mcp')
   .description('MCP server for Fractary Codex knowledge management')
-  .version('0.4.0')
+  .version('0.8.0')
   .option('--config <path>', 'Path to config file', '.fractary/codex/config.yaml')
   .action(async (options) => {
     // Load configuration
@@ -84,7 +84,7 @@ program
     // Create MCP server
     const server = new McpServer({
       name: 'fractary-codex',
-      version: '0.4.0',
+      version: '0.8.0',
       cache,
       storage,
     })
