@@ -30,6 +30,17 @@ export function getDefaultRules(): SyncRules {
 }
 
 /**
+ * Get default archive configuration
+ *
+ * No archives enabled by default - must be explicitly configured per project
+ */
+export function getDefaultArchiveConfig() {
+  return {
+    projects: {},
+  }
+}
+
+/**
  * Get default configuration
  *
  * @param orgSlug - Organization slug
@@ -40,5 +51,6 @@ export function getDefaultConfig(orgSlug: string): CodexConfig {
     organizationSlug: orgSlug,
     directories: getDefaultDirectories(orgSlug),
     rules: getDefaultRules(),
+    archive: getDefaultArchiveConfig(),
   }
 }
