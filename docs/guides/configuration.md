@@ -7,6 +7,7 @@ Complete reference for configuring the Fractary Codex SDK.
 - [Configuration File](#configuration-file)
 - [Configuration Schema](#configuration-schema)
 - [Storage Providers](#storage-providers)
+- [Archive Configuration](#archive-configuration)
 - [Type Registry](#type-registry)
 - [Permissions](#permissions)
 - [Sync Configuration](#sync-configuration)
@@ -197,15 +198,25 @@ storage:
 | `headers` | object | No | {} | Custom HTTP headers |
 | `timeout` | number | No | 30000 | Request timeout in milliseconds |
 
-### S3 Storage (Planned)
+### S3 Archive Storage
+
+Transparently access archived documents from S3-compatible storage (S3, R2, GCS).
+
+**Note:** This provider enables **read-only** access to archived documents. It works via the [fractary CLI](https://github.com/fractary/cli) and requires per-project configuration. See [Archive Configuration](#archive-configuration) for details.
 
 ```yaml
-storage:
-  - type: s3
-    bucket: my-codex-bucket
-    region: us-east-1
-    accessKeyId: ${AWS_ACCESS_KEY_ID}
-    secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+# Archive configuration is per-project, not a general storage provider
+# See Archive Configuration section below for full setup
+```
+
+The S3 Archive storage provider is automatically registered when archive configuration is present. Documents are accessed with the same `codex://org/project/path` URI regardless of whether they're in the active project or archived.
+
+**Storage Priority with Archives:**
+```
+1. Local filesystem (current project)
+2. S3 Archive (if configured and current project)
+3. GitHub (remote repository)
+4. HTTP (fallback)
 ```
 
 ### Multiple Providers
@@ -229,6 +240,250 @@ storage:
     baseUrl: https://codex.example.com
     priority: 100
 ```
+
+## Archive Configuration
+
+Configure transparent access to archived documents stored in cloud storage (S3, R2, GCS, Google Drive).
+
+### Overview
+
+The archive feature enables Codex to automatically fetch documents from cloud storage when they're not found locally. This implements **lifecycle-based storage**:
+
+- **Active documents** → GitHub (versioning, PR workflow, collaboration)
+- **Completed documents** → S3/R2/GCS (static, archived, read-only)
+- **Codex URIs** → Same URI works for both (`codex://org/project/path`)
+
+### Configuration Structure
+
+Archive configuration is **per-project** and uses the [fractary CLI](https://github.com/fractary/cli) for cloud storage access.
+
+```yaml
+archive:
+  projects:
+    # Project key: "org/project"
+    fractary/auth-service:
+      enabled: true
+      handler: s3              # Storage backend: s3, r2, gcs, local
+      bucket: fractary-archives
+      prefix: archive/         # Optional: path prefix (default: "archive/")
+      patterns:                # Optional: limit to specific files
+        - specs/**
+        - docs/**
+
+    fractary/api-gateway:
+      enabled: true
+      handler: r2
+      bucket: api-archives
+      # No patterns = all files eligible for archive
+```
+
+### Archive Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `enabled` | boolean | Yes | - | Enable archive for this project |
+| `handler` | string | Yes | - | Storage backend: `s3`, `r2`, `gcs`, `local` |
+| `bucket` | string | No | - | Cloud storage bucket name |
+| `prefix` | string | No | `archive/` | Path prefix in bucket |
+| `patterns` | string[] | No | `[]` | Glob patterns to match (empty = all files) |
+
+### Storage Handlers
+
+#### AWS S3
+
+```yaml
+archive:
+  projects:
+    fractary/project:
+      enabled: true
+      handler: s3
+      bucket: my-archives
+```
+
+**Requirements:**
+- AWS credentials configured (AWS CLI, environment variables, or IAM role)
+- Bucket permissions: `s3:GetObject`
+
+**Environment variables:**
+```bash
+export AWS_ACCESS_KEY_ID=your-key
+export AWS_SECRET_ACCESS_KEY=your-secret
+export AWS_REGION=us-east-1  # Optional
+```
+
+#### Cloudflare R2
+
+```yaml
+archive:
+  projects:
+    fractary/project:
+      enabled: true
+      handler: r2
+      bucket: my-archives
+```
+
+**Requirements:**
+- Cloudflare R2 credentials configured
+- Environment variables: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`
+
+#### Google Cloud Storage
+
+```yaml
+archive:
+  projects:
+    fractary/project:
+      enabled: true
+      handler: gcs
+      bucket: my-archives
+```
+
+**Requirements:**
+- GCS credentials configured (service account key or Application Default Credentials)
+- Bucket permissions: `storage.objects.get`
+
+#### Local Storage
+
+```yaml
+archive:
+  projects:
+    fractary/project:
+      enabled: true
+      handler: local
+      # No bucket needed - uses local filesystem
+```
+
+### Archive Path Structure
+
+Archives follow a standardized path structure:
+
+```
+{prefix}/{type}/{org}/{project}/{original-path}
+```
+
+**Examples:**
+```
+specs/WORK-123.md → archive/specs/fractary/auth-service/specs/WORK-123.md
+docs/api.md       → archive/docs/fractary/auth-service/docs/api.md
+logs/session.md   → archive/logs/fractary/auth-service/logs/session.md
+```
+
+**Custom prefix:**
+```yaml
+archive:
+  projects:
+    fractary/project:
+      prefix: archived-docs/
+      # Result: archived-docs/specs/fractary/project/specs/WORK-123.md
+```
+
+### Pattern Matching
+
+Use glob patterns to limit which files are eligible for archive lookup:
+
+```yaml
+archive:
+  projects:
+    fractary/project:
+      patterns:
+        - "specs/**"           # All files in specs/
+        - "docs/**/*.md"       # Markdown files in docs/
+        - "*.md"               # Top-level markdown files
+        - "archive/**"         # Explicitly archived content
+```
+
+**No patterns specified** = all files eligible (checked in archive if not found locally)
+
+### Complete Example
+
+```yaml
+organizationSlug: fractary
+
+cache:
+  dir: .fractary/codex/cache
+  maxMemorySize: 104857600  # 100 MB
+  defaultTtl: 3600          # 1 hour
+
+storage:
+  providers:
+    - type: local
+      basePath: ./knowledge
+    - type: github
+      token: ${GITHUB_TOKEN}
+
+# Archive configuration
+archive:
+  projects:
+    # Production service - archive completed specs
+    fractary/auth-service:
+      enabled: true
+      handler: s3
+      bucket: fractary-prod-archives
+      prefix: archive/
+      patterns:
+        - specs/**
+        - docs/**
+
+    # API gateway - use Cloudflare R2
+    fractary/api-gateway:
+      enabled: true
+      handler: r2
+      bucket: api-archives
+      patterns:
+        - specs/**
+
+    # Development project - local archive for testing
+    fractary/dev-project:
+      enabled: true
+      handler: local
+```
+
+### MCP Server Configuration
+
+When using the Codex MCP server, archive configuration is loaded from the same config file:
+
+```json
+// .claude/settings.json
+{
+  "mcpServers": {
+    "fractary-codex": {
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
+    }
+  }
+}
+```
+
+The MCP server automatically enables archive providers based on your configuration.
+
+### Requirements
+
+1. **fractary CLI installed:**
+   ```bash
+   npm install -g @fractary/cli
+   ```
+
+2. **Cloud storage credentials configured** (for S3/R2/GCS)
+
+3. **Archive structure in place** following the path conventions
+
+### How It Works
+
+1. User requests: `codex://fractary/project/specs/WORK-123.md`
+2. Codex checks:
+   - ✅ Local filesystem: `specs/WORK-123.md`
+   - ❌ Not found locally
+   - ✅ Archive configured for `fractary/project`
+   - ✅ Path matches pattern `specs/**`
+   - ✅ Fetch from S3: `archive/specs/fractary/project/specs/WORK-123.md`
+3. Returns content with source: `s3-archive`
+4. Caches result for TTL period
+
+### Limitations
+
+- **Read-only:** Archive storage is read-only (no write/update operations)
+- **Current project only:** Archive provider only checks archives for the current project
+- **Requires fractary CLI:** Uses fractary CLI for cloud storage access
+- **exists() performance:** Checking file existence downloads the full file (optimization planned)
 
 ## Type Registry
 

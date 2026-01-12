@@ -384,6 +384,144 @@ const ref = resolveReference('codex://org/project/docs/api.md')
 const result = await storage.fetch(ref)
 ```
 
+### S3ArchiveStorage
+
+S3-compatible archive storage provider for transparent access to archived documents.
+
+**Note:** This provider enables read-only access to archived documents via the [fractary CLI](https://github.com/fractary/cli). It requires per-project archive configuration and is automatically registered when archive config is present.
+
+**TypeScript:**
+```typescript
+class S3ArchiveStorage implements StorageProvider {
+  constructor(options?: S3ArchiveStorageOptions)
+
+  async fetch(reference: ResolvedReference): Promise<FetchResult>
+  async exists(reference: ResolvedReference): Promise<boolean>
+  canHandle(reference: ResolvedReference): boolean
+}
+
+interface S3ArchiveStorageOptions {
+  projects?: Record<string, ArchiveProjectConfig>
+  fractaryCli?: string  // Path to fractary CLI (default: 'fractary')
+}
+
+interface ArchiveProjectConfig {
+  enabled: boolean
+  handler: 's3' | 'r2' | 'gcs' | 'local'
+  bucket?: string
+  prefix?: string     // Default: 'archive/'
+  patterns?: string[] // Glob patterns (empty = all files)
+}
+```
+
+**Python:**
+```python
+class S3ArchiveStorage(StorageProvider):
+    def __init__(self, options: Optional[S3ArchiveStorageOptions] = None)
+
+    async def fetch(self, reference: ResolvedReference) -> FetchResult
+    async def exists(self, reference: ResolvedReference) -> bool
+    def can_handle(self, reference: ResolvedReference) -> bool
+
+@dataclass
+class S3ArchiveStorageOptions:
+    projects: Optional[Dict[str, ArchiveProjectConfig]] = None
+    fractary_cli: Optional[str] = 'fractary'
+
+@dataclass
+class ArchiveProjectConfig:
+    enabled: bool
+    handler: Literal['s3', 'r2', 'gcs', 'local']
+    bucket: Optional[str] = None
+    prefix: Optional[str] = 'archive/'
+    patterns: Optional[List[str]] = None
+```
+
+**Examples:**
+
+```typescript
+import { S3ArchiveStorage, StorageManager } from '@fractary/codex'
+
+// Typically configured via config file, not manually
+const archiveStorage = new S3ArchiveStorage({
+  projects: {
+    'fractary/auth-service': {
+      enabled: true,
+      handler: 's3',
+      bucket: 'fractary-archives',
+      prefix: 'archive/',
+      patterns: ['specs/**', 'docs/**']
+    }
+  },
+  fractaryCli: 'fractary'  // Or custom path
+})
+
+// Register with storage manager (priority 20 = after local, before GitHub)
+const storage = StorageManager.create()
+storage.registerProvider(archiveStorage, 20)
+
+// Transparent access - same URI for archived and active files
+const ref = resolveReference('codex://fractary/auth-service/specs/WORK-123.md')
+
+// Checks: local → archive → GitHub → HTTP
+const result = await storage.fetch(ref)
+console.log(result.source) // 's3-archive' if from archive
+console.log(result.metadata?.archivePath)
+// 'archive/specs/fractary/auth-service/specs/WORK-123.md'
+```
+
+**Archive Path Calculation:**
+
+The provider automatically calculates archive paths following the convention:
+```
+{prefix}/{type}/{org}/{project}/{original-path}
+```
+
+Examples:
+```typescript
+// Reference: codex://fractary/project/specs/WORK-123.md
+// Archive path: archive/specs/fractary/project/specs/WORK-123.md
+
+// Reference: codex://fractary/project/docs/api.md
+// Archive path: archive/docs/fractary/project/docs/api.md
+
+// With custom prefix: 'archived-docs/'
+// Archive path: archived-docs/specs/fractary/project/specs/WORK-123.md
+```
+
+**Pattern Matching:**
+
+```typescript
+const archiveStorage = new S3ArchiveStorage({
+  projects: {
+    'fractary/project': {
+      enabled: true,
+      handler: 's3',
+      patterns: [
+        'specs/**',        // All files in specs/
+        'docs/**/*.md',    // Markdown files in docs/
+        '*.md'            // Top-level markdown files
+      ]
+    }
+  }
+})
+
+// Only matches if path matches one of the patterns
+// No patterns = all files eligible
+```
+
+**Behavior:**
+
+- **Current project only:** Only checks archives for files in the current project
+- **Read-only:** No write operations supported
+- **Fallback:** Only activated when file not found locally
+- **Uses fractary CLI:** Requires `fractary` command available in PATH
+- **Caching:** Results cached per configured TTL
+
+**Configuration:**
+
+See [Archive Configuration](configuration.md#archive-configuration) for complete setup guide.
+
 ## Cache
 
 Multi-tier caching system with LRU eviction and type-based TTL.

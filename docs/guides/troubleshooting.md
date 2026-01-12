@@ -8,6 +8,7 @@ Common issues and solutions when working with the Fractary Codex SDK.
 - [Configuration Problems](#configuration-problems)
 - [URI and Reference Errors](#uri-and-reference-errors)
 - [Storage Provider Issues](#storage-provider-issues)
+  - [Archive Storage Issues](#archive-storage-fractary-cli-not-found)
 - [Cache Problems](#cache-problems)
 - [Permission Errors](#permission-errors)
 - [MCP Server Issues](#mcp-server-issues)
@@ -381,6 +382,283 @@ StorageError: EACCES: permission denied, open '/path/to/file.md'
    # If using sudo, ensure files are readable
    sudo chown -R $USER:$USER ./knowledge
    ```
+
+### Archive Storage: fractary CLI Not Found
+
+**Problem:** Archive fetch fails with "command not found: fractary".
+
+**Error:**
+```
+StorageError: Failed to fetch from archive: spawn fractary ENOENT
+```
+
+**Solutions:**
+
+1. Install fractary CLI:
+   ```bash
+   npm install -g @fractary/cli
+   ```
+
+2. Verify installation:
+   ```bash
+   which fractary
+   fractary --version
+   ```
+
+3. If installed but not found, check PATH:
+   ```bash
+   echo $PATH
+   # Add npm global bin to PATH if needed
+   export PATH="$PATH:$(npm config get prefix)/bin"
+   ```
+
+4. Specify custom path in configuration:
+   ```yaml
+   archive:
+     # ... project config
+
+   # Environment variable
+   FRACTARY_CLI=/custom/path/to/fractary
+   ```
+
+### Archive Storage: AWS Credentials Not Found
+
+**Problem:** S3 archive fetch fails with credentials error.
+
+**Error:**
+```
+StorageError: fractary-file read failed: Unable to locate credentials
+```
+
+**Solutions:**
+
+1. Set AWS environment variables:
+   ```bash
+   export AWS_ACCESS_KEY_ID=your-access-key
+   export AWS_SECRET_ACCESS_KEY=your-secret-key
+   export AWS_REGION=us-east-1  # Optional but recommended
+   ```
+
+2. Or configure AWS CLI:
+   ```bash
+   aws configure
+   ```
+
+3. Or use IAM role (when running on EC2/ECS)
+
+4. Verify credentials:
+   ```bash
+   aws s3 ls s3://your-bucket/
+   ```
+
+5. Check bucket permissions:
+   - Required: `s3:GetObject`
+   - Verify with:
+     ```bash
+     aws s3api head-object --bucket your-bucket --key archive/test.md
+     ```
+
+### Archive Storage: File Not Found in Archive
+
+**Problem:** Document expected in archive returns 404.
+
+**Error:**
+```
+StorageError: All providers failed to fetch: codex://org/project/specs/WORK-123.md
+```
+
+**Diagnostic:**
+
+```typescript
+// Enable debug logging
+process.env.CODEX_LOG_LEVEL = 'debug'
+
+// Check archive configuration
+const config = loadConfig()
+console.log('Archive config:', config.archive?.projects)
+
+// Verify archive path structure
+const expectedPath = 'archive/specs/org/project/specs/WORK-123.md'
+console.log('Expected archive path:', expectedPath)
+```
+
+**Solutions:**
+
+1. Verify archive configuration is loaded:
+   ```yaml
+   archive:
+     projects:
+       org/project:  # Must match reference org/project
+         enabled: true
+         handler: s3
+         bucket: your-bucket
+   ```
+
+2. Check path structure in S3:
+   ```bash
+   aws s3 ls s3://your-bucket/archive/specs/org/project/specs/
+   ```
+
+3. Verify pattern matching (if patterns configured):
+   ```yaml
+   archive:
+     projects:
+       org/project:
+         patterns:
+           - specs/**  # Must match file path
+   ```
+
+4. Test with fractary CLI directly:
+   ```bash
+   fractary file read \
+     --remote-path archive/specs/org/project/specs/WORK-123.md \
+     --handler s3 \
+     --bucket your-bucket
+   ```
+
+### Archive Storage: Wrong Storage Handler
+
+**Problem:** Archive fetch fails with handler-specific error.
+
+**Error:**
+```
+StorageError: fractary-file read failed: Cloudflare credentials not configured
+```
+
+**Solutions:**
+
+1. Verify handler matches your storage:
+   ```yaml
+   archive:
+     projects:
+       org/project:
+         handler: r2  # Should match actual storage (s3, r2, gcs, local)
+   ```
+
+2. For R2, set Cloudflare credentials:
+   ```bash
+   export CLOUDFLARE_ACCOUNT_ID=your-account-id
+   export CLOUDFLARE_API_TOKEN=your-api-token
+   ```
+
+3. For GCS, authenticate with gcloud:
+   ```bash
+   gcloud auth application-default login
+   ```
+
+4. Test handler with fractary CLI:
+   ```bash
+   fractary file read --remote-path test.md --handler r2 --bucket your-bucket
+   ```
+
+### Archive Storage: Slow Performance
+
+**Problem:** Archive fetches are significantly slower than expected.
+
+**Diagnostic:**
+
+```typescript
+const start = Date.now()
+const result = await cache.get('codex://org/project/specs/WORK-123.md')
+console.log(`Fetch took: ${Date.now() - start}ms`)
+console.log(`Source: ${result.source}`)  // Check if 's3-archive'
+```
+
+**Solutions:**
+
+1. **Enable caching** (should be automatic):
+   ```yaml
+   cache:
+     defaultTtl: 3600  # Cache archive results for 1 hour
+   ```
+
+2. **Check network latency to S3**:
+   ```bash
+   aws s3 cp s3://your-bucket/archive/test.md - --debug
+   ```
+
+3. **Use regional S3 endpoints** (if applicable):
+   ```bash
+   export AWS_REGION=us-east-1  # Same region as your app
+   ```
+
+4. **Consider archive structure optimization**:
+   - Large files: Use smaller archives
+   - Many small files: Consider batching
+
+5. **Monitor exists() calls** (they download full file):
+   - This is a known limitation
+   - Minimize exists() checks where possible
+
+### Archive Storage: Pattern Not Matching
+
+**Problem:** Files that should be in archive are not checked.
+
+**Diagnostic:**
+
+```typescript
+import { S3ArchiveStorage } from '@fractary/codex'
+
+const storage = new S3ArchiveStorage({
+  projects: {
+    'org/project': {
+      enabled: true,
+      handler: 's3',
+      patterns: ['specs/**']
+    }
+  }
+})
+
+const ref = resolveReference('codex://org/project/docs/api.md')
+console.log('Can handle?', storage.canHandle(ref))  // Should be false (docs/** not in patterns)
+```
+
+**Solutions:**
+
+1. Check pattern syntax (uses glob):
+   ```yaml
+   patterns:
+     - "specs/**"       # All files in specs/
+     - "docs/**/*.md"   # Markdown files in docs/
+     - "*.md"          # Top-level markdown only
+   ```
+
+2. Test patterns separately:
+   ```typescript
+   import { minimatch } from 'minimatch'
+   minimatch('specs/WORK-123.md', 'specs/**')  // true
+   minimatch('docs/api.md', 'specs/**')        // false
+   ```
+
+3. Remove patterns to allow all files:
+   ```yaml
+   archive:
+     projects:
+       org/project:
+         enabled: true
+         handler: s3
+         # No patterns = all files eligible
+   ```
+
+### Archive Storage: Empty or Invalid Prefix
+
+**Problem:** Archive fetch fails with path error.
+
+**Error:**
+```
+Error: Archive prefix cannot be empty or whitespace-only
+```
+
+**Solution:**
+
+Fix prefix configuration:
+```yaml
+archive:
+  projects:
+    org/project:
+      prefix: archive/  # Must be non-empty, non-whitespace
+      # Or omit to use default 'archive/'
+```
 
 ## Cache Problems
 
