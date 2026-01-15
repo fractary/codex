@@ -67,24 +67,29 @@ if [ -f .fractary/codex/config.yaml ]; then
   # Validate YAML format with fallback methods
   is_valid=true
 
-  # Try Python/PyYAML first (most accurate)
-  if command -v python3 >/dev/null 2>&1; then
-    if ! python3 -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))" 2>&1 | grep -q "Error\|Exception"; then
+  # Try Python/PyYAML first (most accurate) - check both python3 AND yaml module exist
+  if command -v python3 >/dev/null 2>&1 && python3 -c "import yaml" 2>/dev/null; then
+    # Use exit code directly (0=success, non-zero=failure)
+    if python3 -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))" 2>/dev/null; then
       is_valid=true
     else
       is_valid=false
     fi
-  # Fallback: Basic syntax checks
+  # Fallback: yamllint if available
   elif command -v yamllint >/dev/null 2>&1; then
-    if ! yamllint .fractary/codex/config.yaml >/dev/null 2>&1; then
+    if yamllint .fractary/codex/config.yaml >/dev/null 2>&1; then
+      is_valid=true
+    else
       is_valid=false
     fi
   else
-    # Basic validation: check for common YAML syntax errors
-    if grep -qE '^\s*[^#\s].*:\s*$|^\s*-\s*$' .fractary/codex/config.yaml; then
-      # File has basic YAML structure (keys with colons, list items with dashes)
-      # Check for tabs (not allowed in YAML) - use portable method
-      if grep -q $'\t' .fractary/codex/config.yaml 2>/dev/null; then
+    # Final fallback: Basic YAML syntax checks
+    # Check for basic YAML structure (key: value patterns)
+    if grep -qE '^[a-zA-Z_][a-zA-Z0-9_]*:' .fractary/codex/config.yaml 2>/dev/null; then
+      # File has basic YAML structure
+      # Check for tabs (not allowed in YAML) - portable using printf
+      tab_char=$(printf '\t')
+      if grep -q "$tab_char" .fractary/codex/config.yaml 2>/dev/null; then
         is_valid=false
       fi
     else
@@ -353,11 +358,17 @@ For EXISTING configs:
 
 1. Backup current config with timestamp:
 ```bash
-timestamp=$(date +%Y%m%d%H%M%S%N)
+# Use nanoseconds on Linux, fall back to seconds + random on macOS/BSD
+if date +%N >/dev/null 2>&1 && [ "$(date +%N)" != "N" ]; then
+  timestamp=$(date +%Y%m%d%H%M%S%N)
+else
+  # macOS/BSD fallback: use seconds + random suffix for uniqueness
+  timestamp=$(date +%Y%m%d%H%M%S)_$$_$RANDOM
+fi
 cp .fractary/codex/config.yaml .fractary/codex/config.yaml.backup.$timestamp
 ```
 
-This creates timestamped backups with nanosecond precision (e.g., `config.yaml.backup.20260115143022123456789`) to prevent race conditions from multiple runs per second.
+This creates timestamped backups with high precision to prevent race conditions. On Linux, uses nanoseconds. On macOS/BSD, uses seconds plus PID and random number for uniqueness.
 
 2. Update config file:
 ```
@@ -778,7 +789,7 @@ If config file exists but contains invalid YAML:
    - Manual fix (provide validation command)
    - Cancel operation
 3. If user chooses backup and recreate:
-   - Create timestamped backup: `config.yaml.corrupted.$(date +%Y%m%d%H%M%S%N)`
+   - Create timestamped backup using portable timestamp (see Step 5 for format)
    - Proceed with NEW config workflow
 4. If user chooses manual fix or cancel:
    - Exit without changes
