@@ -81,10 +81,10 @@ if [ -f .fractary/codex/config.yaml ]; then
     fi
   else
     # Basic validation: check for common YAML syntax errors
-    if grep -qE '^\s*[^#\s].*:\s*$|^\s*-\s*$|^\t' .fractary/codex/config.yaml; then
+    if grep -qE '^\s*[^#\s].*:\s*$|^\s*-\s*$' .fractary/codex/config.yaml; then
       # File has basic YAML structure (keys with colons, list items with dashes)
-      # Check for tabs (not allowed in YAML)
-      if grep -qP '\t' .fractary/codex/config.yaml 2>/dev/null; then
+      # Check for tabs (not allowed in YAML) - use portable method
+      if grep -q $'\t' .fractary/codex/config.yaml 2>/dev/null; then
         is_valid=false
       fi
     else
@@ -810,7 +810,26 @@ For NEW configurations (failed during initial setup):
    rm -rf .fractary/codex/cache/
 
    # Remove MCP server config (only fractary-codex entry)
-   # Use jq to surgically remove just the fractary-codex entry
+   if [ -f .mcp.json ]; then
+     if command -v jq >/dev/null 2>&1; then
+       # Use jq to surgically remove just the fractary-codex entry
+       jq 'del(.mcpServers["fractary-codex"])' .mcp.json > .mcp.json.tmp
+       mv .mcp.json.tmp .mcp.json
+
+       # If mcpServers is now empty, remove the whole object
+       if [ "$(jq '.mcpServers | length' .mcp.json)" = "0" ]; then
+         jq 'del(.mcpServers)' .mcp.json > .mcp.json.tmp
+         mv .mcp.json.tmp .mcp.json
+       fi
+
+       # If file is now empty {}, remove it
+       if [ "$(jq '. | length' .mcp.json)" = "0" ]; then
+         rm .mcp.json
+       fi
+     else
+       echo "Warning: jq not available, manual cleanup needed for .mcp.json"
+     fi
+   fi
    ```
 4. Document what failed and provide resolution steps
 
