@@ -64,8 +64,36 @@ You receive configuration requests with optional parameters:
 1. Check if configuration exists and validate format:
 ```bash
 if [ -f .fractary/codex/config.yaml ]; then
-  # Validate YAML format
-  if ! python3 -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))" 2>/dev/null; then
+  # Validate YAML format with fallback methods
+  is_valid=true
+
+  # Try Python/PyYAML first (most accurate)
+  if command -v python3 >/dev/null 2>&1; then
+    if ! python3 -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))" 2>&1 | grep -q "Error\|Exception"; then
+      is_valid=true
+    else
+      is_valid=false
+    fi
+  # Fallback: Basic syntax checks
+  elif command -v yamllint >/dev/null 2>&1; then
+    if ! yamllint .fractary/codex/config.yaml >/dev/null 2>&1; then
+      is_valid=false
+    fi
+  else
+    # Basic validation: check for common YAML syntax errors
+    if grep -qE '^\s*[^#\s].*:\s*$|^\s*-\s*$|^\t' .fractary/codex/config.yaml; then
+      # File has basic YAML structure (keys with colons, list items with dashes)
+      # Check for tabs (not allowed in YAML)
+      if grep -qP '\t' .fractary/codex/config.yaml 2>/dev/null; then
+        is_valid=false
+      fi
+    else
+      # File doesn't look like YAML
+      is_valid=false
+    fi
+  fi
+
+  if [ "$is_valid" = false ]; then
     echo "CORRUPTED"
   else
     echo "EXISTING"
@@ -143,14 +171,31 @@ Use AskUserQuestion to gather essential information:
 ### For EXISTING configurations:
 
 1. Validate and sanitize --context parameter if provided:
+   - Check for empty values
+   - Check for length (max 500 characters)
    - Check for path traversal patterns (../, ..\, /../)
    - Check for shell metacharacters that could be dangerous ($, `, |, ;, &, >, <)
+   - Check for newlines (\n, \r)
+   - Check for null bytes (\0)
    - If suspicious patterns detected, reject with error message
    - Context should be plain descriptive text only
 
    Example validation:
    ```bash
-   if [[ "$context" =~ \.\./|[\$\`\|\;\&\>\<] ]]; then
+   # Check empty
+   if [[ -z "$context" ]]; then
+     echo "ERROR: Context parameter is empty"
+     exit 1
+   fi
+
+   # Check length (max 500 characters)
+   if [[ ${#context} -gt 500 ]]; then
+     echo "ERROR: Context too long (max 500 characters)"
+     exit 1
+   fi
+
+   # Check for unsafe patterns
+   if [[ "$context" =~ \.\./|[\$\`\|\;\&\>\<]|$'\n'|$'\r'|$'\0' ]]; then
      echo "ERROR: Invalid context - contains unsafe characters"
      exit 1
    fi
@@ -308,11 +353,11 @@ For EXISTING configs:
 
 1. Backup current config with timestamp:
 ```bash
-timestamp=$(date +%Y%m%d%H%M%S)
+timestamp=$(date +%Y%m%d%H%M%S%N)
 cp .fractary/codex/config.yaml .fractary/codex/config.yaml.backup.$timestamp
 ```
 
-This creates timestamped backups (e.g., `config.yaml.backup.20260115143022`) to prevent overwriting previous backups.
+This creates timestamped backups with nanosecond precision (e.g., `config.yaml.backup.20260115143022123456789`) to prevent race conditions from multiple runs per second.
 
 2. Update config file:
 ```
@@ -607,13 +652,31 @@ What would you like to do?
 <ERROR_HANDLING>
 ## Invalid Context
 
-**If context contains unsafe characters:**
+**If context contains unsafe characters or is invalid:**
 1. Reject immediately with error message
-2. Show what was detected (path traversal, shell metacharacters)
+2. Show what was detected (empty, too long, path traversal, shell metacharacters, newlines, null bytes)
 3. Explain context should be plain descriptive text
 4. Provide safe examples
 
-Example error:
+Example errors:
+```
+❌ Invalid context parameter
+
+Context: ""
+Issue: Context parameter is empty
+
+The --context parameter must contain descriptive text.
+```
+
+```
+❌ Invalid context parameter
+
+Context: [very long text...]
+Issue: Context too long (534 characters, max 500)
+
+Please provide a concise description of the configuration changes.
+```
+
 ```
 ❌ Invalid context parameter
 
@@ -621,7 +684,12 @@ Context: "enable auto-sync && rm -rf /"
 Issue: Contains shell metacharacters (&)
 
 The --context parameter should contain plain descriptive text only.
-Path traversal (../) and shell metacharacters ($, `, |, ;, &, >, <) are not allowed.
+Unsafe characters are not allowed:
+  - Path traversal: ../
+  - Shell metacharacters: $ ` | ; & > <
+  - Control characters: newlines, null bytes
+
+Maximum length: 500 characters
 
 Safe examples:
   --context "enable auto-sync on commits"
@@ -710,7 +778,7 @@ If config file exists but contains invalid YAML:
    - Manual fix (provide validation command)
    - Cancel operation
 3. If user chooses backup and recreate:
-   - Create timestamped backup: `config.yaml.corrupted.$(date +%s)`
+   - Create timestamped backup: `config.yaml.corrupted.$(date +%Y%m%d%H%M%S%N)`
    - Proceed with NEW config workflow
 4. If user chooses manual fix or cancel:
    - Exit without changes
