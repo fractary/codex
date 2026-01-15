@@ -5,6 +5,7 @@ Comprehensive API reference for Fractary Codex SDK.
 ## Table of Contents
 
 - [References](#references)
+- [File Plugin Integration](#file-plugin-integration)
 - [Storage](#storage)
 - [Cache](#cache)
 - [Types](#types)
@@ -120,19 +121,24 @@ validateUri('codex://org/project') // false
 
 ### resolveReference
 
-Resolve a reference to local filesystem paths.
+Resolve a reference to local filesystem paths with automatic file plugin detection.
 
 **TypeScript:**
 ```typescript
 function resolveReference(uri: string, options?: {
   cacheDir?: string
-  workingDir?: string
-}): ResolvedReference
+  currentOrg?: string
+  currentProject?: string
+  cwd?: string
+  config?: UnifiedConfig  // For file plugin detection
+}): ResolvedReference | null
 
 interface ResolvedReference extends ParsedReference {
-  cachePath: string       // Cache file path
-  isLocal: boolean       // Is this the current project?
-  localPath?: string     // If local, the actual file path
+  cachePath: string           // Cache file path
+  isCurrentProject: boolean   // Is this the current project?
+  localPath?: string          // If local, the actual file path
+  sourceType?: 'local' | 'github' | 'http' | 's3-archive' | 'file-plugin'
+  filePluginSource?: string   // File plugin source name (if applicable)
 }
 ```
 
@@ -143,34 +149,232 @@ def resolve_reference(uri: str, options: Optional[ResolveOptions] = None) -> Res
 @dataclass
 class ResolvedReference(ParsedReference):
     cache_path: str
-    is_local: bool
+    is_current_project: bool
     local_path: Optional[str] = None
+    source_type: Optional[str] = None
+    file_plugin_source: Optional[str] = None
 ```
 
 **Examples:**
 
 ```typescript
+// Standard resolution
 const resolved = resolveReference('codex://fractary/codex/docs/api.md', {
   cacheDir: '.fractary/codex/cache',
-  workingDir: '/home/user/projects/codex'
+  currentOrg: 'fractary',
+  currentProject: 'codex'
 })
 // {
 //   uri: 'codex://fractary/codex/docs/api.md',
 //   org: 'fractary',
 //   project: 'codex',
 //   path: 'docs/api.md',
-//   cachePath: '/home/user/projects/codex/.fractary/codex/cache/fractary/codex/docs/api.md',
-//   isLocal: true,
-//   localPath: '/home/user/projects/codex/docs/api.md'
+//   cachePath: '.fractary/codex/cache/fractary/codex/docs/api.md',
+//   isCurrentProject: true,
+//   localPath: 'docs/api.md',
+//   sourceType: 'local'
+// }
+
+// File plugin detection
+const config = {
+  file: {
+    sources: {
+      specs: { local: { base_path: '.fractary/specs' } }
+    }
+  }
+}
+const filePluginRef = resolveReference('codex://fractary/project/specs/SPEC-001.md', {
+  currentOrg: 'fractary',
+  currentProject: 'project',
+  config
+})
+// {
+//   isCurrentProject: true,
+//   sourceType: 'file-plugin',
+//   filePluginSource: 'specs',
+//   localPath: '.fractary/specs/SPEC-001.md'
 // }
 
 // External project reference
 const external = resolveReference('codex://other-org/other-project/file.md')
 // {
-//   isLocal: false,
+//   isCurrentProject: false,
 //   localPath: undefined,
 //   cachePath: '.fractary/codex/cache/other-org/other-project/file.md'
 // }
+```
+
+## File Plugin Integration
+
+APIs for working with file plugin sources and current project artifacts.
+
+### FileSourceResolver
+
+Resolves and matches file paths against configured file plugin sources.
+
+**TypeScript:**
+```typescript
+import { FileSourceResolver } from '@fractary/codex'
+
+class FileSourceResolver {
+  constructor(config: UnifiedConfig)
+
+  // Get all configured file sources
+  getAvailableSources(): ResolvedFileSource[]
+
+  // Resolve a source by name
+  resolveSource(name: string): ResolvedFileSource | null
+
+  // Check if a path belongs to any file source
+  isFilePluginPath(path: string): boolean
+
+  // Get the source for a given path (longest match)
+  getSourceForPath(path: string): ResolvedFileSource | null
+
+  // Get all source names
+  getSourceNames(): string[]
+
+  // Check if sources are configured
+  hasSources(): boolean
+}
+
+interface ResolvedFileSource {
+  name: string               // Source name (e.g., "specs", "logs")
+  type: 'file-plugin'
+  localPath: string          // Local filesystem path
+  remotePath?: string        // Cloud storage path (if configured)
+  bucket?: string            // Cloud storage bucket
+  prefix?: string            // Cloud storage prefix
+  isCurrentProject: boolean  // Always true
+  config: FileSource         // Raw configuration
+}
+```
+
+**Examples:**
+
+```typescript
+import { FileSourceResolver } from '@fractary/codex'
+
+const config = {
+  file: {
+    sources: {
+      specs: {
+        type: 's3',
+        bucket: 'myproject-files',
+        prefix: 'specs/',
+        local: { base_path: '.fractary/specs' }
+      },
+      logs: {
+        type: 's3',
+        bucket: 'myproject-files',
+        prefix: 'logs/',
+        local: { base_path: '.fractary/logs' }
+      }
+    }
+  }
+}
+
+const resolver = new FileSourceResolver(config)
+
+// List all sources
+const sources = resolver.getAvailableSources()
+// [
+//   { name: 'specs', localPath: '.fractary/specs', remotePath: 's3://myproject-files/specs/', ... },
+//   { name: 'logs', localPath: '.fractary/logs', remotePath: 's3://myproject-files/logs/', ... }
+// ]
+
+// Resolve by name
+const specsSource = resolver.resolveSource('specs')
+// { name: 'specs', localPath: '.fractary/specs', ... }
+
+// Check if path belongs to a source
+resolver.isFilePluginPath('.fractary/specs/SPEC-001.md') // true
+resolver.isFilePluginPath('src/index.ts') // false
+
+// Get source for path
+const source = resolver.getSourceForPath('.fractary/specs/SPEC-001.md')
+// { name: 'specs', localPath: '.fractary/specs', ... }
+```
+
+### FilePluginStorage
+
+Storage provider for file plugin integration (current project artifacts).
+
+**TypeScript:**
+```typescript
+import { FilePluginStorage } from '@fractary/codex'
+
+class FilePluginStorage implements StorageProvider {
+  readonly name = 'file-plugin'
+  readonly type = 'local'
+
+  constructor(options: FilePluginStorageOptions)
+
+  // Check if can handle a reference
+  canHandle(reference: ResolvedReference): boolean
+
+  // Fetch content
+  fetch(reference: ResolvedReference, options?: FetchOptions): Promise<FetchResult>
+
+  // Check if file exists
+  exists(reference: ResolvedReference, options?: FetchOptions): Promise<boolean>
+}
+
+interface FilePluginStorageOptions {
+  config: UnifiedConfig        // Unified configuration
+  enableS3Fallback?: boolean   // Show S3 pull suggestions (default: true)
+  baseDir?: string             // Base directory for relative paths
+}
+```
+
+**Examples:**
+
+```typescript
+import { FilePluginStorage, resolveReference } from '@fractary/codex'
+
+const config = {
+  file: {
+    sources: {
+      specs: { local: { base_path: '.fractary/specs' } }
+    }
+  }
+}
+
+const storage = new FilePluginStorage({ config })
+
+// Resolve and fetch
+const ref = resolveReference('codex://fractary/project/specs/SPEC-001.md', {
+  currentOrg: 'fractary',
+  currentProject: 'project',
+  config
+})
+
+if (ref && storage.canHandle(ref)) {
+  const result = await storage.fetch(ref)
+  // {
+  //   content: Buffer,
+  //   contentType: 'text/markdown',
+  //   size: 1234,
+  //   source: 'file-plugin',
+  //   metadata: { filePluginSource: 'specs', localPath: '...' }
+  // }
+}
+
+// File not found error
+try {
+  await storage.fetch(missingRef)
+} catch (error) {
+  console.error(error.message)
+  // File not found: .fractary/specs/missing.md
+  //
+  // This file may be in cloud storage (s3).
+  //
+  // To fetch from cloud storage, run:
+  //   file pull specs
+  //
+  // Or sync all sources:
+  //   file sync
+}
 ```
 
 ## Storage

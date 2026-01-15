@@ -11,6 +11,7 @@ import { LocalStorage, type LocalStorageOptions } from './local.js'
 import { GitHubStorage, type GitHubStorageOptions } from './github.js'
 import { HttpStorage, type HttpStorageOptions } from './http.js'
 import { S3ArchiveStorage, type S3ArchiveStorageOptions } from './s3-archive.js'
+import { FilePluginStorage, type FilePluginStorageOptions } from './file-plugin.js'
 
 /**
  * Storage manager configuration
@@ -24,6 +25,8 @@ export interface StorageManagerConfig {
   http?: HttpStorageOptions
   /** S3 Archive storage options */
   s3Archive?: S3ArchiveStorageOptions
+  /** File plugin storage options */
+  filePlugin?: FilePluginStorageOptions
   /** Provider priority order */
   priority?: StorageProviderType[]
   /** Whether to enable caching (handled by cache layer, not storage) */
@@ -51,8 +54,23 @@ export class StorageManager {
       this.providers.set('s3-archive', new S3ArchiveStorage(config.s3Archive))
     }
 
-    // Set priority order (local first, then archive, then github, then http)
-    this.priority = config.priority || (config.s3Archive ? ['local', 's3-archive', 'github', 'http'] : ['local', 'github', 'http'])
+    // Initialize File Plugin provider if configured
+    if (config.filePlugin) {
+      this.providers.set('file-plugin', new FilePluginStorage(config.filePlugin))
+    }
+
+    // Set priority order
+    // file-plugin first (current project, no cache)
+    // then local, s3-archive, github, http
+    this.priority =
+      config.priority ||
+      (config.filePlugin && config.s3Archive
+        ? ['file-plugin', 'local', 's3-archive', 'github', 'http']
+        : config.filePlugin
+          ? ['file-plugin', 'local', 'github', 'http']
+          : config.s3Archive
+            ? ['local', 's3-archive', 'github', 'http']
+            : ['local', 'github', 'http'])
   }
 
   /**

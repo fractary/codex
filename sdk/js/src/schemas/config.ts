@@ -103,3 +103,56 @@ export const CodexConfigSchema = z
   .strict()
 
 export type CodexConfig = z.infer<typeof CodexConfigSchema>
+
+/**
+ * Schema for file plugin source configuration
+ *
+ * Based on SPEC-20260115: Codex-File Plugin Integration
+ */
+export const FileSourceSchema = z.object({
+  type: z.enum(['s3', 'r2', 'gcs', 'local']),
+  bucket: z.string().optional(),
+  prefix: z.string().optional(),
+  region: z.string().optional(),
+  local: z.object({
+    base_path: z.string(),
+  }),
+  push: z
+    .object({
+      compress: z.boolean().optional(),
+      keep_local: z.boolean().optional(),
+    })
+    .optional(),
+  auth: z
+    .object({
+      profile: z.string().optional(),
+    })
+    .optional(),
+})
+
+export type FileSource = z.infer<typeof FileSourceSchema>
+
+/**
+ * Schema for file plugin configuration
+ *
+ * Manages local project artifacts (specs, logs, assets) with push/pull to cloud storage
+ */
+export const FileConfigSchema = z.object({
+  schema_version: z.string(),
+  sources: z.record(FileSourceSchema),
+})
+
+export type FileConfig = z.infer<typeof FileConfigSchema>
+
+/**
+ * Schema for unified configuration
+ *
+ * Combines file plugin and codex plugin configuration in a single file
+ * Location: .fractary/config.yaml
+ */
+export const UnifiedConfigSchema = z.object({
+  file: FileConfigSchema.optional(),
+  codex: CodexConfigSchema.optional(),
+})
+
+export type UnifiedConfig = z.infer<typeof UnifiedConfigSchema>

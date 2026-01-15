@@ -107,6 +107,14 @@ export const CODEX_TOOLS: McpTool[] = [
       required: ['pattern'],
     },
   },
+  {
+    name: 'codex_file_sources_list',
+    description: 'List file plugin sources available in the current project.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ]
 
 /**
@@ -169,13 +177,18 @@ export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext):
   try {
     let result
 
+    // Check if this is a current project file plugin source
+    const isFilePlugin = ref.isCurrentProject && ref.sourceType === 'file-plugin'
+
     if (noCache) {
       // Bypass cache, fetch directly
       result = await ctx.storage.fetch(ref, { branch })
-      // Still cache the result for next time
-      await ctx.cache.set(uri, result)
+      // Cache the result for next time (unless it's a file plugin source)
+      if (!isFilePlugin) {
+        await ctx.cache.set(uri, result)
+      }
     } else {
-      // Use cache
+      // Use cache (will bypass cache automatically for file plugin sources)
       result = await ctx.cache.get(ref, { branch })
     }
 
@@ -183,6 +196,14 @@ export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext):
     return resourceResult(uri, content, result.contentType)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+    const errorName = error instanceof Error ? error.name : 'Error'
+
+    // Special handling for file plugin errors
+    if (errorName === 'FilePluginFileNotFoundError') {
+      // Error message already includes helpful guidance
+      return textResult(message, true)
+    }
+
     return textResult(`Failed to fetch ${uri}: ${message}`, true)
   }
 }
@@ -326,6 +347,42 @@ export async function handleCacheClear(args: CacheClearToolArgs, ctx: ToolHandle
 }
 
 /**
+ * Handle codex_file_sources_list tool
+ */
+export async function handleFileSourcesList(ctx: ToolHandlerContext): Promise<ToolResult> {
+  try {
+    // Check if file plugin provider is registered
+    const filePluginProvider = ctx.storage.getProvider('file-plugin')
+
+    if (!filePluginProvider) {
+      return textResult(`No file plugin sources configured.
+
+To enable file plugin integration, the storage manager must be initialized with filePlugin configuration.
+
+File plugin sources allow codex to access current project artifacts (specs, logs, etc.) directly from the local filesystem without caching.`)
+    }
+
+    // For now, we can't easily extract the sources from the provider without adding more methods
+    // This is a basic implementation that just confirms the provider exists
+    return textResult(`File plugin provider is configured.
+
+File plugin sources are available for current project artifact access.
+Sources are read directly from local filesystem without caching.
+
+To see available sources, check the unified configuration at:
+.fractary/config.yaml
+
+Look for the 'file.sources' section which defines:
+- specs: .fractary/specs
+- logs: .fractary/logs
+- etc.`)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    return textResult(`Failed to list file sources: ${message}`, true)
+  }
+}
+
+/**
  * Route a tool call to its handler
  */
 export async function handleToolCall(
@@ -342,6 +399,8 @@ export async function handleToolCall(
       return handleList(args as unknown as ListToolArgs, ctx)
     case 'codex_cache_clear':
       return handleCacheClear(args as unknown as CacheClearToolArgs, ctx)
+    case 'codex_file_sources_list':
+      return handleFileSourcesList(ctx)
     default:
       return textResult(`Unknown tool: ${name}`, true)
   }

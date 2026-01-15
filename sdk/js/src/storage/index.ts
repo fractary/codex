@@ -45,6 +45,9 @@ export { GitHubStorage, createGitHubStorage, type GitHubStorageOptions } from '.
 // HTTP storage provider
 export { HttpStorage, createHttpStorage, type HttpStorageOptions } from './http.js'
 
+// File plugin storage provider
+export { FilePluginStorage, type FilePluginStorageOptions } from './file-plugin.js'
+
 // Storage manager
 export {
   StorageManager,

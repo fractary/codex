@@ -13,7 +13,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { getDefaultYamlConfig, writeYamlConfig } from '../../config/migrate-config';
+import { initializeUnifiedConfig } from '../../config/unified-config';
 
 /**
  * Extract org from git remote URL
@@ -49,13 +49,13 @@ export function initCommand(): Command {
   const cmd = new Command('init');
 
   cmd
-    .description('Initialize Codex v3.0 with YAML configuration')
+    .description('Initialize unified Fractary configuration (.fractary/config.yaml)')
     .option('--org <slug>', 'Organization slug (e.g., "fractary")')
-    .option('--mcp', 'Enable MCP server registration')
+    .option('--project <name>', 'Project name (default: derived from directory)')
     .option('--force', 'Overwrite existing configuration')
     .action(async (options) => {
       try {
-        console.log(chalk.blue('Initializing Codex v3.0 (YAML format)...\n'));
+        console.log(chalk.blue('Initializing unified Fractary configuration...\n'));
 
         // Resolve organization
         let org = options.org;
@@ -86,21 +86,30 @@ export function initCommand(): Command {
           console.log(chalk.dim(`Organization: ${chalk.cyan(org)}\n`));
         }
 
-        // Config path (v4.0 standard)
-        const configDir = path.join(process.cwd(), '.fractary', 'codex');
-        const configPath = path.join(configDir, 'config.yaml');
+        // Resolve project name
+        let project = options.project;
+        if (!project) {
+          // Use current directory name
+          project = path.basename(process.cwd());
+          console.log(chalk.dim(`Project: ${chalk.cyan(project)}\n`));
+        }
+
+        // Unified config path
+        const configPath = path.join(process.cwd(), '.fractary', 'config.yaml');
         const configExists = await fileExists(configPath);
 
         if (configExists && !options.force) {
-          console.log(chalk.yellow('⚠ Configuration already exists at .fractary/codex/config.yaml'));
-          console.log(chalk.dim('Use --force to overwrite'));
-          process.exit(1);
+          console.log(chalk.yellow(`⚠ Configuration already exists at .fractary/config.yaml`));
+          console.log(chalk.dim('Merging with existing configuration...\n'));
         }
 
         // Create directory structure
         console.log('Creating directory structure...');
 
         const dirs = [
+          '.fractary',
+          '.fractary/specs',
+          '.fractary/logs',
           '.fractary/codex',
           '.fractary/codex/cache'
         ];
@@ -110,41 +119,43 @@ export function initCommand(): Command {
           console.log(chalk.green('✓'), chalk.dim(dir + '/'));
         }
 
-        // Create configuration
-        console.log('\nCreating YAML configuration...');
+        // Initialize or merge configuration
+        console.log('\nInitializing configuration...');
 
-        const config = getDefaultYamlConfig(org);
+        const result = await initializeUnifiedConfig(
+          configPath,
+          org,
+          project,
+          { force: options.force }
+        );
 
-        // Enable MCP if requested
-        if (options.mcp && config.mcp) {
-          config.mcp.enabled = true;
+        if (result.created) {
+          console.log(chalk.green('✓'), chalk.dim('.fractary/config.yaml (created)'));
+        } else if (result.merged) {
+          console.log(chalk.green('✓'), chalk.dim('.fractary/config.yaml (merged with existing)'));
         }
 
-        // Write YAML config
-        await writeYamlConfig(config, configPath);
-        console.log(chalk.green('✓'), chalk.dim('.fractary/codex/config.yaml'));
-
         // Success message
-        console.log(chalk.green('\n✓ Codex v4.0 initialized successfully!\n'));
+        console.log(chalk.green('\n✓ Unified configuration initialized successfully!\n'));
 
         console.log(chalk.bold('Configuration:'));
         console.log(chalk.dim(`  Organization: ${org}`));
-        console.log(chalk.dim(`  Cache: .fractary/codex/cache/`));
-        console.log(chalk.dim(`  Config: .fractary/codex/config.yaml`));
-        if (options.mcp) {
-          console.log(chalk.dim(`  MCP Server: Enabled (port 3000)`));
-        }
+        console.log(chalk.dim(`  Project: ${project}`));
+        console.log(chalk.dim(`  Config: .fractary/config.yaml`));
 
-        console.log(chalk.bold('\nStorage providers configured:'));
-        console.log(chalk.dim('  - Local filesystem (./knowledge)'));
-        console.log(chalk.dim('  - GitHub (requires GITHUB_TOKEN)'));
-        console.log(chalk.dim('  - HTTP endpoint'));
+        console.log(chalk.bold('\nFile plugin sources:'));
+        console.log(chalk.dim('  - specs: .fractary/specs/ → S3'));
+        console.log(chalk.dim('  - logs: .fractary/logs/ → S3'));
+
+        console.log(chalk.bold('\nCodex plugin:'));
+        console.log(chalk.dim('  - Cache: .fractary/codex/cache/'));
+        console.log(chalk.dim('  - Dependencies: (none configured)'));
 
         console.log(chalk.bold('\nNext steps:'));
-        console.log(chalk.dim('  1. Set your GitHub token: export GITHUB_TOKEN="your_token"'));
-        console.log(chalk.dim('  2. Edit .fractary/codex/config.yaml to configure storage providers'));
-        console.log(chalk.dim('  3. Fetch a document: fractary codex fetch codex://org/project/path'));
-        console.log(chalk.dim('  4. Check cache: fractary codex cache list'));
+        console.log(chalk.dim('  1. Configure AWS credentials for S3 access'));
+        console.log(chalk.dim('  2. Edit .fractary/config.yaml to add external project dependencies'));
+        console.log(chalk.dim('  3. Access current project files: codex://specs/SPEC-001.md'));
+        console.log(chalk.dim('  4. Access external projects: codex://org/project/docs/README.md'));
 
       } catch (error: any) {
         console.error(chalk.red('Error:'), error.message);

@@ -10,7 +10,16 @@ import type { ResolvedReference } from '../references/index.js'
 /**
  * Supported storage provider types
  */
-export type StorageProviderType = 'local' | 'github' | 'http' | 's3' | 's3-archive' | 'r2' | 'gcs' | 'drive'
+export type StorageProviderType =
+  | 'local'
+  | 'github'
+  | 'http'
+  | 's3'
+  | 's3-archive'
+  | 'r2'
+  | 'gcs'
+  | 'drive'
+  | 'file-plugin'
 
 /**
  * Result of a fetch operation
