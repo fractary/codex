@@ -240,9 +240,11 @@ function detectFilePluginSource(
     const sourceNameInPath = normalizedBasePath.split('/').pop()
     if (sourceNameInPath && normalizedPath.startsWith(sourceNameInPath + '/')) {
       // Path starts with source name (e.g., "specs/SPEC-001.md")
+      // Strip the source name prefix to avoid duplication
+      const pathWithoutSource = normalizedPath.substring(sourceNameInPath.length + 1)
       return {
         name: sourceName,
-        fullPath: path.join(basePath, normalizedPath),
+        fullPath: path.join(basePath, pathWithoutSource),
       }
     }
   }

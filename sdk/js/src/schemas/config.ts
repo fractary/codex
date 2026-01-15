@@ -109,26 +109,40 @@ export type CodexConfig = z.infer<typeof CodexConfigSchema>
  *
  * Based on SPEC-20260115: Codex-File Plugin Integration
  */
-export const FileSourceSchema = z.object({
-  type: z.enum(['s3', 'r2', 'gcs', 'local']),
-  bucket: z.string().optional(),
-  prefix: z.string().optional(),
-  region: z.string().optional(),
-  local: z.object({
-    base_path: z.string(),
-  }),
-  push: z
-    .object({
-      compress: z.boolean().optional(),
-      keep_local: z.boolean().optional(),
-    })
-    .optional(),
-  auth: z
-    .object({
-      profile: z.string().optional(),
-    })
-    .optional(),
-})
+export const FileSourceSchema = z
+  .object({
+    type: z.enum(['s3', 'r2', 'gcs', 'local']),
+    bucket: z.string().optional(),
+    prefix: z.string().optional(),
+    region: z.string().optional(),
+    local: z.object({
+      base_path: z.string(),
+    }),
+    push: z
+      .object({
+        compress: z.boolean().optional(),
+        keep_local: z.boolean().optional(),
+      })
+      .optional(),
+    auth: z
+      .object({
+        profile: z.string().optional(),
+      })
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // Bucket is required for cloud storage types (s3, r2, gcs)
+      if (data.type !== 'local' && !data.bucket) {
+        return false
+      }
+      return true
+    },
+    {
+      message: "Bucket is required for s3, r2, and gcs storage types",
+      path: ['bucket'],
+    }
+  )
 
 export type FileSource = z.infer<typeof FileSourceSchema>
 

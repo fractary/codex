@@ -316,7 +316,7 @@ describe('file-integration/source-resolver', () => {
 
     it('should normalize paths before matching', () => {
       // With leading ./
-      expect(resolver.getSourceForPath('./fractary/specs/SPEC-001.md')?.name).toBe('specs')
+      expect(resolver.getSourceForPath('./.fractary/specs/SPEC-001.md')?.name).toBe('specs')
 
       // With leading /
       expect(resolver.getSourceForPath('/.fractary/specs/SPEC-001.md')?.name).toBe('specs')

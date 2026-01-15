@@ -58,6 +58,26 @@ export interface CodexPluginConfig {
 }
 
 /**
+ * Sanitize a name for use in S3 bucket naming
+ *
+ * S3 bucket naming rules:
+ * - Must be 3-63 characters
+ * - Lowercase letters, numbers, hyphens only
+ * - Must start and end with letter or number
+ *
+ * @param name - Name to sanitize
+ * @returns Sanitized name safe for S3 bucket naming
+ */
+function sanitizeForS3BucketName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-') // Replace invalid chars with hyphen
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+    .replace(/-+/g, '-') // Collapse multiple hyphens
+    .substring(0, 63) // Enforce max length
+}
+
+/**
  * Get default unified configuration
  *
  * @param organization - Organization name
@@ -65,13 +85,15 @@ export interface CodexPluginConfig {
  * @returns Default unified configuration
  */
 export function getDefaultUnifiedConfig(organization: string, project: string): UnifiedConfig {
+  const sanitizedProject = sanitizeForS3BucketName(project)
+
   return {
     file: {
       schema_version: '2.0',
       sources: {
         specs: {
           type: 's3',
-          bucket: `${project}-files`,
+          bucket: `${sanitizedProject}-files`,
           prefix: 'specs/',
           region: 'us-east-1',
           local: {
@@ -87,7 +109,7 @@ export function getDefaultUnifiedConfig(organization: string, project: string): 
         },
         logs: {
           type: 's3',
-          bucket: `${project}-files`,
+          bucket: `${sanitizedProject}-files`,
           prefix: 'logs/',
           region: 'us-east-1',
           local: {

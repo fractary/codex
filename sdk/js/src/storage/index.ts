@@ -48,6 +48,12 @@ export { HttpStorage, createHttpStorage, type HttpStorageOptions } from './http.
 // File plugin storage provider
 export { FilePluginStorage, type FilePluginStorageOptions } from './file-plugin.js'
 
+// Storage errors
+export {
+  FilePluginFileNotFoundError,
+  type FilePluginFileNotFoundErrorOptions,
+} from './errors.js'
+
 // Storage manager
 export {
   StorageManager,

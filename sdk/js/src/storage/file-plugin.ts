@@ -14,6 +14,7 @@ import type { StorageProvider, FetchResult, FetchOptions } from './provider.js'
 import type { ResolvedReference } from '../references/index.js'
 import type { UnifiedConfig } from '../schemas/config.js'
 import { FileSourceResolver, type ResolvedFileSource } from '../file-integration/index.js'
+import { FilePluginFileNotFoundError } from './errors.js'
 
 /**
  * File plugin storage configuration
@@ -69,7 +70,7 @@ export class FilePluginStorage implements StorageProvider {
    * @param options - Fetch options (unused for local reads)
    * @returns Fetch result with content
    */
-  async fetch(reference: ResolvedReference, options?: FetchOptions): Promise<FetchResult> {
+  async fetch(reference: ResolvedReference, _options?: FetchOptions): Promise<FetchResult> {
     if (!reference.localPath) {
       throw new Error(`File plugin reference missing localPath: ${reference.uri}`)
     }
@@ -78,10 +79,21 @@ export class FilePluginStorage implements StorageProvider {
       throw new Error(`File plugin reference missing source name: ${reference.uri}`)
     }
 
-    // Resolve absolute path
+    // Resolve absolute path and validate against path traversal
     const absolutePath = path.isAbsolute(reference.localPath)
-      ? reference.localPath
-      : path.join(this.baseDir, reference.localPath)
+      ? path.resolve(reference.localPath)
+      : path.resolve(this.baseDir, reference.localPath)
+
+    // Security: Validate that resolved path stays within allowed directory
+    const source = this.sourceResolver.resolveSource(reference.filePluginSource)
+    if (source) {
+      const allowedDir = path.resolve(this.baseDir, source.localPath)
+      if (!absolutePath.startsWith(allowedDir + path.sep) && absolutePath !== allowedDir) {
+        throw new Error(
+          `Path traversal detected: ${reference.localPath} resolves outside allowed directory ${source.localPath}`
+        )
+      }
+    }
 
     try {
       // Read file content
@@ -119,14 +131,26 @@ export class FilePluginStorage implements StorageProvider {
    * @param options - Fetch options (unused)
    * @returns True if file exists
    */
-  async exists(reference: ResolvedReference, options?: FetchOptions): Promise<boolean> {
+  async exists(reference: ResolvedReference, _options?: FetchOptions): Promise<boolean> {
     if (!reference.localPath) {
       return false
     }
 
+    // Resolve absolute path and validate against path traversal
     const absolutePath = path.isAbsolute(reference.localPath)
-      ? reference.localPath
-      : path.join(this.baseDir, reference.localPath)
+      ? path.resolve(reference.localPath)
+      : path.resolve(this.baseDir, reference.localPath)
+
+    // Security: Validate that resolved path stays within allowed directory
+    if (reference.filePluginSource) {
+      const source = this.sourceResolver.resolveSource(reference.filePluginSource)
+      if (source) {
+        const allowedDir = path.resolve(this.baseDir, source.localPath)
+        if (!absolutePath.startsWith(allowedDir + path.sep) && absolutePath !== allowedDir) {
+          return false // Path traversal attempt - file doesn't "exist" from our perspective
+        }
+      }
+    }
 
     try {
       await fs.access(absolutePath)
@@ -166,26 +190,18 @@ export class FilePluginStorage implements StorageProvider {
   private createFileNotFoundError(
     reference: ResolvedReference,
     source: ResolvedFileSource | null
-  ): Error {
-    const messages: string[] = [
-      `File not found: ${reference.localPath}`,
-      '',
-    ]
+  ): FilePluginFileNotFoundError {
+    // Use the custom error class which includes helpful messages
+    const includeCloudSuggestions = this.options.enableS3Fallback !== false
+    const storageType = source?.config.type
 
-    if (source && this.options.enableS3Fallback !== false) {
-      messages.push(`This file may be in cloud storage (${source.config.type}).`)
-      messages.push('')
-      messages.push('To fetch from cloud storage, run:')
-      messages.push(`  file pull ${reference.filePluginSource}`)
-      messages.push('')
-      messages.push('Or sync all sources:')
-      messages.push(`  file sync`)
-    } else {
-      messages.push('Please ensure the file exists locally or pull it from cloud storage.')
-    }
-
-    const error = new Error(messages.join('\n'))
-    error.name = 'FilePluginFileNotFoundError'
-    return error
+    return new FilePluginFileNotFoundError(
+      reference.localPath || reference.path || '',
+      reference.filePluginSource || '',
+      {
+        includeCloudSuggestions,
+        storageType,
+      }
+    )
   }
 }

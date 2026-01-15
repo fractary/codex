@@ -211,7 +211,7 @@ describe('storage/file-plugin', () => {
       expect(result.content.toString()).toBe('# Test Spec\n\nTest content')
       expect(result.contentType).toBe('text/markdown')
       expect(result.source).toBe('file-plugin')
-      expect(result.size).toBe(27)
+      expect(result.size).toBe(25)
     })
 
     it('should include metadata in result', async () => {
