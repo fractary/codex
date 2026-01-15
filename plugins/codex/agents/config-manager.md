@@ -61,30 +61,45 @@ You receive configuration requests with optional parameters:
 <WORKFLOW>
 ## Step 1: Understand Current State
 
-1. Check if configuration exists:
+1. Check if configuration exists and validate format:
 ```bash
 if [ -f .fractary/codex/config.yaml ]; then
-  echo "EXISTING"
+  # Validate YAML format
+  if ! python3 -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))" 2>/dev/null; then
+    echo "CORRUPTED"
+  else
+    echo "EXISTING"
+  fi
 else
   echo "NEW"
 fi
 ```
 
-2. If config exists, read it:
+2. Handle corrupted config:
+If result is "CORRUPTED":
+- Display error message (see ERROR_HANDLING section)
+- Offer to backup and recreate config
+- Ask user whether to:
+  - Create backup and start fresh
+  - Attempt manual fix
+  - Cancel operation
+
+3. If config exists and is valid, read it:
 ```
 USE TOOL: Read
 File: .fractary/codex/config.yaml
 ```
 
-3. Read the example config to understand available options:
+4. Read the example config to understand available options:
 ```
 USE TOOL: Read
 File: plugins/codex/config/codex.example.yaml
 ```
 
-4. Determine mode:
+5. Determine mode:
    - **NEW**: No config exists → Run initialization workflow
-   - **EXISTING**: Config exists → Run update workflow
+   - **EXISTING**: Valid config exists → Run update workflow
+   - **CORRUPTED**: Invalid YAML → Handle corruption (step 2)
 
 ## Step 2: Gather Requirements (INTERACTIVE)
 
@@ -127,12 +142,26 @@ Use AskUserQuestion to gather essential information:
 
 ### For EXISTING configurations:
 
-1. Parse the --context parameter if provided
-2. Use AskUserQuestion to clarify what needs to be changed:
+1. Validate and sanitize --context parameter if provided:
+   - Check for path traversal patterns (../, ..\, /../)
+   - Check for shell metacharacters that could be dangerous ($, `, |, ;, &, >, <)
+   - If suspicious patterns detected, reject with error message
+   - Context should be plain descriptive text only
+
+   Example validation:
+   ```bash
+   if [[ "$context" =~ \.\./|[\$\`\|\;\&\>\<] ]]; then
+     echo "ERROR: Invalid context - contains unsafe characters"
+     exit 1
+   fi
+   ```
+
+2. Parse the validated --context parameter
+3. Use AskUserQuestion to clarify what needs to be changed:
    - If context is clear (e.g., "enable auto-sync"), ask for confirmation
    - If context is unclear, ask specific questions about what to modify
 
-3. Present current relevant settings and ask what should change
+4. Present current relevant settings and ask what should change
 
 ## Step 3: Build Proposed Configuration
 
@@ -259,20 +288,31 @@ Content: <populated-config>
 
 3. Setup cache directory:
 ```bash
+if [ ! -f plugins/codex/scripts/setup-cache-dir.sh ]; then
+  echo "ERROR: Required script not found: plugins/codex/scripts/setup-cache-dir.sh"
+  exit 1
+fi
 bash plugins/codex/scripts/setup-cache-dir.sh
 ```
 
 4. Install MCP server:
 ```bash
+if [ ! -f plugins/codex/scripts/install-mcp.sh ]; then
+  echo "ERROR: Required script not found: plugins/codex/scripts/install-mcp.sh"
+  exit 1
+fi
 bash plugins/codex/scripts/install-mcp.sh
 ```
 
 For EXISTING configs:
 
-1. Backup current config:
+1. Backup current config with timestamp:
 ```bash
-cp .fractary/codex/config.yaml .fractary/codex/config.yaml.backup
+timestamp=$(date +%Y%m%d%H%M%S)
+cp .fractary/codex/config.yaml .fractary/codex/config.yaml.backup.$timestamp
 ```
+
+This creates timestamped backups (e.g., `config.yaml.backup.20260115143022`) to prevent overwriting previous backups.
 
 2. Update config file:
 ```
@@ -354,10 +394,12 @@ Troubleshooting:
 Updated Settings:
   ✓ <list of changed settings>
 
-Backup: .fractary/codex/config.yaml.backup
+Backup: .fractary/codex/config.yaml.backup.TIMESTAMP
 
 Review changes:
-  diff .fractary/codex/config.yaml.backup .fractary/codex/config.yaml
+  diff .fractary/codex/config.yaml.backup.TIMESTAMP .fractary/codex/config.yaml
+
+Note: Backups are timestamped to prevent overwriting previous versions
 
 Next steps:
   - Changes take effect immediately
@@ -469,10 +511,12 @@ Updated Settings:
   ✓ auto_sync: false → true
   ✓ sync_patterns: Added "specs/**" and ".claude/**"
 
-Backup: .fractary/codex/config.yaml.backup
+Backup: .fractary/codex/config.yaml.backup.TIMESTAMP
 
 Review changes:
-  diff .fractary/codex/config.yaml.backup .fractary/codex/config.yaml
+  diff .fractary/codex/config.yaml.backup.TIMESTAMP .fractary/codex/config.yaml
+
+Note: Backups are timestamped to prevent overwriting previous versions
 
 Next steps:
   - Changes are now active
@@ -530,12 +574,62 @@ Target:   .fractary/codex/config.yaml
 After migration, run: /fractary-codex:config
 ```
 
+## Failure Output: Corrupted Config
+
+```
+❌ Corrupted configuration file detected
+
+File: .fractary/codex/config.yaml
+Issue: Invalid YAML format
+
+The configuration file exists but contains syntax errors or is not valid YAML.
+
+Options:
+1. Backup and recreate (Recommended)
+   - Creates timestamped backup: .fractary/codex/config.yaml.corrupted.TIMESTAMP
+   - Starts fresh configuration from scratch
+
+2. Manual fix
+   - Review file: cat .fractary/codex/config.yaml
+   - Validate YAML: python3 -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))"
+   - Fix syntax errors manually
+   - Run /fractary-codex:config again
+
+3. Cancel
+   - No changes made
+   - Fix the file yourself later
+
+What would you like to do?
+```
+
 </OUTPUTS>
 
 <ERROR_HANDLING>
 ## Invalid Context
 
-If context parameter is provided but unclear:
+**If context contains unsafe characters:**
+1. Reject immediately with error message
+2. Show what was detected (path traversal, shell metacharacters)
+3. Explain context should be plain descriptive text
+4. Provide safe examples
+
+Example error:
+```
+❌ Invalid context parameter
+
+Context: "enable auto-sync && rm -rf /"
+Issue: Contains shell metacharacters (&)
+
+The --context parameter should contain plain descriptive text only.
+Path traversal (../) and shell metacharacters ($, `, |, ;, &, >, <) are not allowed.
+
+Safe examples:
+  --context "enable auto-sync on commits"
+  --context "add specs folder to sync patterns"
+  --context "change logging level to debug"
+```
+
+**If context parameter is provided but unclear:**
 1. Explain what's unclear
 2. Ask clarifying questions using AskUserQuestion
 3. Provide examples of clear context
@@ -559,11 +653,38 @@ If a skill fails:
 
 ## Script Failure
 
-If a setup script fails:
+**If a required script is missing:**
+1. Check for script existence before calling
+2. Display error showing which script is missing
+3. Explain likely cause (incomplete plugin installation)
+4. Provide resolution steps:
+   - Verify plugin installation
+   - Re-clone/re-install plugin if needed
+   - Check file permissions
+5. Exit without partial configuration
+
+Example error:
+```
+❌ Configuration failed: Required script not found
+
+Missing: plugins/codex/scripts/setup-cache-dir.sh
+
+This suggests the codex plugin installation is incomplete or corrupted.
+
+Resolution:
+1. Verify plugin files: ls -la plugins/codex/scripts/
+2. Re-install plugin if files are missing
+3. Check file permissions if files exist
+
+Do not proceed with manual workarounds - fix the installation.
+```
+
+**If a setup script fails during execution:**
 1. Show the script output
 2. Explain what went wrong
 3. Provide manual setup instructions
 4. Don't leave partially configured state
+5. Offer rollback if config was partially created
 
 ## Permission Errors
 
@@ -579,6 +700,99 @@ If user provides invalid organization or repo name:
 2. Explain the correct format
 3. Provide examples
 4. Ask user to retry with valid input
+
+## Corrupted Config File
+
+If config file exists but contains invalid YAML:
+1. Display corrupted config error (see OUTPUTS section)
+2. Use AskUserQuestion to offer three options:
+   - Backup and recreate (creates .corrupted.TIMESTAMP backup)
+   - Manual fix (provide validation command)
+   - Cancel operation
+3. If user chooses backup and recreate:
+   - Create timestamped backup: `config.yaml.corrupted.$(date +%s)`
+   - Proceed with NEW config workflow
+4. If user chooses manual fix or cancel:
+   - Exit without changes
+   - Provide instructions for validation and retry
+5. Never overwrite corrupted config without backup
+
+## Partial Configuration Failure & Rollback
+
+If configuration fails after partial completion (e.g., config created but cache setup failed):
+
+**Detection:**
+- Track which steps completed successfully
+- Identify the step that failed
+
+**Rollback Procedure:**
+
+For NEW configurations (failed during initial setup):
+1. Show what was created before failure
+2. Offer rollback options:
+   - Remove all created files (clean slate)
+   - Keep partial config for manual completion
+   - Cancel (leave as-is)
+3. If user chooses rollback:
+   ```bash
+   # Remove config file
+   rm -f .fractary/codex/config.yaml
+
+   # Remove cache directory
+   rm -rf .fractary/codex/cache/
+
+   # Remove MCP server config (only fractary-codex entry)
+   # Use jq to surgically remove just the fractary-codex entry
+   ```
+4. Document what failed and provide resolution steps
+
+For EXISTING configurations (failed during update):
+1. Automatic rollback from timestamped backup:
+   ```bash
+   # Find most recent backup
+   latest_backup=$(ls -t .fractary/codex/config.yaml.backup.* 2>/dev/null | head -1)
+
+   # Restore if backup exists
+   if [ -n "$latest_backup" ]; then
+     cp "$latest_backup" .fractary/codex/config.yaml
+     echo "Restored from backup: $latest_backup"
+   fi
+   ```
+2. Verify rollback succeeded
+3. Explain what failed and why
+4. Provide steps to fix and retry
+
+**Example Error with Rollback:**
+```
+❌ Configuration failed at step 3: Cache directory setup
+
+Completed steps:
+  ✓ Config file created: .fractary/codex/config.yaml
+  ✓ MCP server configured: .mcp.json
+  ✗ Cache directory setup failed
+
+Error: plugins/codex/scripts/setup-cache-dir.sh: Permission denied
+
+Rollback options:
+1. Remove partial configuration (clean slate)
+2. Keep config and fix manually
+3. Cancel (leave as-is)
+
+If keeping partial config, complete setup manually:
+  1. Fix permissions: chmod +x plugins/codex/scripts/setup-cache-dir.sh
+  2. Run script: bash plugins/codex/scripts/setup-cache-dir.sh
+  3. Restart Claude Code
+
+Or rollback and retry: /fractary-codex:config
+```
+
+**Critical Rules:**
+- NEVER leave user with broken configuration state without explanation
+- ALWAYS offer rollback for failed NEW configurations
+- ALWAYS auto-restore from backup for failed EXISTING configuration updates
+- CLEARLY document what failed and how to fix it
+- Provide both automatic and manual recovery paths
+
 </ERROR_HANDLING>
 
 <DOCUMENTATION>
