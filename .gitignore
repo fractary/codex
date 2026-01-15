@@ -67,3 +67,6 @@ yarn-error.log*
 # Legacy codex cache locations
 .codex-cache/
 .fractary/plugins/codex/cache/
+
+# Status plugin cache
+.fractary/plugins/status/

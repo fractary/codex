@@ -51,23 +51,25 @@ Request codex://org/project/docs/api.md
 
 ## Quick Start
 
-### 1. Initialize (One-Time Setup)
+### 1. Configure (One-Time Setup)
 
 ```bash
-/fractary-codex:init
+/fractary-codex:config
 ```
 
-Auto-detects organization from git remote and discovers codex repository.
+Interactive configuration with auto-detection of organization and codex repository.
 
 Or specify explicitly:
 ```bash
-/fractary-codex:init --org fractary --codex codex.fractary.com
+/fractary-codex:config --org fractary --codex codex.fractary.com
 ```
+
+> **Note:** The old `/fractary-codex:init` command is still supported for backward compatibility.
 
 This sets up:
 - Configuration at `.fractary/codex/config.yaml` (YAML format, v4.0)
 - Cache directory at `.fractary/codex/cache/` (auto-managed)
-- MCP server in `.claude/settings.json`
+- MCP server in `.mcp.json`
 
 **Note:** Restart Claude Code after initialization to load the MCP server.
 
@@ -545,7 +547,7 @@ Validate plugin setup and configuration status.
 - Configuration file exists and is valid JSON
 - Required fields present (organization, codex_repo)
 - Cache directory exists and is writable
-- MCP server installed in `.claude/settings.json`
+- MCP server installed in `.mcp.json`
 - Cache index exists and is valid
 
 ### `/fractary-codex:validate-refs`
@@ -644,13 +646,13 @@ The codex plugin uses the SDK-provided MCP server from `@fractary/codex` to expo
 
 **Automatic (Recommended):**
 ```bash
-/fractary-codex:init --org fractary --codex codex.fractary.com
+/fractary-codex:config --org fractary --codex codex.fractary.com
 ```
 
 This automatically:
 1. Creates YAML configuration at `.fractary/codex/config.yaml`
 2. Sets up cache directory
-3. Registers SDK MCP server in `.claude/settings.json`
+3. Registers SDK MCP server in `.mcp.json`
 4. Detects and migrates legacy custom MCP server (if present)
 
 **Manual:**
@@ -910,7 +912,7 @@ Configure MCP server for seamless integration in Claude Desktop/Code conversatio
 ls -la .fractary/codex/cache/index.json
 ```
 
-**Fix:** Run `/fractary-codex:init` to set up the cache directory.
+**Fix:** Run `/fractary-codex:config` to set up the cache directory.
 
 ### Permission Denied
 
@@ -939,7 +941,7 @@ ls plugins/codex/mcp-server/dist/
 ```
 
 **Fix:**
-1. Run `/fractary-codex:init` to configure MCP
+1. Run `/fractary-codex:config` to configure MCP
 2. Restart Claude
 3. Fetch some documents: `/fractary-codex:fetch codex://org/project/file.md`
 
