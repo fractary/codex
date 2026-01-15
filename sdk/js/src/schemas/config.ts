@@ -76,6 +76,60 @@ export const ArchiveConfigSchema = z.object({
 export type ArchiveConfig = z.infer<typeof ArchiveConfigSchema>
 
 /**
+ * Schema for GitHub authentication configuration
+ */
+export const GitHubAuthConfigSchema = z.object({
+  /** Default token environment variable name (default: GITHUB_TOKEN) */
+  default_token_env: z.string().optional(),
+  /** Fallback to public access if authentication fails */
+  fallback_to_public: z.boolean().optional(),
+})
+
+export type GitHubAuthConfig = z.infer<typeof GitHubAuthConfigSchema>
+
+/**
+ * Schema for authentication configuration
+ */
+export const AuthConfigSchema = z.object({
+  /** GitHub authentication configuration */
+  github: GitHubAuthConfigSchema.optional(),
+})
+
+export type AuthConfig = z.infer<typeof AuthConfigSchema>
+
+/**
+ * Schema for source configuration within a dependency
+ */
+export const SourceConfigSchema = z.object({
+  /** Source type */
+  type: z.enum(['github', 's3', 'http', 'local']),
+  /** Environment variable containing the authentication token */
+  token_env: z.string().optional(),
+  /** Direct token value (not recommended, use token_env instead) */
+  token: z.string().optional(),
+  /** Branch to fetch from (for GitHub sources) */
+  branch: z.string().optional(),
+  /** Base URL (for HTTP sources) */
+  base_url: z.string().optional(),
+  /** Bucket name (for S3 sources) */
+  bucket: z.string().optional(),
+  /** Prefix/path within bucket (for S3 sources) */
+  prefix: z.string().optional(),
+})
+
+export type SourceConfig = z.infer<typeof SourceConfigSchema>
+
+/**
+ * Schema for dependency configuration
+ */
+export const DependencyConfigSchema = z.object({
+  /** Sources within this dependency */
+  sources: z.record(SourceConfigSchema),
+})
+
+export type DependencyConfig = z.infer<typeof DependencyConfigSchema>
+
+/**
  * Schema for Codex configuration
  *
  * Based on SPEC-00005: Configuration System
@@ -83,6 +137,9 @@ export type ArchiveConfig = z.infer<typeof ArchiveConfigSchema>
 export const CodexConfigSchema = z
   .object({
     organizationSlug: z.string(),
+
+    /** Project name (optional) */
+    project: z.string().optional(),
 
     directories: z
       .object({
@@ -99,6 +156,12 @@ export const CodexConfigSchema = z
 
     // Archive configuration
     archive: ArchiveConfigSchema.optional(),
+
+    // Authentication configuration
+    auth: AuthConfigSchema.optional(),
+
+    // Dependencies configuration (external projects)
+    dependencies: z.record(DependencyConfigSchema).optional(),
   })
   .strict()
 

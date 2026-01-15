@@ -23,12 +23,14 @@
   },
   "enabledPlugins": {
     "fractary-codex@fractary-codex": true,
+    "fractary-core@fractary-core": true,
     "fractary-repo@fractary-core": true,
     "fractary-work@fractary-core": true,
     "fractary-docs@fractary-core": true,
     "fractary-spec@fractary-core": true,
     "fractary-logs@fractary-core": true,
     "fractary-file@fractary-core": true,
+    "fractary-status@fractary-core": true,
     "fractary-faber@fractary-faber": true,
     "fractary-faber-cloud@fractary-faber": true
   },
