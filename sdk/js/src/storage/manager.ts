@@ -98,7 +98,7 @@ export class StorageManager {
       const dependency = this.codexConfig.dependencies[dependencyKey]
 
       // Look for token in any GitHub source
-      for (const [sourceName, sourceConfig] of Object.entries(dependency.sources)) {
+      for (const [, sourceConfig] of Object.entries(dependency.sources)) {
         if (sourceConfig.type === 'github') {
           // Check token_env first
           if (sourceConfig.token_env) {

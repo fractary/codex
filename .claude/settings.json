@@ -30,6 +30,7 @@
     "fractary-spec@fractary-core": true,
     "fractary-logs@fractary-core": true,
     "fractary-file@fractary-core": true,
+    "fractary-status@fractary-core": true,
     "fractary-faber@fractary-faber": true,
     "fractary-faber-cloud@fractary-faber": true
   },

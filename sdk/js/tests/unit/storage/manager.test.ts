@@ -397,6 +397,251 @@ describe('storage/manager', () => {
     })
   })
 
+  describe('authentication resolution', () => {
+    it('should use default token from auth config', async () => {
+      const manager = new StorageManager({
+        codexConfig: {
+          organizationSlug: 'test-org',
+          auth: {
+            github: {
+              default_token_env: 'CUSTOM_GITHUB_TOKEN',
+            },
+          },
+        },
+      })
+
+      // Set environment variable
+      process.env.CUSTOM_GITHUB_TOKEN = 'test_default_token'
+
+      const mockGitHub = createMockProvider('github', 'github', true, {
+        content: Buffer.from('test'),
+        contentType: 'text/plain',
+        size: 4,
+        source: 'github',
+      })
+      manager.registerProvider(mockGitHub)
+
+      const ref = createReference({ org: 'test-org', project: 'test-project' })
+      await manager.fetch(ref)
+
+      expect(mockGitHub.fetch).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({ token: 'test_default_token' })
+      )
+
+      delete process.env.CUSTOM_GITHUB_TOKEN
+    })
+
+    it('should use dependency-specific token', async () => {
+      const manager = new StorageManager({
+        codexConfig: {
+          organizationSlug: 'test-org',
+          auth: {
+            github: {
+              default_token_env: 'GITHUB_TOKEN',
+            },
+          },
+          dependencies: {
+            'partner-org/partner-project': {
+              sources: {
+                docs: {
+                  type: 'github',
+                  token_env: 'PARTNER_TOKEN',
+                },
+              },
+            },
+          },
+        },
+      })
+
+      process.env.GITHUB_TOKEN = 'default_token'
+      process.env.PARTNER_TOKEN = 'partner_specific_token'
+
+      const mockGitHub = createMockProvider('github', 'github', true, {
+        content: Buffer.from('test'),
+        contentType: 'text/plain',
+        size: 4,
+        source: 'github',
+      })
+      manager.registerProvider(mockGitHub)
+
+      const ref = createReference({ org: 'partner-org', project: 'partner-project' })
+      await manager.fetch(ref)
+
+      expect(mockGitHub.fetch).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({ token: 'partner_specific_token' })
+      )
+
+      delete process.env.GITHUB_TOKEN
+      delete process.env.PARTNER_TOKEN
+    })
+
+    it('should fall back to default when dependency token not set', async () => {
+      const manager = new StorageManager({
+        codexConfig: {
+          organizationSlug: 'test-org',
+          auth: {
+            github: {
+              default_token_env: 'GITHUB_TOKEN',
+            },
+          },
+          dependencies: {
+            'partner-org/partner-project': {
+              sources: {
+                docs: {
+                  type: 'github',
+                  token_env: 'MISSING_TOKEN',
+                },
+              },
+            },
+          },
+        },
+      })
+
+      process.env.GITHUB_TOKEN = 'default_token'
+
+      const mockGitHub = createMockProvider('github', 'github', true, {
+        content: Buffer.from('test'),
+        contentType: 'text/plain',
+        size: 4,
+        source: 'github',
+      })
+      manager.registerProvider(mockGitHub)
+
+      const ref = createReference({ org: 'partner-org', project: 'partner-project' })
+      await manager.fetch(ref)
+
+      expect(mockGitHub.fetch).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({ token: 'default_token' })
+      )
+
+      delete process.env.GITHUB_TOKEN
+    })
+
+    it('should use direct token from source config', async () => {
+      const manager = new StorageManager({
+        codexConfig: {
+          organizationSlug: 'test-org',
+          dependencies: {
+            'test-org/test-project': {
+              sources: {
+                docs: {
+                  type: 'github',
+                  token: 'direct_token_value',
+                },
+              },
+            },
+          },
+        },
+      })
+
+      const mockGitHub = createMockProvider('github', 'github', true, {
+        content: Buffer.from('test'),
+        contentType: 'text/plain',
+        size: 4,
+        source: 'github',
+      })
+      manager.registerProvider(mockGitHub)
+
+      const ref = createReference({ org: 'test-org', project: 'test-project' })
+      await manager.fetch(ref)
+
+      expect(mockGitHub.fetch).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({ token: 'direct_token_value' })
+      )
+    })
+
+    it('should allow explicit token to override resolved token', async () => {
+      const manager = new StorageManager({
+        codexConfig: {
+          organizationSlug: 'test-org',
+          auth: {
+            github: {
+              default_token_env: 'GITHUB_TOKEN',
+            },
+          },
+        },
+      })
+
+      process.env.GITHUB_TOKEN = 'default_token'
+
+      const mockGitHub = createMockProvider('github', 'github', true, {
+        content: Buffer.from('test'),
+        contentType: 'text/plain',
+        size: 4,
+        source: 'github',
+      })
+      manager.registerProvider(mockGitHub)
+
+      const ref = createReference()
+      await manager.fetch(ref, { token: 'explicit_override_token' })
+
+      expect(mockGitHub.fetch).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({ token: 'explicit_override_token' })
+      )
+
+      delete process.env.GITHUB_TOKEN
+    })
+
+    it('should handle missing auth config gracefully', async () => {
+      const manager = new StorageManager({
+        codexConfig: {
+          organizationSlug: 'test-org',
+        },
+      })
+
+      const mockGitHub = createMockProvider('github', 'github', true, {
+        content: Buffer.from('test'),
+        contentType: 'text/plain',
+        size: 4,
+        source: 'github',
+      })
+      manager.registerProvider(mockGitHub)
+
+      const ref = createReference()
+      await manager.fetch(ref)
+
+      // Should fall back to GITHUB_TOKEN env var by default
+      expect(mockGitHub.fetch).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({ token: undefined })
+      )
+    })
+
+    it('should resolve token for exists() method', async () => {
+      const manager = new StorageManager({
+        codexConfig: {
+          organizationSlug: 'test-org',
+          auth: {
+            github: {
+              default_token_env: 'GITHUB_TOKEN',
+            },
+          },
+        },
+      })
+
+      process.env.GITHUB_TOKEN = 'test_token'
+
+      const mockGitHub = createMockProvider('github', 'github', true)
+      mockGitHub.exists = vi.fn().mockResolvedValue(true)
+      manager.registerProvider(mockGitHub)
+
+      const ref = createReference()
+      await manager.exists(ref)
+
+      expect(mockGitHub.exists).toHaveBeenCalledWith(
+        ref,
+        expect.objectContaining({ token: 'test_token' })
+      )
+
+      delete process.env.GITHUB_TOKEN
+    })
+  })
+
   describe('default manager', () => {
     beforeEach(() => {
       // Reset default manager
