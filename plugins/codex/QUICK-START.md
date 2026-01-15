@@ -24,46 +24,64 @@
 
 ---
 
-## Step 1: Initialize Configuration (2 minutes)
+## Step 1: Configure Plugin (2 minutes)
 
-### Run the Init Command
+### Run the Configuration Command
 
 ```bash
-/fractary-codex:init
+/fractary-codex:config
 ```
+
+> **Note:** The old `/fractary-codex:init` command is still supported for backward compatibility.
 
 ### What Happens
 
+The command will guide you through an interactive setup:
+
 1. **Auto-Detection**: Extracts organization from your git remote
-   ```
-   Detected organization: fractary
-   Is this correct? (Y/n)
-   ```
+   - Shows detected organization and asks for confirmation
 
 2. **Codex Discovery**: Searches for `codex.*` repositories
-   ```
-   Found codex repository: codex.fractary.com
-   Use this repository? (Y/n)
-   ```
+   - Shows found repositories and asks you to select or confirm
 
-3. **Configuration Creation**: Creates config file
+3. **Sync Patterns**: Asks which files you want to sync
+   - Standard (docs, README, CLAUDE.md, standards, guides) - Recommended
+   - Minimal (docs and README only)
+   - Custom (specify your own patterns)
+
+4. **Auto-sync**: Asks if files should sync automatically on commit
+   - Manual sync (recommended) or automatic sync
+
+5. **Confirmation**: Shows proposed configuration and asks for approval
+
+6. **Configuration Creation**: Creates config file after confirmation
    ```
-   ✅ Codex plugin initialized successfully!
+   ✅ Codex plugin configured successfully!
 
    Created:
-     - Project config: .fractary/plugins/codex/config.json
+     - Config: .fractary/codex/config.yaml (YAML, v4.0)
+     - Cache: .fractary/codex/cache/
+     - MCP Server: .mcp.json
 
    Configuration:
      Organization: fractary
      Codex Repository: codex.fractary.com
-     Sync Patterns: docs/**, CLAUDE.md, README.md, .claude/**
+     Auto-sync: disabled
+     Sync Patterns: 5 patterns configured
    ```
 
-### Manual Configuration (Optional)
+### Non-Interactive Configuration (Optional)
 
-If auto-detection fails, specify manually:
+Specify everything explicitly to skip interactive questions:
 ```bash
-/fractary-codex:init --org fractary --codex codex.fractary.com
+/fractary-codex:config --org fractary --codex codex.fractary.com
+```
+
+### Update Existing Configuration
+
+Use the `--context` parameter to describe what you want to change:
+```bash
+/fractary-codex:config --context "enable auto-sync and add specs folder to sync patterns"
 ```
 
 ---
@@ -259,7 +277,7 @@ codex_sync_exclude: ["docs/internal/**"]
 **Problem**:
 ```
 ⚠️ Configuration required
-Run: /fractary-codex:init
+Run: /fractary-codex:config
 ```
 
 **Solution**: Run the init command to create configuration
@@ -387,7 +405,7 @@ jobs:
 
 ```bash
 # Initialize
-/fractary-codex:init
+/fractary-codex:config
 
 # Sync project (preview)
 /fractary-codex:sync-project --dry-run
