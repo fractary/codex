@@ -5,6 +5,8 @@ Complete reference for configuring the Fractary Codex SDK.
 ## Table of Contents
 
 - [Configuration File](#configuration-file)
+- [Unified Configuration Structure](#unified-configuration-structure)
+- [File Plugin Integration](#file-plugin-integration)
 - [Configuration Schema](#configuration-schema)
 - [Storage Providers](#storage-providers)
 - [Archive Configuration](#archive-configuration)
@@ -17,16 +19,19 @@ Complete reference for configuring the Fractary Codex SDK.
 
 ## Configuration File
 
-The Codex SDK uses a YAML configuration file located at `.fractary/codex/config.yaml` in your project root.
+The Codex SDK uses a unified YAML configuration file located at `.fractary/config.yaml` in your project root. This unified configuration includes both Codex plugin settings and File plugin integration.
+
+**Note:** The legacy path `.fractary/codex/config.yaml` is still supported for backward compatibility but is deprecated.
 
 ### File Location
 
 The SDK searches for configuration in the following order:
 
-1. `.fractary/codex/config.yaml` (project-specific)
-2. `~/.fractary/codex/config.yaml` (user-wide)
-3. Environment variables
-4. Default values
+1. `.fractary/config.yaml` (unified configuration - recommended)
+2. `.fractary/codex/config.yaml` (legacy - deprecated)
+3. `~/.fractary/config.yaml` (user-wide)
+4. Environment variables
+5. Default values
 
 ### Creating Configuration
 
@@ -43,29 +48,199 @@ python -m fractary_codex init
 **Manual creation:**
 
 ```yaml
-# .fractary/codex/config.yaml
-organization: fractary
-cacheDir: .fractary/codex/cache
+# .fractary/config.yaml (unified configuration)
+file:
+  schema_version: "2.0"
+  sources:
+    specs:
+      type: s3
+      bucket: myproject-files
+      prefix: specs/
+      region: us-east-1
+      local:
+        base_path: .fractary/specs
+      push:
+        compress: false
+        keep_local: true
+      auth:
+        profile: default
 
-storage:
-  - type: local
-    basePath: ./knowledge
-  - type: github
-    token: ${GITHUB_TOKEN}
+    logs:
+      type: s3
+      bucket: myproject-files
+      prefix: logs/
+      region: us-east-1
+      local:
+        base_path: .fractary/logs
+      push:
+        compress: true
+        keep_local: true
 
-types:
-  docs:
-    name: docs
-    patterns:
-      - docs/**
-      - "**/*.md"
-    defaultTtl: 86400
+codex:
+  schema_version: "2.0"
+  organization: fractary
+  project: myproject
+  dependencies: {}
+```
 
-permissions:
-  default: read
-  rules:
-    - pattern: internal/**
-      permission: none
+## Unified Configuration Structure
+
+The unified configuration file (`.fractary/config.yaml`) combines both file plugin and codex plugin settings in a single YAML file.
+
+### File Plugin Section
+
+The `file:` section configures local artifact sources (specs, logs, assets) that can be synced with cloud storage:
+
+```yaml
+file:
+  schema_version: "2.0"
+  sources:
+    # Source name (e.g., "specs", "logs", "assets")
+    {source-name}:
+      type: s3 | r2 | gcs | local
+      bucket: string              # Cloud storage bucket (optional for local)
+      prefix: string              # Path prefix in bucket (optional)
+      region: string              # Cloud region (optional)
+      local:
+        base_path: string         # Local filesystem path
+      push:
+        compress: boolean         # Compress before upload (optional)
+        keep_local: boolean       # Keep local copy after upload (optional)
+      auth:
+        profile: string           # AWS profile or auth config (optional)
+```
+
+### Codex Plugin Section
+
+The `codex:` section configures the knowledge management system and external project dependencies:
+
+```yaml
+codex:
+  schema_version: "2.0"
+  organization: string            # Your organization slug
+  project: string                 # Current project name
+  dependencies:
+    # External project dependencies
+    {org}/{project}:
+      sources:
+        {source-name}:
+          type: s3 | github | http
+          # ... source-specific configuration
+```
+
+### Benefits of Unified Configuration
+
+1. **Single Source of Truth**: All Fractary configuration in one place
+2. **Auto-Discovery**: Codex automatically detects file plugin sources for current project
+3. **Current Project Optimization**: No caching for current project files (always fresh)
+4. **Cross-Project Access**: Explicit dependencies with caching for external projects
+5. **Simplified Management**: One file to version, backup, and share
+
+## File Plugin Integration
+
+The Codex SDK automatically integrates with file plugin sources configured in the unified configuration. This enables seamless access to current project artifacts without explicit configuration.
+
+### Current Project Access
+
+When you access files from your current project that are managed by the file plugin, Codex:
+
+1. **Detects file plugin sources** from the `file.sources` configuration
+2. **Bypasses cache** for freshness during active development
+3. **Reads directly** from local filesystem
+4. **Provides helpful errors** when files are missing locally
+
+**Example:**
+
+```yaml
+# .fractary/config.yaml
+file:
+  sources:
+    specs:
+      local:
+        base_path: .fractary/specs
+```
+
+```typescript
+// Access specs directly - no caching, always fresh
+const spec = await fetch('codex://fractary/myproject/specs/SPEC-001.md')
+```
+
+### URI Patterns
+
+File plugin sources support flexible URI patterns:
+
+```
+# Full URI (explicit org/project)
+codex://fractary/myproject/specs/SPEC-001.md
+
+# Shorthand URI (omit org/project for current project)
+codex://specs/SPEC-001.md
+
+# Both resolve to: .fractary/specs/SPEC-001.md (no cache)
+```
+
+### Cache Behavior
+
+**Current Project** (file plugin sources):
+- ✅ Always reads fresh from disk
+- ❌ Never cached
+- ⚡ Optimal for active development
+
+**External Projects** (dependencies):
+- ✅ Cached with TTL
+- 🔄 Stale-while-revalidate support
+- 💾 Persisted across sessions
+
+### Storage Provider Priority
+
+When both file plugin and standard storage providers are configured:
+
+```
+1. file-plugin (current project only, no cache)
+2. local (current project, standard files)
+3. s3-archive (archived documents)
+4. github (remote repositories)
+5. http (API endpoints)
+```
+
+### File Not Found Handling
+
+When a file plugin file is missing locally, Codex provides helpful error messages:
+
+```
+File not found: .fractary/specs/SPEC-001.md
+
+This file may be in cloud storage (s3).
+
+To fetch from cloud storage, run:
+  file pull specs
+
+Or sync all sources:
+  file sync
+```
+
+### MCP Server Integration
+
+The Codex MCP server automatically detects file plugin sources:
+
+```json
+// .claude/settings.json
+{
+  "mcpServers": {
+    "fractary-codex": {
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
+    }
+  }
+}
+```
+
+Use the `codex_file_sources_list` tool to discover available sources:
+
+```typescript
+// List file plugin sources
+const sources = await client.call('codex_file_sources_list', {})
+// Returns: specs (.fractary/specs), logs (.fractary/logs), etc.
 ```
 
 ## Configuration Schema

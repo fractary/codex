@@ -159,6 +159,12 @@ export {
   HttpStorage,
   createHttpStorage,
   type HttpStorageOptions,
+  // File plugin storage
+  FilePluginStorage,
+  type FilePluginStorageOptions,
+  // Storage errors
+  FilePluginFileNotFoundError,
+  type FilePluginFileNotFoundErrorOptions,
   // Storage manager
   StorageManager,
   createStorageManager,

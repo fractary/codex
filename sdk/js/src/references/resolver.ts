@@ -9,6 +9,7 @@
 import path from 'path'
 import { execSync } from 'child_process'
 import { parseReference, type ParsedReference } from './parser.js'
+import type { StorageProviderType } from '../storage/provider.js'
 
 /**
  * Resolved reference with filesystem paths
@@ -20,6 +21,10 @@ export interface ResolvedReference extends ParsedReference {
   isCurrentProject: boolean
   /** Local filesystem path if current project */
   localPath?: string
+  /** Source type for storage routing */
+  sourceType?: StorageProviderType
+  /** File plugin source name if sourceType is 'file-plugin' */
+  filePluginSource?: string
 }
 
 /**
@@ -34,6 +39,8 @@ export interface ResolveOptions {
   currentProject?: string
   /** Current working directory (for git detection) */
   cwd?: string
+  /** Unified config for file plugin source resolution */
+  config?: any // Type will be UnifiedConfig, using 'any' to avoid circular dependency
 }
 
 /**
@@ -164,9 +171,85 @@ export function resolveReference(
   // If it's the current project and there's a path, provide the local path
   if (isCurrentProject && parsed.path) {
     resolved.localPath = parsed.path
+
+    // Check if this path belongs to a file plugin source
+    if (options.config) {
+      const fileSource = detectFilePluginSource(parsed.path, options.config)
+      if (fileSource) {
+        resolved.sourceType = 'file-plugin'
+        resolved.filePluginSource = fileSource.name
+        resolved.localPath = fileSource.fullPath
+      }
+    }
   }
 
   return resolved
+}
+
+/**
+ * Detect if a path belongs to a file plugin source
+ *
+ * @param filePath - The file path from the URI
+ * @param config - Unified configuration
+ * @returns Matching file source info or null
+ */
+function detectFilePluginSource(
+  filePath: string,
+  config: any
+): { name: string; fullPath: string } | null {
+  if (!config?.file?.sources) {
+    return null
+  }
+
+  // Check each file source to see if the path matches
+  for (const [sourceName, source] of Object.entries(config.file.sources) as [string, any][]) {
+    const basePath = source.local?.base_path
+    if (!basePath) {
+      continue
+    }
+
+    // Normalize paths for comparison
+    const normalizedPath = filePath.replace(/^\.\//, '').replace(/^\//, '')
+    const normalizedBasePath = basePath.replace(/^\.\//, '').replace(/^\//, '').replace(/\/$/, '')
+
+    // Check if path starts with source's base_path
+    // Examples:
+    //   filePath: "specs/SPEC-001.md"
+    //   basePath: ".fractary/specs"
+    //   normalizedPath: "specs/SPEC-001.md"
+    //   normalizedBasePath: ".fractary/specs"
+    //
+    // Or if path is already prefixed:
+    //   filePath: ".fractary/specs/SPEC-001.md"
+    //   normalizedPath: ".fractary/specs/SPEC-001.md"
+    //
+    // We need to check two scenarios:
+    // 1. Path already includes base_path: ".fractary/specs/SPEC-001.md" starts with ".fractary/specs"
+    // 2. Path is relative to base_path: "specs/SPEC-001.md" and base_path is ".fractary/specs"
+    //    In this case, we extract the source name from base_path and check if path starts with it
+
+    if (normalizedPath.startsWith(normalizedBasePath)) {
+      // Scenario 1: Path already includes full base_path
+      return {
+        name: sourceName,
+        fullPath: path.join(basePath, normalizedPath.substring(normalizedBasePath.length).replace(/^\//, '')),
+      }
+    }
+
+    // Scenario 2: Extract source name from base_path (e.g., "specs" from ".fractary/specs")
+    const sourceNameInPath = normalizedBasePath.split('/').pop()
+    if (sourceNameInPath && normalizedPath.startsWith(sourceNameInPath + '/')) {
+      // Path starts with source name (e.g., "specs/SPEC-001.md")
+      // Strip the source name prefix to avoid duplication
+      const pathWithoutSource = normalizedPath.substring(sourceNameInPath.length + 1)
+      return {
+        name: sourceName,
+        fullPath: path.join(basePath, pathWithoutSource),
+      }
+    }
+  }
+
+  return null
 }
 
 /**

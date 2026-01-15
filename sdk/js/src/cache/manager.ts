@@ -100,11 +100,23 @@ export class CacheManager {
    * Get content for a reference
    *
    * Implements cache-first strategy with stale-while-revalidate.
+   *
+   * EXCEPTION: File plugin sources (current project files) bypass cache entirely.
+   * They are always read fresh from disk for optimal development experience.
    */
   async get(
     reference: ResolvedReference,
     options?: FetchOptions & { ttl?: number }
   ): Promise<FetchResult> {
+    // Bypass cache for current project file plugin sources
+    // These are read directly from disk for freshness
+    if (reference.isCurrentProject && reference.sourceType === 'file-plugin') {
+      if (!this.storage) {
+        throw new Error('Storage manager not set')
+      }
+      return await this.storage.fetch(reference, options)
+    }
+
     const ttl = options?.ttl ?? this.config.defaultTtl
 
     // Check memory cache
@@ -367,6 +379,9 @@ export class CacheManager {
 
   /**
    * Fetch content and store in cache
+   *
+   * EXCEPTION: File plugin sources are not cached (should not reach here,
+   * but added as safety check).
    */
   private async fetchAndCache(
     reference: ResolvedReference,
@@ -378,7 +393,12 @@ export class CacheManager {
     }
 
     const result = await this.storage.fetch(reference, options)
-    await this.set(reference.uri, result, ttl)
+
+    // Don't cache current project file plugin sources
+    // They should always be read fresh from disk
+    if (!(reference.isCurrentProject && reference.sourceType === 'file-plugin')) {
+      await this.set(reference.uri, result, ttl)
+    }
 
     return result
   }
