@@ -12,6 +12,7 @@ import { GitHubStorage, type GitHubStorageOptions } from './github.js'
 import { HttpStorage, type HttpStorageOptions } from './http.js'
 import { S3ArchiveStorage, type S3ArchiveStorageOptions } from './s3-archive.js'
 import { FilePluginStorage, type FilePluginStorageOptions } from './file-plugin.js'
+import type { CodexConfig } from '../schemas/config.js'
 
 /**
  * Storage manager configuration
@@ -31,6 +32,8 @@ export interface StorageManagerConfig {
   priority?: StorageProviderType[]
   /** Whether to enable caching (handled by cache layer, not storage) */
   enableCaching?: boolean
+  /** Full codex configuration (for auth and dependencies) */
+  codexConfig?: CodexConfig
 }
 
 /**
@@ -42,8 +45,12 @@ export interface StorageManagerConfig {
 export class StorageManager {
   private providers: Map<StorageProviderType, StorageProvider> = new Map()
   private priority: StorageProviderType[]
+  private codexConfig?: CodexConfig
 
   constructor(config: StorageManagerConfig = {}) {
+    // Store codex config for auth resolution
+    this.codexConfig = config.codexConfig
+
     // Initialize default providers
     this.providers.set('local', new LocalStorage(config.local))
     this.providers.set('github', new GitHubStorage(config.github))
@@ -71,6 +78,61 @@ export class StorageManager {
           : config.s3Archive
             ? ['local', 's3-archive', 'github', 'http']
             : ['local', 'github', 'http'])
+  }
+
+  /**
+   * Resolve authentication token for a reference
+   *
+   * Looks up dependency-specific authentication or falls back to default
+   */
+  private resolveToken(reference: ResolvedReference): string | undefined {
+    if (!this.codexConfig) {
+      return undefined
+    }
+
+    // Build dependency key: org/project
+    const dependencyKey = `${reference.org}/${reference.project}`
+
+    // Check for dependency-specific auth
+    if (this.codexConfig.dependencies?.[dependencyKey]) {
+      const dependency = this.codexConfig.dependencies[dependencyKey]
+
+      // Look for token in any GitHub source
+      for (const [sourceName, sourceConfig] of Object.entries(dependency.sources)) {
+        if (sourceConfig.type === 'github') {
+          // Check token_env first
+          if (sourceConfig.token_env) {
+            const token = process.env[sourceConfig.token_env]
+            if (token) {
+              return token
+            }
+          }
+
+          // Check direct token (not recommended, but supported)
+          if (sourceConfig.token) {
+            return sourceConfig.token
+          }
+        }
+      }
+    }
+
+    // Fall back to default GitHub auth
+    const defaultTokenEnv = this.codexConfig.auth?.github?.default_token_env || 'GITHUB_TOKEN'
+    return process.env[defaultTokenEnv]
+  }
+
+  /**
+   * Resolve fetch options with authentication
+   *
+   * Merges reference-specific authentication with provided options
+   */
+  private resolveFetchOptions(reference: ResolvedReference, options?: FetchOptions): FetchOptions {
+    const token = this.resolveToken(reference)
+
+    return {
+      ...options,
+      token: options?.token || token, // Explicit option overrides resolved token
+    }
   }
 
   /**
@@ -118,8 +180,11 @@ export class StorageManager {
    * Fetch content for a reference
    *
    * Tries providers in priority order until one succeeds.
+   * Automatically resolves authentication based on dependency configuration.
    */
   async fetch(reference: ResolvedReference, options?: FetchOptions): Promise<FetchResult> {
+    // Resolve authentication options
+    const resolvedOptions = this.resolveFetchOptions(reference, options)
     const errors: Error[] = []
 
     for (const type of this.priority) {
@@ -129,7 +194,7 @@ export class StorageManager {
       }
 
       try {
-        return await provider.fetch(reference, options)
+        return await provider.fetch(reference, resolvedOptions)
       } catch (error) {
         errors.push(error instanceof Error ? error : new Error(String(error)))
         // Continue to next provider
@@ -157,8 +222,12 @@ export class StorageManager {
    * Check if content exists for a reference
    *
    * Returns true if any provider reports the content exists.
+   * Automatically resolves authentication based on dependency configuration.
    */
   async exists(reference: ResolvedReference, options?: FetchOptions): Promise<boolean> {
+    // Resolve authentication options
+    const resolvedOptions = this.resolveFetchOptions(reference, options)
+
     for (const type of this.priority) {
       const provider = this.providers.get(type)
       if (!provider || !provider.canHandle(reference)) {
@@ -166,7 +235,7 @@ export class StorageManager {
       }
 
       try {
-        if (await provider.exists(reference, options)) {
+        if (await provider.exists(reference, resolvedOptions)) {
           return true
         }
       } catch {
@@ -195,6 +264,8 @@ export class StorageManager {
 
   /**
    * Fetch multiple references in parallel
+   *
+   * Automatically resolves authentication for each reference based on dependency configuration.
    */
   async fetchMany(
     references: ResolvedReference[],
@@ -204,6 +275,7 @@ export class StorageManager {
 
     const promises = references.map(async (ref) => {
       try {
+        // Each reference gets its own resolved options
         const result = await this.fetch(ref, options)
         results.set(ref.uri, result)
       } catch (error) {

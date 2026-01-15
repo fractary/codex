@@ -23,6 +23,7 @@
   },
   "enabledPlugins": {
     "fractary-codex@fractary-codex": true,
+    "fractary-core@fractary-core": true,
     "fractary-repo@fractary-core": true,
     "fractary-work@fractary-core": true,
     "fractary-docs@fractary-core": true,

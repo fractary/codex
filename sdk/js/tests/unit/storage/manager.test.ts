@@ -201,7 +201,8 @@ describe('storage/manager', () => {
       const result = await manager.fetch(ref)
 
       expect(result).toBe(mockResult)
-      expect(mockGitHub.fetch).toHaveBeenCalledWith(ref, undefined)
+      // Manager now resolves auth options even when no auth is configured
+      expect(mockGitHub.fetch).toHaveBeenCalledWith(ref, expect.objectContaining({ token: undefined }))
     })
 
     it('should try next provider on failure', async () => {
