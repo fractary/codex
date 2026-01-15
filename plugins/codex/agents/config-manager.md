@@ -65,7 +65,8 @@ You receive configuration requests with optional parameters:
 ```bash
 if [ -f .fractary/codex/config.yaml ]; then
   # Validate YAML format with fallback methods
-  is_valid=true
+  # Default to false (fail-safe) - must be explicitly set true by validation
+  is_valid=false
 
   # Try Python/PyYAML first (most accurate) - check both python3 AND yaml module exist
   if command -v python3 >/dev/null 2>&1 && python3 -c "import yaml" 2>/dev/null; then
@@ -91,6 +92,9 @@ if [ -f .fractary/codex/config.yaml ]; then
       tab_char=$(printf '\t')
       if grep -q "$tab_char" .fractary/codex/config.yaml 2>/dev/null; then
         is_valid=false
+      else
+        # Passed basic validation
+        is_valid=true
       fi
     else
       # File doesn't look like YAML
@@ -136,20 +140,57 @@ File: plugins/codex/config/codex.example.yaml
 
 ## Step 2: Gather Requirements (INTERACTIVE)
 
+### Input Validation for Organization/Repository Names
+
+Before using any organization or repository name (whether auto-detected or user-provided), validate the format:
+
+```bash
+# Validate org/repo name format (alphanumeric, hyphens, underscores, dots)
+validate_name() {
+  local name="$1"
+  local type="$2"  # "organization" or "repository"
+
+  # Check not empty
+  if [ -z "$name" ]; then
+    echo "ERROR: $type name cannot be empty"
+    return 1
+  fi
+
+  # Check length (1-100 characters)
+  if [ ${#name} -gt 100 ]; then
+    echo "ERROR: $type name too long (max 100 characters)"
+    return 1
+  fi
+
+  # Check format: alphanumeric, hyphens, underscores, dots only
+  if ! echo "$name" | grep -qE '^[a-zA-Z0-9][a-zA-Z0-9._-]*$'; then
+    echo "ERROR: Invalid $type name format"
+    echo "Must start with alphanumeric, contain only: a-z, A-Z, 0-9, ., -, _"
+    return 1
+  fi
+
+  return 0
+}
+```
+
 ### For NEW configurations:
 
 Use AskUserQuestion to gather essential information:
 
 1. **Organization** (if not provided via --org):
    - Try auto-detection from git remote
-   - If successful, show detected org and ask for confirmation
-   - If fails, ask user to provide organization name
+   - **Validate format** before showing to user
+   - If successful and valid, show detected org and ask for confirmation
+   - If fails or invalid, ask user to provide organization name
+   - **Re-validate** any user-provided name
 
 2. **Codex Repository** (if not provided via --codex):
    - Use repo-discoverer skill to find matching repos
-   - If one found, ask for confirmation
+   - **Validate format** of discovered repos
+   - If one found and valid, ask for confirmation
    - If multiple found, ask user to select
    - If none found, ask user to provide repo name
+   - **Re-validate** any user-provided name
 
 3. **Sync Patterns**:
    Ask: "Which files should be synced with the codex?"
@@ -321,6 +362,29 @@ Parameters: {
 ```
 
 ### Option B: CLI Unavailable (Fallback)
+
+**IMPORTANT: Track Pre-existing State for Rollback**
+
+Before making any changes, record what already exists:
+```bash
+# Track pre-existing files for potential rollback
+mcp_existed=false
+if [ -f .mcp.json ]; then
+  mcp_existed=true
+  # Backup existing .mcp.json before modification
+  cp .mcp.json .mcp.json.pre-codex-config
+fi
+
+config_existed=false
+if [ -f .fractary/codex/config.yaml ]; then
+  config_existed=true
+fi
+
+cache_existed=false
+if [ -d .fractary/codex/cache ]; then
+  cache_existed=true
+fi
+```
 
 For NEW configs:
 
@@ -814,33 +878,39 @@ For NEW configurations (failed during initial setup):
    - Cancel (leave as-is)
 3. If user chooses rollback:
    ```bash
-   # Remove config file
-   rm -f .fractary/codex/config.yaml
+   # Remove config file (only if we created it)
+   if [ "$config_existed" = false ]; then
+     rm -f .fractary/codex/config.yaml
+   fi
 
-   # Remove cache directory
-   rm -rf .fractary/codex/cache/
+   # Remove cache directory (only if we created it)
+   if [ "$cache_existed" = false ]; then
+     rm -rf .fractary/codex/cache/
+   fi
 
-   # Remove MCP server config (only fractary-codex entry)
+   # Handle MCP server config based on pre-existing state
    if [ -f .mcp.json ]; then
-     if command -v jq >/dev/null 2>&1; then
-       # Use jq to surgically remove just the fractary-codex entry
-       jq 'del(.mcpServers["fractary-codex"])' .mcp.json > .mcp.json.tmp
-       mv .mcp.json.tmp .mcp.json
-
-       # If mcpServers is now empty, remove the whole object
-       if [ "$(jq '.mcpServers | length' .mcp.json)" = "0" ]; then
-         jq 'del(.mcpServers)' .mcp.json > .mcp.json.tmp
-         mv .mcp.json.tmp .mcp.json
-       fi
-
-       # If file is now empty {}, remove it
-       if [ "$(jq '. | length' .mcp.json)" = "0" ]; then
-         rm .mcp.json
+     if [ "$mcp_existed" = true ]; then
+       # .mcp.json existed before - restore from backup
+       if [ -f .mcp.json.pre-codex-config ]; then
+         mv .mcp.json.pre-codex-config .mcp.json
+         echo "Restored .mcp.json from pre-configuration backup"
+       else
+         # No backup, surgically remove our entry
+         if command -v jq >/dev/null 2>&1; then
+           jq 'del(.mcpServers["fractary-codex"])' .mcp.json > .mcp.json.tmp
+           mv .mcp.json.tmp .mcp.json
+         fi
        fi
      else
-       echo "Warning: jq not available, manual cleanup needed for .mcp.json"
+       # .mcp.json didn't exist before - we created it, so remove it entirely
+       rm -f .mcp.json
+       echo "Removed .mcp.json (created during this configuration)"
      fi
    fi
+
+   # Clean up backup file if rollback succeeded
+   rm -f .mcp.json.pre-codex-config
    ```
 4. Document what failed and provide resolution steps
 
