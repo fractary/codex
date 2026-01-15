@@ -46,12 +46,13 @@ describe('MCP Tools', () => {
 
   describe('CODEX_TOOLS', () => {
     it('should export all required tools', () => {
-      expect(CODEX_TOOLS).toHaveLength(4)
+      expect(CODEX_TOOLS).toHaveLength(5)
       const toolNames = CODEX_TOOLS.map((t) => t.name)
       expect(toolNames).toContain('codex_document_fetch')
       expect(toolNames).toContain('codex_search')
       expect(toolNames).toContain('codex_cache_list')
       expect(toolNames).toContain('codex_cache_clear')
+      expect(toolNames).toContain('codex_file_sources_list')
     })
 
     it('should have valid tool schemas', () => {
