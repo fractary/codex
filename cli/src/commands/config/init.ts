@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { initializeUnifiedConfig } from '../../config/unified-config';
+import { ensureCachePathIgnored } from '../../config/gitignore-utils';
 
 /**
  * Extract org from git remote URL
@@ -117,6 +118,17 @@ export function initCommand(): Command {
         for (const dir of dirs) {
           await fs.mkdir(path.join(process.cwd(), dir), { recursive: true });
           console.log(chalk.green('✓'), chalk.dim(dir + '/'));
+        }
+
+        // Ensure .fractary/.gitignore exists with cache path
+        const gitignoreResult = await ensureCachePathIgnored(process.cwd(), '.fractary/codex/cache');
+
+        if (gitignoreResult.created) {
+          console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (created)'));
+        } else if (gitignoreResult.updated) {
+          console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (updated)'));
+        } else {
+          console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (exists)'));
         }
 
         // Initialize or merge configuration

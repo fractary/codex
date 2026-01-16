@@ -18,6 +18,11 @@ import {
   writeYamlConfig,
   type MigrationResult
 } from '../../config/migrate-config';
+import {
+  ensureCachePathIgnored,
+  DEFAULT_CACHE_DIR,
+  normalizeCachePath
+} from '../../config/gitignore-utils';
 
 /**
  * Check if file exists
@@ -89,8 +94,9 @@ export function migrateCommand(): Command {
 
         try {
           legacyConfig = JSON.parse(legacyContent);
-        } catch {
+        } catch (parseError: any) {
           console.error(chalk.red('Error:'), 'Invalid JSON in legacy config file.');
+          console.error(chalk.dim('Details:'), parseError.message);
           process.exit(1);
         }
 
@@ -168,8 +174,13 @@ export function migrateCommand(): Command {
           await writeYamlConfig(migrationResult.yamlConfig, newConfigPath);
 
           // Create cache directory
-          const cacheDir = path.join(process.cwd(), '.codex-cache');
+          const configuredCacheDir = migrationResult.yamlConfig.cacheDir || '.fractary/codex/cache';
+          const cacheDir = path.join(process.cwd(), configuredCacheDir);
           await fs.mkdir(cacheDir, { recursive: true });
+
+          // Ensure cache path is in .fractary/.gitignore
+          const gitignoreResult = await ensureCachePathIgnored(process.cwd(), configuredCacheDir);
+          const isCustomCachePath = normalizeCachePath(configuredCacheDir) !== DEFAULT_CACHE_DIR;
 
           if (!options.json) {
             console.log(chalk.green('✓'), 'YAML configuration created');
@@ -178,11 +189,27 @@ export function migrateCommand(): Command {
               console.log(chalk.green('✓'), 'Legacy config backed up');
             }
 
+            // Report gitignore status
+            if (gitignoreResult.created) {
+              console.log(chalk.green('✓'), '.fractary/.gitignore created');
+            } else if (gitignoreResult.updated) {
+              console.log(chalk.green('✓'), '.fractary/.gitignore updated with cache path');
+            } else if (gitignoreResult.alreadyIgnored) {
+              console.log(chalk.green('✓'), 'Cache path already in .fractary/.gitignore');
+            }
+
+            // Warn about custom cache path
+            if (isCustomCachePath) {
+              console.log('');
+              console.log(chalk.yellow('⚠ Custom cache directory detected:'), chalk.dim(configuredCacheDir));
+              console.log(chalk.dim('  Ensure .fractary/.gitignore includes this path to avoid committing cache files.'));
+            }
+
             console.log('');
             console.log(chalk.bold('New Configuration:'));
             console.log(chalk.dim(`  Path: ${newConfigPath}`));
             console.log(chalk.dim(`  Organization: ${migrationResult.yamlConfig.organization}`));
-            console.log(chalk.dim(`  Cache: ${migrationResult.yamlConfig.cacheDir || '.codex-cache'}`));
+            console.log(chalk.dim(`  Cache: ${configuredCacheDir}`));
             console.log(chalk.dim(`  Storage Providers: ${migrationResult.yamlConfig.storage?.length || 0}`));
 
             console.log('');
