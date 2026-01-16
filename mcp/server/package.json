@@ -1,6 +1,6 @@
 {
   "name": "@fractary/codex-mcp",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "MCP server for Fractary Codex knowledge management",
   "keywords": [
     "codex",
@@ -50,7 +50,7 @@
     "prepublishOnly": "npm run build && npm run test"
   },
   "dependencies": {
-    "@fractary/codex": "^0.9.0",
+    "@fractary/codex": "^0.9.1",
     "commander": "^11.1.0",
     "js-yaml": "^4.1.0"
   },

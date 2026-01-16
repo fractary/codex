@@ -2,7 +2,7 @@
 # This file configures the codex plugin for knowledge management and sync operations
 # CLI version: Use this format with @fractary/cli and @fractary/codex SDK
 
-version: "4.0"
+version: "2.0"
 
 # Organization identification
 organization: fractary
