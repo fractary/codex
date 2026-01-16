@@ -1,5 +1,5 @@
 ---
-name: fractary-codex:config
+name: fractary-codex:configure
 description: Configure codex plugin settings - initialize or update configuration - delegates to fractary-codex:config-manager agent
 allowed-tools: Task(fractary-codex:config-manager)
 model: claude-haiku-4-5

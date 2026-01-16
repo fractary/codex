@@ -26,7 +26,7 @@ Note: Global configuration at `~/.config/fractary/codex/config.json` is **deprec
 **Format**: JSON
 **Location**: `.fractary/plugins/codex/config.json` (project-level only)
 
-**Configuration Method**: Run `/fractary-codex:init`
+**Configuration Method**: Run `/fractary-codex:configure`
 
 **Features**:
 - Project-level configuration only (global config deprecated)
@@ -42,7 +42,7 @@ Note: Global configuration at `~/.config/fractary/codex/config.json` is **deprec
 - Global: `~/.config/fractary/codex/config.json` (deprecated)
 - Project: `.fractary/plugins/codex/config.json`
 
-**Migration**: If you have a global config, run `/fractary-codex:init` to create project-level config. The global config is no longer used.
+**Migration**: If you have a global config, run `/fractary-codex:configure` to create project-level config. The global config is no longer used.
 
 ### v1.x (Legacy - Before 2025-11-04)
 
@@ -51,7 +51,7 @@ Note: Global configuration at `~/.config/fractary/codex/config.json` is **deprec
 
 **Configuration Method**: Manual `.env` file creation with hardcoded values
 
-**Migration**: v1.x is completely deprecated. Run `/fractary-codex:init` to create v2.0+ configuration.
+**Migration**: v1.x is completely deprecated. Run `/fractary-codex:configure` to create v2.0+ configuration.
 
 ---
 
@@ -86,7 +86,7 @@ If you find a file named `docs/codex-sync.yaml` or similar YAML configuration fi
 
 2. **Initialize new configuration**:
    ```bash
-   /fractary-codex:init
+   /fractary-codex:configure
    ```
 
 3. **Verify configuration**:
@@ -106,7 +106,7 @@ If you have YAML configuration files:
 1. **Extract relevant settings** (if any are codex-related)
 2. **Run init to create proper configuration**:
    ```bash
-   /fractary-codex:init
+   /fractary-codex:configure
    ```
 3. **Manually transfer any custom patterns** to `.fractary/plugins/codex/config.json`
 4. **Remove YAML configuration files** (they are not used)
@@ -185,7 +185,7 @@ To verify your configuration is correct:
 ### "Configuration not found" error
 
 **Cause**: No configuration file exists
-**Solution**: Run `/fractary-codex:init`
+**Solution**: Run `/fractary-codex:configure`
 
 ### "Invalid JSON" error
 
@@ -203,7 +203,7 @@ To verify your configuration is correct:
 **Solution**:
 1. Check for config in non-standard locations
 2. If found, extract any useful settings
-3. Run `/fractary-codex:init` to create config in correct location
+3. Run `/fractary-codex:configure` to create config in correct location
 4. Remove old configuration files
 
 ---
@@ -216,4 +216,4 @@ To verify your configuration is correct:
 ❌ **YAML Config**: Never officially used - safe to remove
 ❌ **.env Files**: Deprecated in v1.x - migrate to JSON
 
-**Always use** `/fractary-codex:init` to create proper configuration.
+**Always use** `/fractary-codex:configure` to create proper configuration.

@@ -222,7 +222,7 @@ Note: Negative numbers indicate additions (new infrastructure or expanded functi
 
 1. **Initialize**:
    ```bash
-   /fractary-codex:init
+   /fractary-codex:configure
    ```
 
    This automatically creates YAML config at `.fractary/codex/config.yaml`

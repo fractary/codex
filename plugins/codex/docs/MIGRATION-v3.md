@@ -263,7 +263,7 @@ Required manual configuration in `.claude/config.json`:
 
 ```bash
 # Init command handles everything
-/fractary-codex:init --org fractary --codex codex.fractary.com
+/fractary-codex:configure --org fractary --codex codex.fractary.com
 
 # Or install MCP separately
 ./scripts/install-mcp.sh
@@ -354,7 +354,7 @@ If you need to rollback:
 
 2. **Manual migration:**
    - Create v3.0 config manually
-   - Run `/fractary-codex:init`
+   - Run `/fractary-codex:configure`
 
 ### References Not Found
 
@@ -382,7 +382,7 @@ If you need to rollback:
 
 2. **Reinitialize:**
    ```bash
-   /fractary-codex:init --force
+   /fractary-codex:configure --force
    ```
 
 ## Timeline
@@ -406,14 +406,14 @@ v3.0 introduces a consistent noun-verb naming pattern across all commands for im
 
 #### Command Renames
 
-| Old Command (v2.0) | New Command (v3.0) | Notes |
-|--------------------|---------------------|-------|
-| `/fractary-codex:fetch` | `/fractary-codex:document-fetch` | Explicit noun prefix |
-| `/fractary-codex:metrics` | `/fractary-codex:cache-stats` | Aligned with SDK terminology |
-| `/fractary-codex:init` | `/fractary-codex:config-init` | Category-scoped |
-| `/fractary-codex:migrate` | `/fractary-codex:config-migrate` | Category-scoped |
-| `/fractary-codex:sync-project` | `/fractary-codex:sync` | Simplified (project scope implicit) |
-| `/fractary-codex:sync-org` | **REMOVED** | See migration path below |
+| Old Command (v2.0) | New Command (v3.0) | Current (v5+) |
+|--------------------|---------------------|---------------|
+| `/fractary-codex:fetch` | `/fractary-codex:document-fetch` | `/fractary-codex:document-fetch` |
+| `/fractary-codex:metrics` | `/fractary-codex:cache-stats` | `/fractary-codex:cache-stats` |
+| `/fractary-codex:init` | `/fractary-codex:config-init` | `/fractary-codex:configure` |
+| `/fractary-codex:migrate` | `/fractary-codex:config-migrate` | `/fractary-codex:config-migrate` |
+| `/fractary-codex:sync-project` | `/fractary-codex:sync` | `/fractary-codex:sync` |
+| `/fractary-codex:sync-org` | **REMOVED** | **REMOVED** |
 
 ### Organization Sync Removal
 

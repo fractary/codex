@@ -121,7 +121,7 @@ If config missing required fields:
 ❌ Invalid configuration
 
 Missing required fields in .fractary/codex/config.yaml
-Please run: /fractary-codex:init
+Please run: /fractary-codex:configure
 ```
 
 ## Step 2: Determine Project Name
@@ -490,7 +490,7 @@ Expected: .fractary/codex/config.yaml
 Not found in current directory.
 
 Please initialize first:
-  /fractary-codex:init
+  /fractary-codex:configure
 ```
 
 ## Invalid Environment
@@ -543,7 +543,7 @@ After fixing, retry:
 If config doesn't exist:
 1. Check `.fractary/codex/config.yaml`
 2. If not found, show clear error
-3. Guide user to run `/fractary-codex:init`
+3. Guide user to run `/fractary-codex:configure`
 4. Don't proceed with sync
 
 ## Config Invalid

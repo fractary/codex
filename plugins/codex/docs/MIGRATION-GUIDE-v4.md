@@ -275,7 +275,7 @@ jq . .fractary/plugins/codex/config.json
 
 # If invalid, either:
 # 1. Fix JSON manually
-# 2. Start fresh: /fractary-codex:init
+# 2. Start fresh: /fractary-codex:configure
 ```
 
 ### Issue: "Global config still used"
@@ -416,7 +416,7 @@ Or with global CLI:
 The MCP server configuration is automatically migrated when you run:
 
 ```bash
-/fractary-codex:init
+/fractary-codex:configure
 ```
 
 The installation script will:
@@ -464,7 +464,7 @@ npm install -g @fractary/codex
 
 **Issue**: "Config file not found"
 
-**Solution**: Ensure `.fractary/codex/config.yaml` exists at project root. Run `/fractary-codex:init` if missing.
+**Solution**: Ensure `.fractary/codex/config.yaml` exists at project root. Run `/fractary-codex:configure` if missing.
 
 ## Next Steps
 

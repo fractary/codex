@@ -497,14 +497,14 @@ Next Steps:
   5. Run first sync: /fractary-codex:sync --from-codex --dry-run
 
 Commands:
-  - /fractary-codex:config        # Update configuration
+  - /fractary-codex:configure        # Update configuration
   - /fractary-codex:sync          # Sync project with codex
   - codex://<org>/<proj>/file.md  # Reference docs (auto-fetch via MCP)
 
 Troubleshooting:
   - Authentication errors → Run /fractary-repo:init
   - MCP not working → Restart Claude Code
-  - Cache issues → Run /fractary-codex:config (recreates cache dir)
+  - Cache issues → Run /fractary-codex:configure (recreates cache dir)
 ```
 
 **For EXISTING configs:**
@@ -612,14 +612,14 @@ Next Steps:
   5. Run first sync: /fractary-codex:sync --from-codex --dry-run
 
 Commands:
-  - /fractary-codex:config        # Update configuration
+  - /fractary-codex:configure        # Update configuration
   - /fractary-codex:sync          # Sync project with codex
   - codex://org/proj/file.md      # Reference docs (auto-fetch via MCP)
 
 Troubleshooting:
   - Authentication errors → Run /fractary-repo:init
   - MCP not working → Restart Claude Code
-  - Cache issues → Run /fractary-codex:config (recreates cache dir)
+  - Cache issues → Run /fractary-codex:configure (recreates cache dir)
 ```
 
 ## Success Output (UPDATE)
@@ -651,11 +651,11 @@ Next steps:
 No changes were made to your configuration.
 
 To configure codex, run:
-  /fractary-codex:config [--context "what you want to configure"]
+  /fractary-codex:configure [--context "what you want to configure"]
 
 Examples:
-  /fractary-codex:config --context "enable auto-sync"
-  /fractary-codex:config --org fractary --codex codex.fractary.com
+  /fractary-codex:configure --context "enable auto-sync"
+  /fractary-codex:configure --org fractary --codex codex.fractary.com
 ```
 
 ## Failure Output: Invalid Context
@@ -691,7 +691,7 @@ Please manually convert your JSON config to YAML format.
 Template: plugins/codex/config/codex.example.yaml
 Target:   .fractary/codex/config.yaml
 
-After migration, run: /fractary-codex:config
+After migration, run: /fractary-codex:configure
 ```
 
 ## Failure Output: Corrupted Config
@@ -713,7 +713,7 @@ Options:
    - Review file: cat .fractary/codex/config.yaml
    - Validate YAML: python3 -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))"
    - Fix syntax errors manually
-   - Run /fractary-codex:config again
+   - Run /fractary-codex:configure again
 
 3. Cancel
    - No changes made
@@ -951,7 +951,7 @@ If keeping partial config, complete setup manually:
   2. Run script: bash plugins/codex/scripts/setup-cache-dir.sh
   3. Restart Claude Code
 
-Or rollback and retry: /fractary-codex:config
+Or rollback and retry: /fractary-codex:configure
 ```
 
 **Critical Rules:**
@@ -979,12 +979,12 @@ After successful configuration, guide the user on:
    - How to reference docs via codex:// URIs
 
 3. **How to make future changes**:
-   - Run /fractary-codex:config with --context
+   - Run /fractary-codex:configure with --context
    - Edit .fractary/codex/config.yaml directly
    - Reference example config for available options
 
 4. **Commands available**:
-   - /fractary-codex:config - Update configuration
+   - /fractary-codex:configure - Update configuration
    - /fractary-codex:sync - Sync with codex
    - codex:// URI pattern - Reference docs
 
@@ -995,7 +995,7 @@ Keep guidance concise but complete.
 ## Example 1: Initial Setup (Interactive)
 
 ```
-User: /fractary-codex:config
+User: /fractary-codex:configure
 
 Agent: Let me configure the codex plugin for you.
 
@@ -1108,7 +1108,7 @@ Troubleshooting:
 ## Example 2: Update Existing Config
 
 ```
-User: /fractary-codex:config --context "enable auto-sync and add specs folder to sync patterns"
+User: /fractary-codex:configure --context "enable auto-sync and add specs folder to sync patterns"
 
 Agent: Let me update your codex configuration.
 

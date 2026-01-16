@@ -29,10 +29,8 @@
 ### Run the Configuration Command
 
 ```bash
-/fractary-codex:config
+/fractary-codex:configure
 ```
-
-> **Note:** The old `/fractary-codex:init` command is still supported for backward compatibility.
 
 ### What Happens
 
@@ -74,14 +72,14 @@ The command will guide you through an interactive setup:
 
 Specify everything explicitly to skip interactive questions:
 ```bash
-/fractary-codex:config --org fractary --codex codex.fractary.com
+/fractary-codex:configure --org fractary --codex codex.fractary.com
 ```
 
 ### Update Existing Configuration
 
 Use the `--context` parameter to describe what you want to change:
 ```bash
-/fractary-codex:config --context "enable auto-sync and add specs folder to sync patterns"
+/fractary-codex:configure --context "enable auto-sync and add specs folder to sync patterns"
 ```
 
 ---
@@ -277,7 +275,7 @@ codex_sync_exclude: ["docs/internal/**"]
 **Problem**:
 ```
 ⚠️ Configuration required
-Run: /fractary-codex:config
+Run: /fractary-codex:configure
 ```
 
 **Solution**: Run the init command to create configuration
@@ -405,7 +403,7 @@ jobs:
 
 ```bash
 # Initialize
-/fractary-codex:config
+/fractary-codex:configure
 
 # Sync project (preview)
 /fractary-codex:sync-project --dry-run
