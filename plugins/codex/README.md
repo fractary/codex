@@ -54,17 +54,15 @@ Request codex://org/project/docs/api.md
 ### 1. Configure (One-Time Setup)
 
 ```bash
-/fractary-codex:config
+/fractary-codex:configure
 ```
 
 Interactive configuration with auto-detection of organization and codex repository.
 
 Or specify explicitly:
 ```bash
-/fractary-codex:config --org fractary --codex codex.fractary.com
+/fractary-codex:configure --org fractary --codex codex.fractary.com
 ```
-
-> **Note:** The old `/fractary-codex:init` command is still supported for backward compatibility.
 
 This sets up:
 - Configuration at `.fractary/codex/config.yaml` (YAML format, v4.0)
@@ -646,7 +644,7 @@ The codex plugin uses the SDK-provided MCP server from `@fractary/codex` to expo
 
 **Automatic (Recommended):**
 ```bash
-/fractary-codex:config --org fractary --codex codex.fractary.com
+/fractary-codex:configure --org fractary --codex codex.fractary.com
 ```
 
 This automatically:
@@ -912,7 +910,7 @@ Configure MCP server for seamless integration in Claude Desktop/Code conversatio
 ls -la .fractary/codex/cache/index.json
 ```
 
-**Fix:** Run `/fractary-codex:config` to set up the cache directory.
+**Fix:** Run `/fractary-codex:configure` to set up the cache directory.
 
 ### Permission Denied
 
@@ -941,7 +939,7 @@ ls plugins/codex/mcp-server/dist/
 ```
 
 **Fix:**
-1. Run `/fractary-codex:config` to configure MCP
+1. Run `/fractary-codex:configure` to configure MCP
 2. Restart Claude
 3. Fetch some documents: `/fractary-codex:fetch codex://org/project/file.md`
 

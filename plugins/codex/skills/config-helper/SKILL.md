@@ -74,7 +74,7 @@ IF status == "not_found":
 No codex configuration detected.
 
 Next Steps:
-1. Run: /fractary-codex:init
+1. Run: /fractary-codex:configure
 2. This will create: .fractary/codex/config.yaml
 
 Preferred format: YAML at .fractary/codex/config.yaml
@@ -365,7 +365,7 @@ When jq or yq not installed:
 
 When source config doesn't exist:
 1. Show which path was checked
-2. Suggest running /fractary-codex:init
+2. Suggest running /fractary-codex:configure
 3. Don't attempt migration
 
 ### Target Already Exists
@@ -381,7 +381,7 @@ When target YAML already exists:
 When source JSON is malformed:
 1. Show JSON validation error
 2. Suggest fixing source manually
-3. Or recreating config with /fractary-codex:init
+3. Or recreating config with /fractary-codex:configure
 4. Don't attempt migration
 
 ### Validation Failures

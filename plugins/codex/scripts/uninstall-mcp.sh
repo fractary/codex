@@ -148,6 +148,6 @@ jq -n \
     },
     next_steps: [
       "Restart Claude Code to unload the MCP server",
-      "Run /fractary-codex:init to reinstall if needed"
+      "Run /fractary-codex:configure to reinstall if needed"
     ]
   }'

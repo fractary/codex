@@ -43,7 +43,7 @@ If you're upgrading from v4.3.3 or earlier:
 
    In your project directory:
    ```
-   /fractary-codex:init
+   /fractary-codex:configure
    ```
 
    The script will:
@@ -69,7 +69,7 @@ If you're upgrading from v4.3.3 or earlier:
 No migration needed! Just run:
 
 ```
-/fractary-codex:init --org <your-org> --codex <your-codex-repo>
+/fractary-codex:configure --org <your-org> --codex <your-codex-repo>
 ```
 
 Then restart Claude Code.
@@ -143,7 +143,7 @@ Then restart Claude Code.
 **Solution**:
 1. Edit `.claude/settings.json`
 2. Remove old `fractary-codex` MCP server entry
-3. Run `/fractary-codex:init` to recreate with new format
+3. Run `/fractary-codex:configure` to recreate with new format
 4. Restart Claude Code
 
 ### npx Can't Find Package
@@ -186,7 +186,7 @@ Then update `.claude/settings.json`:
 **Solution**:
 1. Verify config file location: `.fractary/codex/config.yaml` (not `.fractary/codex.yaml`)
 2. Check file exists: `ls -la .fractary/codex/config.yaml`
-3. If wrong location, re-run: `/fractary-codex:init`
+3. If wrong location, re-run: `/fractary-codex:configure`
 
 ### Cache Directory Issues
 

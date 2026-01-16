@@ -246,7 +246,7 @@ else
     echo "  ✅ Installed as '$mcp_server_name'"
   else
     echo "  ⚠️ Not installed"
-    echo "     Run: /fractary-codex:init to install"
+    echo "     Run: /fractary-codex:configure to install"
   fi
   echo ""
 
@@ -271,6 +271,6 @@ else
   # Next steps
   if [[ "$overall_status" != "ready" ]]; then
     echo "Next Steps:"
-    echo "  Run: /fractary-codex:init to configure the plugin"
+    echo "  Run: /fractary-codex:configure to configure the plugin"
   fi
 fi

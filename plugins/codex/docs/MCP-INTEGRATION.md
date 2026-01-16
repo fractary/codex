@@ -39,7 +39,7 @@ Examples:
 The easiest way to set up the MCP server is via the init command:
 
 ```bash
-/fractary-codex:init --org fractary --codex codex.fractary.com
+/fractary-codex:configure --org fractary --codex codex.fractary.com
 ```
 
 This will:
