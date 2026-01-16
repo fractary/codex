@@ -1,10 +1,10 @@
 {
   "name": "fractary-codex",
-  "version": "5.5.0",
+  "version": "5.5.1",
   "description": "Knowledge retrieval and documentation sync - self-managing memory fabric with MCP integration. Reference docs via codex:// URIs (auto-fetched by MCP). Sync projects bidirectionally with central codex repository.",
   "commands": "./commands/",
   "agents": [
-    "./agents/config-manager.md",
+    "./agents/configurator.md",
     "./agents/sync-manager.md"
   ],
   "skills": "./skills/"
