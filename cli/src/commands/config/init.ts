@@ -119,6 +119,29 @@ export function initCommand(): Command {
           console.log(chalk.green('✓'), chalk.dim(dir + '/'));
         }
 
+        // Create .fractary/.gitignore if it doesn't exist
+        const gitignorePath = path.join(process.cwd(), '.fractary', '.gitignore');
+        const gitignoreExists = await fileExists(gitignorePath);
+
+        if (!gitignoreExists) {
+          const gitignoreContent = `# Fractary tool-specific ignores
+# This file manages all .fractary/ directory exclusions
+
+# Codex cache (v4.0 standard)
+codex/cache/
+
+# Legacy codex cache location
+plugins/codex/cache/
+
+# Status plugin cache
+plugins/status/
+`;
+          await fs.writeFile(gitignorePath, gitignoreContent, 'utf-8');
+          console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (created)'));
+        } else {
+          console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (exists)'));
+        }
+
         // Initialize or merge configuration
         console.log('\nInitializing configuration...');
 
