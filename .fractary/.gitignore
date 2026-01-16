@@ -1,0 +1,11 @@
+# Fractary tool-specific ignores
+# This file manages all .fractary/ directory exclusions
+
+# Codex cache (v4.0 standard)
+codex/cache/
+
+# Legacy codex cache location
+plugins/codex/cache/
+
+# Status plugin cache
+plugins/status/
