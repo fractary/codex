@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { initializeUnifiedConfig } from '../../config/unified-config';
+import { ensureCachePathIgnored } from '../../config/gitignore-utils';
 
 /**
  * Extract org from git remote URL
@@ -119,25 +120,13 @@ export function initCommand(): Command {
           console.log(chalk.green('✓'), chalk.dim(dir + '/'));
         }
 
-        // Create .fractary/.gitignore if it doesn't exist
-        const gitignorePath = path.join(process.cwd(), '.fractary', '.gitignore');
-        const gitignoreExists = await fileExists(gitignorePath);
+        // Ensure .fractary/.gitignore exists with cache path
+        const gitignoreResult = await ensureCachePathIgnored(process.cwd(), '.fractary/codex/cache');
 
-        if (!gitignoreExists) {
-          const gitignoreContent = `# Fractary tool-specific ignores
-# This file manages all .fractary/ directory exclusions
-
-# Codex cache (v4.0 standard)
-codex/cache/
-
-# Legacy codex cache location
-plugins/codex/cache/
-
-# Status plugin cache
-plugins/status/
-`;
-          await fs.writeFile(gitignorePath, gitignoreContent, 'utf-8');
+        if (gitignoreResult.created) {
           console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (created)'));
+        } else if (gitignoreResult.updated) {
+          console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (updated)'));
         } else {
           console.log(chalk.green('✓'), chalk.dim('.fractary/.gitignore (exists)'));
         }
