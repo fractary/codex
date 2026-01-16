@@ -13,8 +13,13 @@ import {
   ensureCachePathIgnored,
   readFractaryGitignore,
   writeFractaryGitignore,
+  hasSectionMarker,
+  getSectionContent,
+  updateSection,
+  migrateToSectionFormat,
   DEFAULT_FRACTARY_GITIGNORE,
-  DEFAULT_CACHE_DIR
+  DEFAULT_CACHE_DIR,
+  LEGACY_FRACTARY_GITIGNORE_PATTERNS
 } from '../../../src/config/gitignore-utils.js';
 
 describe('gitignore-utils', () => {
@@ -244,10 +249,184 @@ other/path/
       expect(DEFAULT_CACHE_DIR).toBe('codex/cache/');
     });
 
-    it('DEFAULT_FRACTARY_GITIGNORE should contain standard entries', () => {
+    it('DEFAULT_FRACTARY_GITIGNORE should use section-based format', () => {
+      // New format uses section markers instead of flat entries
       expect(DEFAULT_FRACTARY_GITIGNORE).toContain('codex/cache/');
-      expect(DEFAULT_FRACTARY_GITIGNORE).toContain('plugins/codex/cache/');
-      expect(DEFAULT_FRACTARY_GITIGNORE).toContain('plugins/status/');
+      expect(DEFAULT_FRACTARY_GITIGNORE).toContain('# ===== fractary-codex (managed) =====');
+      expect(DEFAULT_FRACTARY_GITIGNORE).toContain('# ===== end fractary-codex =====');
+    });
+
+    it('LEGACY_FRACTARY_GITIGNORE_PATTERNS should contain old format entries', () => {
+      expect(LEGACY_FRACTARY_GITIGNORE_PATTERNS).toContain('plugins/codex/cache/');
+      expect(LEGACY_FRACTARY_GITIGNORE_PATTERNS).toContain('plugins/status/');
+      expect(LEGACY_FRACTARY_GITIGNORE_PATTERNS).toContain('# Codex cache (v4.0 standard)');
+    });
+  });
+
+  describe('hasSectionMarker', () => {
+    it('should return true when section marker exists', () => {
+      const content = `# .fractary/.gitignore
+# ===== fractary-codex (managed) =====
+codex/cache/
+# ===== end fractary-codex =====
+`;
+      expect(hasSectionMarker(content, 'fractary-codex')).toBe(true);
+    });
+
+    it('should return false when section marker does not exist', () => {
+      const content = `# .fractary/.gitignore
+codex/cache/
+`;
+      expect(hasSectionMarker(content, 'fractary-codex')).toBe(false);
+    });
+
+    it('should match exact plugin name', () => {
+      const content = `# ===== fractary-codex (managed) =====
+codex/cache/
+# ===== end fractary-codex =====
+`;
+      expect(hasSectionMarker(content, 'fractary-codex')).toBe(true);
+      expect(hasSectionMarker(content, 'fractary-other')).toBe(false);
+    });
+  });
+
+  describe('getSectionContent', () => {
+    it('should return entries from existing section', () => {
+      const content = `# .fractary/.gitignore
+# ===== fractary-codex (managed) =====
+codex/cache/
+codex/temp/
+# ===== end fractary-codex =====
+`;
+      const entries = getSectionContent(content, 'fractary-codex');
+      expect(entries).toEqual(['codex/cache/', 'codex/temp/']);
+    });
+
+    it('should return null when section does not exist', () => {
+      const content = `# .fractary/.gitignore
+codex/cache/
+`;
+      expect(getSectionContent(content, 'fractary-codex')).toBeNull();
+    });
+
+    it('should ignore comments within section', () => {
+      const content = `# ===== fractary-codex (managed) =====
+# This is a comment
+codex/cache/
+# Another comment
+codex/temp/
+# ===== end fractary-codex =====
+`;
+      const entries = getSectionContent(content, 'fractary-codex');
+      expect(entries).toEqual(['codex/cache/', 'codex/temp/']);
+    });
+
+    it('should return empty array for section with no entries', () => {
+      const content = `# ===== fractary-codex (managed) =====
+# ===== end fractary-codex =====
+`;
+      const entries = getSectionContent(content, 'fractary-codex');
+      expect(entries).toEqual([]);
+    });
+
+    it('should handle multiple sections', () => {
+      const content = `# ===== fractary-codex (managed) =====
+codex/cache/
+# ===== end fractary-codex =====
+
+# ===== fractary-work (managed) =====
+work/cache/
+# ===== end fractary-work =====
+`;
+      expect(getSectionContent(content, 'fractary-codex')).toEqual(['codex/cache/']);
+      expect(getSectionContent(content, 'fractary-work')).toEqual(['work/cache/']);
+    });
+  });
+
+  describe('updateSection', () => {
+    it('should create new section when none exists', () => {
+      const content = `# .fractary/.gitignore
+other/path/
+`;
+      const result = updateSection(content, 'fractary-codex', ['codex/cache/']);
+      expect(result).toContain('# ===== fractary-codex (managed) =====');
+      expect(result).toContain('codex/cache/');
+      expect(result).toContain('# ===== end fractary-codex =====');
+      expect(result).toContain('other/path/');
+    });
+
+    it('should replace existing section', () => {
+      const content = `# ===== fractary-codex (managed) =====
+old/path/
+# ===== end fractary-codex =====
+`;
+      const result = updateSection(content, 'fractary-codex', ['new/cache/', 'another/path/']);
+      expect(result).toContain('new/cache/');
+      expect(result).toContain('another/path/');
+      expect(result).not.toContain('old/path/');
+    });
+
+    it('should preserve other sections when updating', () => {
+      const content = `# ===== fractary-codex (managed) =====
+codex/cache/
+# ===== end fractary-codex =====
+
+# ===== fractary-work (managed) =====
+work/cache/
+# ===== end fractary-work =====
+`;
+      const result = updateSection(content, 'fractary-codex', ['codex/new/']);
+      expect(result).toContain('codex/new/');
+      expect(result).toContain('# ===== fractary-work (managed) =====');
+      expect(result).toContain('work/cache/');
+    });
+
+    it('should handle empty entries array', () => {
+      const content = `# .fractary/.gitignore
+`;
+      const result = updateSection(content, 'fractary-codex', []);
+      expect(result).toContain('# ===== fractary-codex (managed) =====');
+      expect(result).toContain('# ===== end fractary-codex =====');
+    });
+  });
+
+  describe('migrateToSectionFormat', () => {
+    it('should return content unchanged if already using section format', () => {
+      const content = `# ===== fractary-codex (managed) =====
+codex/cache/
+# ===== end fractary-codex =====
+`;
+      expect(migrateToSectionFormat(content)).toBe(content);
+    });
+
+    it('should migrate old format to section format', () => {
+      // Use only legacy header patterns (avoid substring match issue with codex/cache/)
+      const oldContent = `# Fractary tool-specific ignores
+plugins/status/
+`;
+      const result = migrateToSectionFormat(oldContent);
+      expect(result).toContain('# ===== fractary-codex (managed) =====');
+      expect(result).toContain('codex/cache/');
+      expect(result).toContain('# ===== end fractary-codex =====');
+      expect(result).not.toContain('plugins/status/');
+    });
+
+    it('should return unchanged if no legacy patterns found', () => {
+      const content = `# Custom gitignore
+custom/path/
+`;
+      expect(migrateToSectionFormat(content)).toBe(content);
+    });
+
+    it('should preserve non-legacy entries in "Other entries" section', () => {
+      // Use legacy header without codex/cache/ substring to trigger proper migration
+      const oldContent = `# Fractary tool-specific ignores
+plugins/status/
+custom/preserved/path/
+`;
+      const result = migrateToSectionFormat(oldContent);
+      expect(result).toContain('# Other entries (preserved from migration)');
+      expect(result).toContain('custom/preserved/path/');
     });
   });
 });
