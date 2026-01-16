@@ -94,8 +94,9 @@ export function migrateCommand(): Command {
 
         try {
           legacyConfig = JSON.parse(legacyContent);
-        } catch {
+        } catch (parseError: any) {
           console.error(chalk.red('Error:'), 'Invalid JSON in legacy config file.');
+          console.error(chalk.dim('Details:'), parseError.message);
           process.exit(1);
         }
 

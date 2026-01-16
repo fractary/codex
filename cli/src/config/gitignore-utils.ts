@@ -4,8 +4,8 @@
  * Manages .fractary/.gitignore entries, particularly for cache directories.
  */
 
-import * as fs from 'fs/promises'
-import * as path from 'path'
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 /**
  * Default gitignore content for .fractary directory
@@ -21,42 +21,12 @@ plugins/codex/cache/
 
 # Status plugin cache
 plugins/status/
-`
+`;
 
 /**
  * Default cache directory (relative to .fractary/)
  */
-export const DEFAULT_CACHE_DIR = 'codex/cache/'
-
-/**
- * Check if a file exists
- */
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath)
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * Normalize a cache path to be relative to .fractary/
- *
- * @param cachePath - Cache path (e.g., ".fractary/codex/cache" or "codex/cache")
- * @returns Path relative to .fractary/ with trailing slash
- */
-export function normalizeCachePath(cachePath: string): string {
-  // Remove .fractary/ prefix if present
-  let normalized = cachePath.replace(/^\.fractary\//, '')
-
-  // Ensure trailing slash for directory
-  if (!normalized.endsWith('/')) {
-    normalized += '/'
-  }
-
-  return normalized
-}
+export const DEFAULT_CACHE_DIR = 'codex/cache/';
 
 /**
  * Read existing .fractary/.gitignore content
@@ -65,15 +35,15 @@ export function normalizeCachePath(cachePath: string): string {
  * @returns Gitignore content or null if doesn't exist
  */
 export async function readFractaryGitignore(projectRoot: string): Promise<string | null> {
-  const gitignorePath = path.join(projectRoot, '.fractary', '.gitignore')
+  const gitignorePath = path.join(projectRoot, '.fractary', '.gitignore');
 
   try {
-    return await fs.readFile(gitignorePath, 'utf-8')
+    return await fs.readFile(gitignorePath, 'utf-8');
   } catch (error: any) {
     if (error.code === 'ENOENT') {
-      return null
+      return null;
     }
-    throw error
+    throw error;
   }
 }
 
@@ -84,12 +54,41 @@ export async function readFractaryGitignore(projectRoot: string): Promise<string
  * @param content - Gitignore content
  */
 export async function writeFractaryGitignore(projectRoot: string, content: string): Promise<void> {
-  const gitignorePath = path.join(projectRoot, '.fractary', '.gitignore')
+  const gitignorePath = path.join(projectRoot, '.fractary', '.gitignore');
 
   // Ensure .fractary directory exists
-  await fs.mkdir(path.join(projectRoot, '.fractary'), { recursive: true })
+  await fs.mkdir(path.join(projectRoot, '.fractary'), { recursive: true });
 
-  await fs.writeFile(gitignorePath, content, 'utf-8')
+  await fs.writeFile(gitignorePath, content, 'utf-8');
+}
+
+/**
+ * Normalize a cache path to be relative to .fractary/
+ *
+ * Handles both Unix and Windows path separators, converting to forward slashes
+ * for gitignore compatibility.
+ *
+ * @param cachePath - Cache path (e.g., ".fractary/codex/cache" or "codex/cache")
+ * @returns Path relative to .fractary/ with trailing slash
+ *
+ * @example
+ * normalizeCachePath('.fractary/codex/cache')  // returns 'codex/cache/'
+ * normalizeCachePath('codex/cache')            // returns 'codex/cache/'
+ * normalizeCachePath('codex\\cache')           // returns 'codex/cache/' (Windows)
+ */
+export function normalizeCachePath(cachePath: string): string {
+  // Normalize to forward slashes (gitignore always uses forward slashes)
+  let normalized = cachePath.replace(/\\/g, '/');
+
+  // Remove .fractary/ prefix if present
+  normalized = normalized.replace(/^\.fractary\//, '');
+
+  // Ensure trailing slash for directory
+  if (!normalized.endsWith('/')) {
+    normalized += '/';
+  }
+
+  return normalized;
 }
 
 /**
@@ -100,21 +99,21 @@ export async function writeFractaryGitignore(projectRoot: string, content: strin
  * @returns true if path is already ignored
  */
 export function isCachePathIgnored(gitignoreContent: string, cachePath: string): boolean {
-  const normalized = normalizeCachePath(cachePath)
-  const lines = gitignoreContent.split('\n').map(l => l.trim())
+  const normalized = normalizeCachePath(cachePath);
+  const lines = gitignoreContent.split('\n').map(l => l.trim());
 
   // Check for exact match or pattern that would match
   return lines.some(line => {
-    if (line.startsWith('#') || line === '') return false
+    if (line.startsWith('#') || line === '') return false;
 
-    // Normalize the line for comparison
-    let normalizedLine = line
+    // Normalize the line for comparison (also handle Windows paths in existing gitignore)
+    let normalizedLine = line.replace(/\\/g, '/');
     if (!normalizedLine.endsWith('/')) {
-      normalizedLine += '/'
+      normalizedLine += '/';
     }
 
-    return normalizedLine === normalized
-  })
+    return normalizedLine === normalized;
+  });
 }
 
 /**
@@ -130,23 +129,23 @@ export function addCachePathToGitignore(
   cachePath: string,
   comment?: string
 ): string {
-  const normalized = normalizeCachePath(cachePath)
+  const normalized = normalizeCachePath(cachePath);
 
   // Don't add if already present
   if (isCachePathIgnored(gitignoreContent, cachePath)) {
-    return gitignoreContent
+    return gitignoreContent;
   }
 
   // Add entry with optional comment
-  let addition = ''
+  let addition = '';
   if (comment) {
-    addition += `\n# ${comment}\n`
+    addition += `\n# ${comment}\n`;
   } else {
-    addition += '\n'
+    addition += '\n';
   }
-  addition += normalized + '\n'
+  addition += normalized + '\n';
 
-  return gitignoreContent.trimEnd() + addition
+  return gitignoreContent.trimEnd() + addition;
 }
 
 /**
@@ -160,45 +159,45 @@ export async function ensureCachePathIgnored(
   projectRoot: string,
   cachePath: string
 ): Promise<{
-  created: boolean
-  updated: boolean
-  alreadyIgnored: boolean
-  gitignorePath: string
+  created: boolean;
+  updated: boolean;
+  alreadyIgnored: boolean;
+  gitignorePath: string;
 }> {
-  const gitignorePath = path.join(projectRoot, '.fractary', '.gitignore')
+  const gitignorePath = path.join(projectRoot, '.fractary', '.gitignore');
 
   // Normalize the cache path relative to .fractary/
-  let relativeCachePath = cachePath
+  let relativeCachePath = cachePath;
 
   // Handle absolute paths
   if (path.isAbsolute(cachePath)) {
-    relativeCachePath = path.relative(path.join(projectRoot, '.fractary'), cachePath)
+    relativeCachePath = path.relative(path.join(projectRoot, '.fractary'), cachePath);
   }
 
   // Handle paths starting with .fractary/
-  relativeCachePath = normalizeCachePath(relativeCachePath)
+  relativeCachePath = normalizeCachePath(relativeCachePath);
 
   // Read existing gitignore or use default
-  let content = await readFractaryGitignore(projectRoot)
-  const gitignoreExists = content !== null
+  let content = await readFractaryGitignore(projectRoot);
+  const gitignoreExists = content !== null;
 
   if (!gitignoreExists) {
     // Create with default content
-    content = DEFAULT_FRACTARY_GITIGNORE
+    content = DEFAULT_FRACTARY_GITIGNORE;
 
     // Check if the cache path is already in default content
     if (!isCachePathIgnored(content, relativeCachePath)) {
-      content = addCachePathToGitignore(content, relativeCachePath, 'Custom cache directory')
+      content = addCachePathToGitignore(content, relativeCachePath, 'Custom cache directory');
     }
 
-    await writeFractaryGitignore(projectRoot, content)
+    await writeFractaryGitignore(projectRoot, content);
 
     return {
       created: true,
       updated: false,
       alreadyIgnored: false,
       gitignorePath,
-    }
+    };
   }
 
   // Check if already ignored
@@ -208,19 +207,19 @@ export async function ensureCachePathIgnored(
       updated: false,
       alreadyIgnored: true,
       gitignorePath,
-    }
+    };
   }
 
   // Add the cache path
-  content = addCachePathToGitignore(content, relativeCachePath, 'Custom cache directory')
-  await writeFractaryGitignore(projectRoot, content)
+  content = addCachePathToGitignore(content, relativeCachePath, 'Custom cache directory');
+  await writeFractaryGitignore(projectRoot, content);
 
   return {
     created: false,
     updated: true,
     alreadyIgnored: false,
     gitignorePath,
-  }
+  };
 }
 
 /**
@@ -230,8 +229,8 @@ export async function ensureCachePathIgnored(
  * @returns Warning message string
  */
 export function getCustomCachePathWarning(cachePath: string): string {
-  const normalized = normalizeCachePath(cachePath)
+  const normalized = normalizeCachePath(cachePath);
 
   return `Custom cache directory detected: ${cachePath}
-Please ensure .fractary/.gitignore includes: ${normalized}`
+Please ensure .fractary/.gitignore includes: ${normalized}`;
 }
