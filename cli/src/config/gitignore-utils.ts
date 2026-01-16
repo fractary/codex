@@ -9,19 +9,27 @@ import * as path from 'path';
 
 /**
  * Default gitignore content for .fractary directory
+ *
+ * Uses standard section markers (5 equals signs, start AND end markers)
+ * to allow multiple plugins to manage their own sections without conflicts.
  */
-export const DEFAULT_FRACTARY_GITIGNORE = `# Fractary tool-specific ignores
-# This file manages all .fractary/ directory exclusions
+export const DEFAULT_FRACTARY_GITIGNORE = `# .fractary/.gitignore
+# This file is managed by multiple plugins - each plugin manages its own section
 
-# Codex cache (v4.0 standard)
+# ===== fractary-codex (managed) =====
 codex/cache/
-
-# Legacy codex cache location
-plugins/codex/cache/
-
-# Status plugin cache
-plugins/status/
+# ===== end fractary-codex =====
 `;
+
+/**
+ * Legacy gitignore content (for migration detection)
+ */
+export const LEGACY_FRACTARY_GITIGNORE_PATTERNS = [
+  '# Fractary tool-specific ignores',
+  '# Codex cache (v4.0 standard)',
+  'plugins/codex/cache/',
+  'plugins/status/',
+];
 
 /**
  * Default cache directory (relative to .fractary/)
@@ -233,4 +241,167 @@ export function getCustomCachePathWarning(cachePath: string): string {
 
   return `Custom cache directory detected: ${cachePath}
 Please ensure .fractary/.gitignore includes: ${normalized}`;
+}
+
+// ===== Section Management Functions =====
+// Standard format: # ===== fractary-{plugin} (managed) ===== ... # ===== end fractary-{plugin} =====
+
+const SECTION_START_PATTERN = /^# ===== (fractary-[\w-]+) \(managed\) =====$/;
+const SECTION_END_PATTERN = /^# ===== end (fractary-[\w-]+) =====$/;
+
+/**
+ * Check if a section marker exists in the gitignore content
+ *
+ * @param content - Gitignore content
+ * @param pluginName - Plugin name (e.g., "fractary-codex")
+ * @returns true if the section exists
+ */
+export function hasSectionMarker(content: string, pluginName: string): boolean {
+  const startMarker = `# ===== ${pluginName} (managed) =====`;
+  return content.includes(startMarker);
+}
+
+/**
+ * Get the content of a specific section
+ *
+ * @param content - Gitignore content
+ * @param pluginName - Plugin name (e.g., "fractary-codex")
+ * @returns Section entries as an array, or null if section doesn't exist
+ */
+export function getSectionContent(content: string, pluginName: string): string[] | null {
+  const startMarker = `# ===== ${pluginName} (managed) =====`;
+  const endMarker = `# ===== end ${pluginName} =====`;
+
+  const lines = content.split('\n');
+  const entries: string[] = [];
+  let inSection = false;
+
+  for (const line of lines) {
+    if (line.trim() === startMarker) {
+      inSection = true;
+      continue;
+    }
+    if (line.trim() === endMarker && inSection) {
+      return entries;
+    }
+    if (inSection && line.trim() && !line.startsWith('#')) {
+      entries.push(line.trim());
+    }
+  }
+
+  return inSection ? entries : null;
+}
+
+/**
+ * Update or create a section in the gitignore content
+ *
+ * @param content - Existing gitignore content
+ * @param pluginName - Plugin name (e.g., "fractary-codex")
+ * @param entries - Entries to put in the section
+ * @returns Updated gitignore content
+ */
+export function updateSection(content: string, pluginName: string, entries: string[]): string {
+  const startMarker = `# ===== ${pluginName} (managed) =====`;
+  const endMarker = `# ===== end ${pluginName} =====`;
+
+  // Build new section
+  const newSection = [startMarker, ...entries, endMarker].join('\n');
+
+  // Check if section already exists
+  if (hasSectionMarker(content, pluginName)) {
+    // Remove existing section
+    const lines = content.split('\n');
+    const result: string[] = [];
+    let inSection = false;
+
+    for (const line of lines) {
+      if (line.trim() === startMarker) {
+        inSection = true;
+        continue;
+      }
+      if (line.trim() === endMarker && inSection) {
+        inSection = false;
+        continue;
+      }
+      if (!inSection) {
+        result.push(line);
+      }
+    }
+
+    // Append new section
+    return result.join('\n').trimEnd() + '\n\n' + newSection + '\n';
+  }
+
+  // Section doesn't exist - append it
+  return content.trimEnd() + '\n\n' + newSection + '\n';
+}
+
+/**
+ * Migrate old-format gitignore to new section-based format
+ *
+ * Converts old format (no section markers) to new format with proper markers.
+ *
+ * @param content - Existing gitignore content
+ * @returns Migrated content
+ */
+export function migrateToSectionFormat(content: string): string {
+  // Check if already using section format
+  if (SECTION_START_PATTERN.test(content)) {
+    return content;
+  }
+
+  // Check for old format indicators
+  const hasOldFormat = LEGACY_FRACTARY_GITIGNORE_PATTERNS.some(pattern =>
+    content.includes(pattern)
+  );
+
+  if (!hasOldFormat) {
+    return content;
+  }
+
+  // Extract codex-related entries from old format
+  const lines = content.split('\n');
+  const codexEntries: string[] = [];
+  const otherLines: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Identify codex-related entries
+    if (
+      trimmed === 'codex/cache/' ||
+      trimmed === 'plugins/codex/cache/' ||
+      trimmed.startsWith('# Codex') ||
+      trimmed.startsWith('# Legacy codex')
+    ) {
+      if (trimmed === 'codex/cache/') {
+        codexEntries.push(trimmed);
+      }
+    } else if (
+      trimmed !== '# Fractary tool-specific ignores' &&
+      trimmed !== '# This file manages all .fractary/ directory exclusions'
+    ) {
+      otherLines.push(line);
+    }
+  }
+
+  // Build new content with section markers
+  let newContent = '# .fractary/.gitignore\n# This file is managed by multiple plugins - each plugin manages its own section\n\n';
+
+  // Add codex section if we have entries
+  if (codexEntries.length > 0 || !content.includes('codex/cache/')) {
+    newContent += '# ===== fractary-codex (managed) =====\n';
+    newContent += (codexEntries.length > 0 ? codexEntries : ['codex/cache/']).join('\n') + '\n';
+    newContent += '# ===== end fractary-codex =====\n';
+  }
+
+  // Preserve other non-empty, non-header lines
+  const preservedLines = otherLines.filter(l =>
+    l.trim() && !l.trim().startsWith('# Status plugin') && l.trim() !== 'plugins/status/'
+  );
+  if (preservedLines.length > 0) {
+    newContent += '\n# Other entries (preserved from migration)\n';
+    newContent += preservedLines.join('\n') + '\n';
+  }
+
+  return newContent;
 }
