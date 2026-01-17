@@ -54,6 +54,7 @@ export interface CodexPluginConfig {
   schema_version: string
   organization: string
   project: string
+  codex_repo: string
   dependencies?: Record<string, any>
 }
 
@@ -82,9 +83,10 @@ function sanitizeForS3BucketName(name: string): string {
  *
  * @param organization - Organization name
  * @param project - Project name
+ * @param codexRepo - Codex repository name (e.g., codex.fractary.com)
  * @returns Default unified configuration
  */
-export function getDefaultUnifiedConfig(organization: string, project: string): UnifiedConfig {
+export function getDefaultUnifiedConfig(organization: string, project: string, codexRepo: string): UnifiedConfig {
   const sanitizedProject = sanitizeForS3BucketName(project)
 
   return {
@@ -129,6 +131,7 @@ export function getDefaultUnifiedConfig(organization: string, project: string): 
       schema_version: '2.0',
       organization,
       project,
+      codex_repo: codexRepo,
       dependencies: {},
     },
   }
@@ -206,6 +209,7 @@ export function mergeUnifiedConfigs(existing: UnifiedConfig, updates: UnifiedCon
       schema_version: updates.codex?.schema_version || existing.codex?.schema_version || '2.0',
       organization: updates.codex?.organization || existing.codex?.organization || 'default',
       project: updates.codex?.project || existing.codex?.project || 'default',
+      codex_repo: updates.codex?.codex_repo || existing.codex?.codex_repo || '',
       dependencies: {
         ...(existing.codex?.dependencies || {}),
         ...(updates.codex?.dependencies || {}),
@@ -224,6 +228,7 @@ export function mergeUnifiedConfigs(existing: UnifiedConfig, updates: UnifiedCon
  * @param configPath - Path to config file
  * @param organization - Organization name
  * @param project - Project name
+ * @param codexRepo - Codex repository name (e.g., codex.fractary.com)
  * @param options - Options for initialization
  * @returns Result of initialization
  */
@@ -231,6 +236,7 @@ export async function initializeUnifiedConfig(
   configPath: string,
   organization: string,
   project: string,
+  codexRepo: string,
   options?: {
     force?: boolean
   }
@@ -240,7 +246,7 @@ export async function initializeUnifiedConfig(
 
   if (existingConfig && !options?.force) {
     // Merge with existing config
-    const defaultConfig = getDefaultUnifiedConfig(organization, project)
+    const defaultConfig = getDefaultUnifiedConfig(organization, project, codexRepo)
     const merged = mergeUnifiedConfigs(existingConfig, defaultConfig)
     await writeUnifiedConfig(merged, configPath)
 
@@ -252,7 +258,7 @@ export async function initializeUnifiedConfig(
   }
 
   // Create new config
-  const config = getDefaultUnifiedConfig(organization, project)
+  const config = getDefaultUnifiedConfig(organization, project, codexRepo)
   await writeUnifiedConfig(config, configPath)
 
   return {
