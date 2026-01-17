@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fractary-codex"
-version = "0.1.0"
+version = "0.2.0"
 description = "Knowledge infrastructure SDK for AI agents - universal references, multi-tier caching, storage abstraction"
 readme = "README.md"
 license = "MIT"
