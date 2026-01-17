@@ -252,7 +252,7 @@ Return validation object:
       "severity": "error",
       "category": "errors",
       "message": "Sync operation failed: Authentication required",
-      "resolution": "Configure repo plugin authentication with: /fractary-repo:init"
+      "resolution": "Configure git authentication: run 'gh auth login' or set GITHUB_TOKEN environment variable"
     }
   ],
   "recommendations": [

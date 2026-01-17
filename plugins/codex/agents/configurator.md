@@ -266,6 +266,7 @@ codex:
   schema_version: "2.0"
   organization: fractary
   project: myproject
+  codex_repo: codex.fractary.com
   dependencies: {}
 
 Additional Files to Create:
@@ -386,6 +387,7 @@ Content: |
     schema_version: "2.0"
     organization: <organization>
     project: <project>
+    codex_repo: <codex-repo>
     dependencies: {}
 
   # Optional: file plugin section can be added later
@@ -567,15 +569,18 @@ Configuration:
 ⚠️ ADDITIONAL CONFIGURATION REQUIRED:
 
 1. **Git Authentication** (Required for sync operations)
-   The codex plugin requires git authentication to sync with repositories.
+   The codex plugin uses your existing git credentials to sync with repositories.
 
-   Configure authentication:
-   /fractary-repo:init
+   Verify you have access to the codex repository:
+   gh repo view <org>/<codex-repo>
 
-   This sets up GitHub/GitLab/Bitbucket credentials needed for cloning and
-   pushing to the codex repository.
+   Authentication options:
+   - SSH keys: Ensure your SSH key is added to GitHub/GitLab
+   - HTTPS: Use git credential helper or GITHUB_TOKEN env var
+   - gh CLI: Run 'gh auth login' if using GitHub CLI
 
-   Documentation: See fractary-repo plugin README for authentication options
+   Set GITHUB_TOKEN for CI/automation:
+   export GITHUB_TOKEN=<your-token>
 
 2. **Restart Claude Code** (Required for MCP server)
    The MCP server configuration has been updated in .mcp.json
@@ -594,7 +599,7 @@ Configuration:
    Documentation: See fractary-file plugin for storage configuration
 
 Next Steps:
-  1. Configure git authentication: /fractary-repo:init
+  1. Verify git access: gh repo view <org>/<codex-repo>
   2. Restart Claude Code (for MCP server)
   3. Review config: cat .fractary/config.yaml
   4. Test MCP: codex://<org>/<project>/README.md
@@ -606,7 +611,7 @@ Commands:
   - codex://<org>/<proj>/file.md  # Reference docs (auto-fetch via MCP)
 
 Troubleshooting:
-  - Authentication errors → Run /fractary-repo:init
+  - Authentication errors → Check git credentials (gh auth status) or GITHUB_TOKEN
   - MCP not working → Restart Claude Code
   - Cache issues → Run /fractary-codex:configure (recreates cache dir)
 ```
@@ -679,15 +684,18 @@ Configuration:
 ⚠️ ADDITIONAL CONFIGURATION REQUIRED:
 
 1. **Git Authentication** (Required for sync operations)
-   The codex plugin requires git authentication to sync with repositories.
+   The codex plugin uses your existing git credentials to sync with repositories.
 
-   Configure authentication:
-   /fractary-repo:init
+   Verify you have access to the codex repository:
+   gh repo view <org>/<codex-repo>
 
-   This sets up GitHub/GitLab/Bitbucket credentials needed for cloning and
-   pushing to the codex repository.
+   Authentication options:
+   - SSH keys: Ensure your SSH key is added to GitHub/GitLab
+   - HTTPS: Use git credential helper or GITHUB_TOKEN env var
+   - gh CLI: Run 'gh auth login' if using GitHub CLI
 
-   Documentation: See fractary-repo plugin README for authentication options
+   Set GITHUB_TOKEN for CI/automation:
+   export GITHUB_TOKEN=<your-token>
 
 2. **Restart Claude Code** (Required for MCP server)
    The MCP server configuration has been updated in .mcp.json
@@ -706,7 +714,7 @@ Configuration:
    Documentation: See fractary-file plugin for storage configuration
 
 Next Steps:
-  1. Configure git authentication: /fractary-repo:init
+  1. Verify git access: gh repo view <org>/<codex-repo>
   2. Restart Claude Code (for MCP server)
   3. Review config: cat .fractary/config.yaml
   4. Test MCP: codex://fractary/<project>/README.md
@@ -718,7 +726,7 @@ Commands:
   - codex://org/proj/file.md      # Reference docs (auto-fetch via MCP)
 
 Troubleshooting:
-  - Authentication errors → Run /fractary-repo:init
+  - Authentication errors → Check git credentials (gh auth status) or GITHUB_TOKEN
   - MCP not working → Restart Claude Code
   - Cache issues → Run /fractary-codex:configure (recreates cache dir)
 ```
@@ -1119,6 +1127,7 @@ codex:
   schema_version: "2.0"
   organization: fractary
   project: myproject
+  codex_repo: codex.fractary.com
   dependencies: {}
 
 Additional Files to Create:
@@ -1153,8 +1162,8 @@ Configuration:
 ⚠️ ADDITIONAL CONFIGURATION REQUIRED:
 
 1. **Git Authentication** (Required for sync operations)
-   Configure authentication: /fractary-repo:init
-   Documentation: See fractary-repo plugin README
+   Verify access: gh repo view <org>/<codex-repo>
+   Or set: export GITHUB_TOKEN=<your-token> README
 
 2. **Restart Claude Code** (Required for MCP server)
    Restart Claude Code to load the fractary-codex MCP server.
@@ -1164,14 +1173,14 @@ Configuration:
    Documentation: See fractary-file plugin
 
 Next Steps:
-  1. Configure git authentication: /fractary-repo:init
+  1. Verify git access: gh repo view <org>/<codex-repo>
   2. Restart Claude Code (for MCP server)
   3. Review config: cat .fractary/config.yaml
   4. Test MCP: codex://fractary/myproject/README.md
   5. Run first sync: /fractary-codex:sync --from-codex --dry-run
 
 Troubleshooting:
-  - Authentication errors → Run /fractary-repo:init
+  - Authentication errors → Check git credentials (gh auth status) or GITHUB_TOKEN
   - MCP not working → Restart Claude Code
 ```
 

@@ -227,7 +227,7 @@ Return this JSON structure:
   4. Include resolution steps
 
   Common failures:
-  - **API authentication**: Repo plugin not configured → suggest running /fractary-repo:init
+  - **API authentication**: Git credentials not configured → suggest running `gh auth login` or setting GITHUB_TOKEN
   - **Organization not found**: Typo in org name → verify spelling
   - **Rate limiting**: Too many API calls → wait and retry
   - **Permission denied**: No access to org → verify permissions

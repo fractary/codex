@@ -17,6 +17,33 @@ import { initializeUnifiedConfig } from '../../config/unified-config';
 import { ensureCachePathIgnored } from '../../config/gitignore-utils';
 
 /**
+ * Validate organization or repository name format
+ * Prevents command injection by ensuring only safe characters
+ *
+ * Valid: alphanumeric, hyphens, underscores, dots
+ * Invalid: shell metacharacters, spaces, etc.
+ */
+export function validateNameFormat(name: string, type: 'organization' | 'repository'): void {
+  if (!name || typeof name !== 'string') {
+    throw new Error(`${type} name is required`);
+  }
+
+  if (name.length > 100) {
+    throw new Error(`${type} name too long (max 100 characters)`);
+  }
+
+  // Only allow safe characters: alphanumeric, hyphens, underscores, dots
+  // Must start with alphanumeric
+  const safePattern = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
+  if (!safePattern.test(name)) {
+    throw new Error(
+      `Invalid ${type} name format: "${name}". ` +
+      `Must start with alphanumeric and contain only: a-z, A-Z, 0-9, ., -, _`
+    );
+  }
+}
+
+/**
  * Extract org from git remote URL
  */
 async function getOrgFromGitRemote(): Promise<string | null> {
@@ -31,6 +58,90 @@ async function getOrgFromGitRemote(): Promise<string | null> {
     return sshMatch?.[1] || httpsMatch?.[1] || null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Result type for codex repository discovery
+ */
+export interface DiscoverCodexRepoResult {
+  repo: string | null;
+  error?: 'gh_not_installed' | 'auth_failed' | 'org_not_found' | 'no_repos_found' | 'unknown';
+  message?: string;
+}
+
+/**
+ * Discover codex repository in organization
+ * Looks for repos matching codex.* pattern
+ *
+ * @param org - Organization name (must be validated before calling)
+ * @returns Discovery result with repo name or error details
+ */
+export async function discoverCodexRepo(org: string): Promise<DiscoverCodexRepoResult> {
+  // Validate org to prevent command injection
+  try {
+    validateNameFormat(org, 'organization');
+  } catch (error: any) {
+    return { repo: null, error: 'unknown', message: error.message };
+  }
+
+  try {
+    const { execSync } = require('child_process');
+
+    // First check if gh CLI is available
+    try {
+      execSync('gh --version', { encoding: 'utf-8', stdio: 'pipe' });
+    } catch {
+      return {
+        repo: null,
+        error: 'gh_not_installed',
+        message: 'GitHub CLI (gh) is not installed. Install from https://cli.github.com/'
+      };
+    }
+
+    // Check if authenticated
+    try {
+      execSync('gh auth status', { encoding: 'utf-8', stdio: 'pipe' });
+    } catch {
+      return {
+        repo: null,
+        error: 'auth_failed',
+        message: 'GitHub CLI not authenticated. Run: gh auth login'
+      };
+    }
+
+    // Use gh CLI to list repos matching codex.* pattern
+    // Note: org is validated above to contain only safe characters
+    const result = execSync(
+      `gh repo list ${org} --json name --jq '.[].name | select(startswith("codex."))' 2>&1`,
+      { encoding: 'utf-8' }
+    ).trim();
+
+    // Check for org not found error
+    if (result.includes('Could not resolve to an Organization') || result.includes('Not Found')) {
+      return {
+        repo: null,
+        error: 'org_not_found',
+        message: `Organization '${org}' not found on GitHub`
+      };
+    }
+
+    const repos = result.split('\n').filter(Boolean);
+    if (repos.length === 0) {
+      return {
+        repo: null,
+        error: 'no_repos_found',
+        message: `No codex.* repositories found in organization '${org}'`
+      };
+    }
+
+    return { repo: repos[0] };
+  } catch (error: any) {
+    return {
+      repo: null,
+      error: 'unknown',
+      message: error.message || 'Unknown error during discovery'
+    };
   }
 }
 
@@ -53,6 +164,7 @@ export function initCommand(): Command {
     .description('Initialize unified Fractary configuration (.fractary/config.yaml)')
     .option('--org <slug>', 'Organization slug (e.g., "fractary")')
     .option('--project <name>', 'Project name (default: derived from directory)')
+    .option('--codex-repo <name>', 'Codex repository name (e.g., "codex.fractary.com")')
     .option('--force', 'Overwrite existing configuration')
     .action(async (options) => {
       try {
@@ -87,12 +199,59 @@ export function initCommand(): Command {
           console.log(chalk.dim(`Organization: ${chalk.cyan(org)}\n`));
         }
 
+        // Validate organization name format (security: prevents command injection)
+        try {
+          validateNameFormat(org, 'organization');
+        } catch (error: any) {
+          console.error(chalk.red('Error:'), error.message);
+          process.exit(1);
+        }
+
         // Resolve project name
         let project = options.project;
         if (!project) {
           // Use current directory name
           project = path.basename(process.cwd());
           console.log(chalk.dim(`Project: ${chalk.cyan(project)}\n`));
+        }
+
+        // Resolve codex repository
+        let codexRepo = options.codexRepo;
+
+        // Validate codex repo if provided via CLI
+        if (codexRepo) {
+          try {
+            validateNameFormat(codexRepo, 'repository');
+          } catch (error: any) {
+            console.error(chalk.red('Error:'), error.message);
+            process.exit(1);
+          }
+          console.log(chalk.dim(`Codex repository: ${chalk.cyan(codexRepo)}\n`));
+        } else {
+          // Try to discover codex repo in the organization
+          const discoveryResult = await discoverCodexRepo(org);
+          if (discoveryResult.repo) {
+            codexRepo = discoveryResult.repo;
+            console.log(chalk.dim(`Codex repository: ${chalk.cyan(codexRepo)} (auto-discovered)\n`));
+          } else {
+            // Log specific error for debugging
+            if (discoveryResult.error === 'gh_not_installed') {
+              console.log(chalk.dim(`  Note: ${discoveryResult.message}\n`));
+            } else if (discoveryResult.error === 'auth_failed') {
+              console.log(chalk.dim(`  Note: ${discoveryResult.message}\n`));
+            } else if (discoveryResult.error === 'org_not_found') {
+              console.log(chalk.dim(`  Note: ${discoveryResult.message}\n`));
+            }
+          }
+        }
+
+        if (!codexRepo) {
+          console.log(chalk.yellow(`⚠ Could not discover codex repository in organization '${org}'`));
+          console.log(chalk.dim('  Use --codex-repo <name> to specify explicitly'));
+          console.log(chalk.dim('  Expected naming convention: codex.{org}.{tld} (e.g., codex.fractary.com)\n'));
+          // Use a placeholder that makes it clear it needs to be configured
+          codexRepo = `codex.${org}.com`;
+          console.log(chalk.dim(`  Using default: ${chalk.cyan(codexRepo)}\n`));
         }
 
         // Unified config path
@@ -138,6 +297,7 @@ export function initCommand(): Command {
           configPath,
           org,
           project,
+          codexRepo,
           { force: options.force }
         );
 
@@ -153,6 +313,7 @@ export function initCommand(): Command {
         console.log(chalk.bold('Configuration:'));
         console.log(chalk.dim(`  Organization: ${org}`));
         console.log(chalk.dim(`  Project: ${project}`));
+        console.log(chalk.dim(`  Codex Repository: ${codexRepo}`));
         console.log(chalk.dim(`  Config: .fractary/config.yaml`));
 
         console.log(chalk.bold('\nFile plugin sources:'));
@@ -163,11 +324,18 @@ export function initCommand(): Command {
         console.log(chalk.dim('  - Cache: .fractary/codex/cache/'));
         console.log(chalk.dim('  - Dependencies: (none configured)'));
 
+        console.log(chalk.bold('\nGit Authentication:'));
+        console.log(chalk.dim('  Codex sync uses your existing git credentials.'));
+        console.log(chalk.dim('  Ensure you have access to the codex repository:'));
+        console.log(chalk.dim(`    gh repo view ${org}/${codexRepo}`));
+        console.log(chalk.dim('  Or set GITHUB_TOKEN environment variable.'));
+
         console.log(chalk.bold('\nNext steps:'));
-        console.log(chalk.dim('  1. Configure AWS credentials for S3 access'));
-        console.log(chalk.dim('  2. Edit .fractary/config.yaml to add external project dependencies'));
-        console.log(chalk.dim('  3. Access current project files: codex://specs/SPEC-001.md'));
-        console.log(chalk.dim('  4. Access external projects: codex://org/project/docs/README.md'));
+        console.log(chalk.dim('  1. Verify codex repository access: gh repo view ' + org + '/' + codexRepo));
+        console.log(chalk.dim('  2. Configure AWS credentials for S3 access (if using file plugin)'));
+        console.log(chalk.dim('  3. Edit .fractary/config.yaml to add external project dependencies'));
+        console.log(chalk.dim('  4. Access current project files: codex://specs/SPEC-001.md'));
+        console.log(chalk.dim('  5. Access external projects: codex://org/project/docs/README.md'));
 
       } catch (error: any) {
         console.error(chalk.red('Error:'), error.message);

@@ -6,10 +6,13 @@
 
 ## Prerequisites
 
-1. **Fractary-Repo Plugin** must be installed and configured
+1. **Git Authentication** configured for your organization's repositories
    ```bash
-   # Check if repo plugin is available
-   /fractary-repo:init --help
+   # Check GitHub CLI authentication status
+   gh auth status
+
+   # Or verify git credentials work
+   git ls-remote git@github.com:your-org/codex.your-org.com.git
    ```
 
 2. **Git Repository** with a remote (GitHub, GitLab, or Bitbucket)
@@ -287,9 +290,16 @@ Run: /fractary-codex:configure
 ❌ Failed to clone repository: authentication required
 ```
 
-**Solution**: Configure fractary-repo plugin authentication
+**Solution**: Verify your git authentication is configured correctly
 ```bash
-/fractary-repo:init
+# Check GitHub CLI auth status
+gh auth status
+
+# Or test repository access directly
+gh repo view your-org/codex.your-org.com
+
+# For CI/automation, set GITHUB_TOKEN
+export GITHUB_TOKEN=<your-token>
 ```
 
 ### Deletion Threshold Exceeded
