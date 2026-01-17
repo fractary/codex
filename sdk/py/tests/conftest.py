@@ -17,19 +17,20 @@ def temp_dir() -> Generator[Path, None, None]:
 
 @pytest.fixture
 def sample_config_yaml() -> str:
-    """Sample codex.yaml content."""
+    """Sample unified config.yaml content with codex section."""
     return """
-organization: test-org
-project: test-project
-cache:
-  directory: .test-cache
-  default_ttl: 3600
-types:
-  custom-docs:
-    patterns:
-      - "custom/**/*.md"
-    ttl: 7200
-    priority: 100
+codex:
+  organization: test-org
+  project: test-project
+  cache:
+    directory: .test-cache
+    default_ttl: 3600
+  types:
+    custom-docs:
+      patterns:
+        - "custom/**/*.md"
+      ttl: 7200
+      priority: 100
 """
 
 
@@ -55,7 +56,7 @@ def config_dir(temp_dir: Path, sample_config_yaml: str) -> Path:
     """Create a temporary directory with a config file."""
     fractary_dir = temp_dir / ".fractary"
     fractary_dir.mkdir()
-    config_file = fractary_dir / "codex.yaml"
+    config_file = fractary_dir / "config.yaml"
     config_file.write_text(sample_config_yaml)
     return temp_dir
 
