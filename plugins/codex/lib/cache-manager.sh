@@ -13,13 +13,13 @@
 #
 # Environment Variables:
 #   CODEX_CACHE_PATH   - Path to cache directory (default: .fractary/codex/cache)
-#   CODEX_CONFIG_PATH  - Path to config file (default: .fractary/codex/config.yaml)
+#   CODEX_CONFIG_PATH  - Path to config file (default: .fractary/config.yaml)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
-config_path="${CODEX_CONFIG_PATH:-.fractary/codex/config.yaml}"
+config_path="${CODEX_CONFIG_PATH:-.fractary/config.yaml}"
 index_path="$cache_path/.cache-index.json"
 
 # Get default TTL from config or use 7 days

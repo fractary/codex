@@ -131,7 +131,7 @@ registry.register(ArtifactType(
 ```python
 from fractary_codex import load_config, resolve_organization
 
-# Load from .fractary/codex/config.yaml
+# Load from .fractary/config.yaml
 config = load_config()
 if config:
     print(f"Organization: {config.organization}")
@@ -193,7 +193,7 @@ for r in results:
 
 ### Configuration
 
-- `load_config()` - Load .fractary/codex/config.yaml
+- `load_config()` - Load .fractary/config.yaml
 - `resolve_organization()` - Detect org from config/git
 - `CodexConfig` - Configuration dataclass
 

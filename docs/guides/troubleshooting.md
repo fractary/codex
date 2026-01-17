@@ -100,9 +100,9 @@ if (!config) {
   const path = require('path')
 
   const paths = [
-    '.fractary/codex/config.yaml',
+    '.fractary/config.yaml',
     '.fractary/codex.yml',
-    path.join(process.env.HOME, '.fractary/codex/config.yaml')
+    path.join(process.env.HOME, '.fractary/config.yaml')
   ]
 
   paths.forEach(p => {
@@ -116,7 +116,7 @@ if (!config) {
 1. Create config file:
    ```bash
    mkdir -p .fractary
-   touch .fractary/codex/config.yaml
+   touch .fractary/config.yaml
    ```
 
 2. Use absolute path:
@@ -144,13 +144,13 @@ Validate YAML syntax:
 
 ```bash
 # Using yamllint
-yamllint .fractary/codex/config.yaml
+yamllint .fractary/config.yaml
 
 # Using Python
-python -c "import yaml; yaml.safe_load(open('.fractary/codex/config.yaml'))"
+python -c "import yaml; yaml.safe_load(open('.fractary/config.yaml'))"
 
 # Using Node.js
-node -e "const yaml = require('js-yaml'); const fs = require('fs'); yaml.load(fs.readFileSync('.fractary/codex/config.yaml'))"
+node -e "const yaml = require('js-yaml'); const fs = require('fs'); yaml.load(fs.readFileSync('.fractary/config.yaml'))"
 ```
 
 Common YAML mistakes:

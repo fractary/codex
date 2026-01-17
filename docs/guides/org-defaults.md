@@ -25,7 +25,7 @@ codex.corthos.ai/
 ## Org Config Format
 
 ```yaml
-# codex.corthos.ai/.fractary/codex/config.yaml
+# codex.corthos.ai/.fractary/config.yaml
 
 sync:
   # Default patterns for pushing to codex
@@ -75,7 +75,7 @@ This ensures every project pulls its own files from codex by default without exp
 
 ### Example Setup
 
-**Org config (codex.corthos.ai/.fractary/codex/config.yaml):**
+**Org config (codex.corthos.ai/.fractary/config.yaml):**
 ```yaml
 sync:
   default_to_codex:
@@ -90,7 +90,7 @@ sync:
 
 ### Project Without Config
 
-**Project:** api.corthodex.ai (no `.fractary/codex/config.yaml`)
+**Project:** api.corthodex.ai (no `.fractary/config.yaml`)
 
 **Effective config:** Uses org defaults
 ```yaml
@@ -110,7 +110,7 @@ sync:
 
 **Project:** etl.corthion.ai
 
-**Project config (.fractary/codex/config.yaml):**
+**Project config (.fractary/config.yaml):**
 ```yaml
 sync:
   to_codex:
@@ -212,7 +212,7 @@ Each has its own default_to_codex/default_from_codex.
 # Most projects use org defaults
 
 # But data projects override:
-# etl.corthion.ai/.fractary/codex/config.yaml
+# etl.corthion.ai/.fractary/config.yaml
 sync:
   to_codex:
     - "docs/schema/**/*"  # Data-specific patterns
@@ -248,7 +248,7 @@ sync:
 
 **After (once in org config):**
 ```yaml
-# codex.corthos.ai/.fractary/codex/config.yaml
+# codex.corthos.ai/.fractary/config.yaml
 sync:
   default_to_codex:
     - "README.md"
@@ -262,8 +262,8 @@ For projects that match org defaults exactly, delete their project configs:
 
 ```bash
 # Projects will automatically use org defaults
-rm lake.corthonomy.ai/.fractary/codex/config.yaml
-rm api.corthodex.ai/.fractary/codex/config.yaml
+rm lake.corthonomy.ai/.fractary/config.yaml
+rm api.corthodex.ai/.fractary/config.yaml
 ```
 
 ### Step 4: Keep Custom Project Configs
@@ -271,7 +271,7 @@ rm api.corthodex.ai/.fractary/codex/config.yaml
 For projects with unique patterns, keep their project configs:
 
 ```yaml
-# etl.corthion.ai/.fractary/codex/config.yaml (keep this!)
+# etl.corthion.ai/.fractary/config.yaml (keep this!)
 sync:
   to_codex:
     - "docs/schema/**/*"  # Unique to ETL projects
@@ -376,13 +376,13 @@ Impact:
 **Solution:**
 ```bash
 # Check org config exists
-ls codex.corthos.ai/.fractary/codex/config.yaml
+ls codex.corthos.ai/.fractary/config.yaml
 
 # Validate YAML syntax
-yamllint codex.corthos.ai/.fractary/codex/config.yaml
+yamllint codex.corthos.ai/.fractary/config.yaml
 
 # Check if project has config (overrides org)
-ls lake.corthonomy.ai/.fractary/codex/config.yaml
+ls lake.corthonomy.ai/.fractary/config.yaml
 ```
 
 ### Too Many/Few Files Syncing
@@ -403,7 +403,7 @@ ls lake.corthonomy.ai/.fractary/codex/config.yaml
 **Solution:** Create project config with desired patterns:
 
 ```yaml
-# my-project/.fractary/codex/config.yaml
+# my-project/.fractary/config.yaml
 sync:
   to_codex:
     - "my/custom/pattern/**"

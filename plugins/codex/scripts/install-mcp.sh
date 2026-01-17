@@ -94,7 +94,7 @@ fi
 mcp_config=$(jq -n \
   '{
     command: "npx",
-    args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"]
+    args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
   }')
 
 # Merge into existing settings
@@ -119,7 +119,7 @@ jq -n \
     details: {
       mcp_command: $command,
       mcp_package: "@fractary/codex-mcp",
-      config_path: ".fractary/codex/config.yaml",
+      config_path: ".fractary/config.yaml",
       settings: $settings,
       backup: (if $backup == "" then null else $backup end),
       updated_existing: $had_existing,

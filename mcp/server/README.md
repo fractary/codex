@@ -37,7 +37,7 @@ Add to your `.claude/settings.json`:
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
     }
   }
 }
@@ -46,7 +46,7 @@ Add to your `.claude/settings.json`:
 ### Stdio Mode (Default)
 
 ```bash
-fractary-codex-mcp --config .fractary/codex/config.yaml
+fractary-codex-mcp --config .fractary/config.yaml
 ```
 
 The server communicates via stdin/stdout using the MCP protocol.
@@ -61,7 +61,7 @@ The server exposes an SSE (Server-Sent Events) endpoint for HTTP clients.
 
 ## Configuration
 
-Create a `.fractary/codex/config.yaml` configuration file:
+Create a `.fractary/config.yaml` configuration file:
 
 ```yaml
 # Organization configuration
@@ -139,7 +139,7 @@ const result = await fetch('codex://fractary/auth-service/specs/WORK-123.md')
 
 ### Environment Variables
 
-- `FRACTARY_CONFIG`: Path to configuration file (default: `.fractary/codex/config.yaml`)
+- `FRACTARY_CONFIG`: Path to configuration file (default: `.fractary/config.yaml`)
 - `GITHUB_TOKEN`: GitHub personal access token for GitHub storage provider
 - `FRACTARY_CLI`: Path to fractary CLI executable (default: `fractary`)
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`: AWS credentials for S3
@@ -304,7 +304,7 @@ If you were using the MCP server from `@fractary/codex` (versions ≤0.1.x), upd
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex/config.yaml"]
+      "args": ["@fractary/codex", "mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
@@ -316,7 +316,7 @@ If you were using the MCP server from `@fractary/codex` (versions ≤0.1.x), upd
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
     }
   }
 }

@@ -19,7 +19,7 @@ This approach:
 
 ### Project Config
 
-Each project has a `.fractary/codex/config.yaml` file:
+Each project has a `.fractary/config.yaml` file:
 
 ```yaml
 sync:
@@ -93,7 +93,7 @@ cd /path/to/your-project
 
 **Scenario:** ETL project has schemas that Lake project needs.
 
-**etl.corthion.ai/.fractary/codex/config.yaml:**
+**etl.corthion.ai/.fractary/config.yaml:**
 ```yaml
 sync:
   to_codex:
@@ -102,7 +102,7 @@ sync:
     - "docs/guides/**/*.md"
 ```
 
-**lake.corthonomy.ai/.fractary/codex/config.yaml:**
+**lake.corthonomy.ai/.fractary/config.yaml:**
 ```yaml
 sync:
   from_codex:
@@ -124,7 +124,7 @@ cd /path/to/lake.corthonomy.ai
 
 ### Case 2: Share Standards Across All Projects
 
-**core.corthodex.ai/.fractary/codex/config.yaml:**
+**core.corthodex.ai/.fractary/config.yaml:**
 ```yaml
 sync:
   to_codex:
@@ -132,7 +132,7 @@ sync:
     - "docs/templates/**/*"
 ```
 
-**any-project/.fractary/codex/config.yaml:**
+**any-project/.fractary/config.yaml:**
 ```yaml
 sync:
   from_codex:
@@ -143,7 +143,7 @@ sync:
 
 ### Case 3: Selective File Sharing
 
-**api.project/.fractary/codex/config.yaml:**
+**api.project/.fractary/config.yaml:**
 ```yaml
 sync:
   to_codex:
@@ -199,14 +199,14 @@ codex_sync_include: ['lake.*', 'api.*']
 
 ### After (directional approach):
 
-**File: etl.corthion.ai/.fractary/codex/config.yaml**
+**File: etl.corthion.ai/.fractary/config.yaml**
 ```yaml
 sync:
   to_codex:
     - "docs/schema/**/*"
 ```
 
-**File: lake.corthonomy.ai/.fractary/codex/config.yaml**
+**File: lake.corthonomy.ai/.fractary/config.yaml**
 ```yaml
 sync:
   from_codex:
@@ -274,7 +274,7 @@ exclude:
    ```bash
    /fractary-codex:sync --from-codex --dry-run
    ```
-3. Verify config file location: `.fractary/codex/config.yaml`
+3. Verify config file location: `.fractary/config.yaml`
 
 ### Wrong files syncing
 

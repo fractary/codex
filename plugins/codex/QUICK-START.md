@@ -57,7 +57,7 @@ The command will guide you through an interactive setup:
    ✅ Codex plugin configured successfully!
 
    Created:
-     - Config: .fractary/codex/config.yaml (YAML, v4.0)
+     - Config: .fractary/config.yaml (YAML, v4.0)
      - Cache: .fractary/codex/cache/
      - MCP Server: .mcp.json
 

@@ -7,7 +7,7 @@
         "-y",
         "@fractary/codex-mcp",
         "--config",
-        ".fractary/codex/config.yaml"
+        ".fractary/config.yaml"
       ],
       "env": {}
     }

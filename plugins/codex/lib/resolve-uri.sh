@@ -10,7 +10,7 @@
 #
 # Environment Variables:
 #   CODEX_CACHE_PATH   - Path to cache directory (default: .fractary/codex/cache)
-#   CODEX_CONFIG_PATH  - Path to config file (default: .fractary/codex/config.yaml)
+#   CODEX_CONFIG_PATH  - Path to config file (default: .fractary/config.yaml)
 #   CODEX_CURRENT_ORG  - Override current organization
 #   CODEX_CURRENT_PROJECT - Override current project
 
@@ -18,7 +18,7 @@ set -euo pipefail
 
 uri="${1:-}"
 cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
-config_path="${CODEX_CONFIG_PATH:-.fractary/codex/config.yaml}"
+config_path="${CODEX_CONFIG_PATH:-.fractary/config.yaml}"
 
 # Parse additional arguments
 shift || true

@@ -63,10 +63,10 @@ A standalone Model Context Protocol server for AI agent integration:
 **Quick example:**
 ```bash
 # Run MCP server with stdio transport (default)
-npx @fractary/codex-mcp-server --config .fractary/codex/config.yaml
+npx @fractary/codex-mcp-server --config .fractary/config.yaml
 
 # Run MCP server with HTTP transport
-npx @fractary/codex-mcp-server --port 3000 --config .fractary/codex/config.yaml
+npx @fractary/codex-mcp-server --port 3000 --config .fractary/config.yaml
 ```
 
 **Claude Code integration:**
@@ -76,7 +76,7 @@ Add to `.claude/settings.json`:
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
     }
   }
 }

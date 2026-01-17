@@ -40,19 +40,31 @@ program
   .name('fractary-codex-mcp')
   .description('MCP server for Fractary Codex knowledge management')
   .version('0.8.0')
-  .option('--config <path>', 'Path to config file', '.fractary/codex/config.yaml')
+  .option('--config <path>', 'Path to config file', '.fractary/config.yaml')
   .action(async (options) => {
     // Load configuration
     let config: Record<string, unknown> = {}
     try {
       const configFile = readFileSync(options.config, 'utf-8')
-      config = yaml.load(configFile) as Record<string, unknown>
+      const rawConfig = yaml.load(configFile) as Record<string, unknown>
+
+      // Handle unified config format (codex section) or legacy flat format
+      if (rawConfig && typeof rawConfig === 'object' && 'codex' in rawConfig) {
+        // Unified config - extract codex section and merge with top-level
+        config = {
+          ...(rawConfig.codex as Record<string, unknown>),
+          // Preserve file section if present (for file plugin integration)
+          file: rawConfig.file,
+        }
+      } else {
+        config = rawConfig || {}
+      }
 
       // Expand environment variables in config (${VAR_NAME} syntax)
       config = expandEnvVars(config)
     } catch (error) {
       // Config file is optional - continue with defaults
-      if (options.config !== '.fractary/codex/config.yaml') {
+      if (options.config !== '.fractary/config.yaml') {
         console.error(`Warning: Could not load config file: ${options.config}`)
       }
     }
