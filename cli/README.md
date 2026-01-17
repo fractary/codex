@@ -42,7 +42,7 @@ Options:
 **Example:**
 ```bash
 fractary-codex init
-# Creates .fractary/codex/config.yaml and .fractary/codex/cache/
+# Creates .fractary/config.yaml and .fractary/codex/cache/
 ```
 
 ### `fetch` - Fetch Documents
@@ -269,7 +269,7 @@ Options:
 
 ## Configuration
 
-Codex uses `.fractary/codex/config.yaml` for configuration:
+Codex uses `.fractary/config.yaml` for configuration:
 
 ```yaml
 organization: myorg

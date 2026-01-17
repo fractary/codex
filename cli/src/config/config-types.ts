@@ -149,9 +149,9 @@ export interface McpConfig {
 }
 
 /**
- * Codex v3.0 YAML configuration
+ * Codex YAML configuration
  *
- * This is the format that will be written to .fractary/codex/config.yaml
+ * This is the format for the codex: section in .fractary/config.yaml
  */
 export interface CodexYamlConfig {
   organization: string;

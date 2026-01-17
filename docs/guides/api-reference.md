@@ -970,7 +970,7 @@ Configuration loading and management.
 
 ### loadConfig
 
-Load configuration from `.fractary/codex/config.yaml`.
+Load configuration from `.fractary/config.yaml`.
 
 **TypeScript:**
 ```typescript
@@ -1015,13 +1015,13 @@ class StorageProviderConfig:
 ```typescript
 import { loadConfig } from '@fractary/codex'
 
-// Load from default location (.fractary/codex/config.yaml)
+// Load from default location (.fractary/config.yaml)
 const config = loadConfig()
 
 // Load from custom path
 const customConfig = loadConfig('/path/to/codex.yaml')
 
-// Example configuration file (.fractary/codex/config.yaml):
+// Example configuration file (.fractary/config.yaml):
 ```
 
 ```yaml
@@ -1085,7 +1085,7 @@ def resolve_organization(working_dir: Optional[Path] = None) -> Optional[str]
 import { resolveOrganization } from '@fractary/codex'
 
 // Auto-detect from:
-// 1. .fractary/codex/config.yaml config
+// 1. .fractary/config.yaml config
 // 2. Git remote URL (e.g., git@github.com:fractary/codex.git -> 'fractary')
 // 3. Current directory name (fallback)
 const org = resolveOrganization()
@@ -1380,15 +1380,15 @@ class MigrationResult:
 import { migrateConfig } from '@fractary/codex'
 
 // Dry run
-const result = migrateConfig('.fractary/codex/config.yaml')
+const result = migrateConfig('.fractary/config.yaml')
 console.log(result.changes)
 
 // Migrate with backup
-const migrated = migrateConfig('.fractary/codex/config.yaml', {
+const migrated = migrateConfig('.fractary/config.yaml', {
   backup: true,
   write: true
 })
-// Creates .fractary/codex/config.yaml.backup
+// Creates .fractary/config.yaml.backup
 ```
 
 ### convertLegacyReferences

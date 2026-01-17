@@ -1,7 +1,7 @@
 /**
- * Initialize Codex project command (v3.0 YAML)
+ * Initialize Codex project command
  *
- * Creates .fractary/codex/config.yaml configuration with:
+ * Creates .fractary/config.yaml (unified config) with:
  * - Organization detection from git remote
  * - Multi-provider storage configuration
  * - Cache configuration

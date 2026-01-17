@@ -21,17 +21,14 @@ Complete reference for configuring the Fractary Codex SDK.
 
 The Codex SDK uses a unified YAML configuration file located at `.fractary/config.yaml` in your project root. This unified configuration includes both Codex plugin settings and File plugin integration.
 
-**Note:** The legacy path `.fractary/codex/config.yaml` is still supported for backward compatibility but is deprecated.
-
 ### File Location
 
 The SDK searches for configuration in the following order:
 
-1. `.fractary/config.yaml` (unified configuration - recommended)
-2. `.fractary/codex/config.yaml` (legacy - deprecated)
-3. `~/.fractary/config.yaml` (user-wide)
-4. Environment variables
-5. Default values
+1. `.fractary/config.yaml` (unified configuration)
+2. `~/.fractary/config.yaml` (user-wide defaults)
+3. Environment variables
+4. Default values
 
 ### Creating Configuration
 
@@ -622,7 +619,7 @@ When using the Codex MCP server, archive configuration is loaded from the same c
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
     }
   }
 }
@@ -903,7 +900,7 @@ cacheDir: ${CODEX_CACHE_DIR:-.fractary/codex/cache}
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CODEX_CONFIG_PATH` | Path to config file | `.fractary/codex/config.yaml` |
+| `CODEX_CONFIG_PATH` | Path to config file | `.fractary/config.yaml` |
 | `CODEX_CACHE_DIR` | Cache directory | `.fractary/codex/cache` |
 | `CODEX_ORGANIZATION` | Organization name | (auto-detect) |
 | `GITHUB_TOKEN` | GitHub access token | - |
@@ -932,7 +929,7 @@ storage:
 ### 2. Organize by Environment
 
 ```yaml
-# .fractary/codex/config.yaml (base config)
+# .fractary/config.yaml (base config)
 organization: fractary
 cacheDir: .fractary/codex/cache
 
@@ -961,8 +958,8 @@ const config = loadConfig(`.fractary/codex.${env}.yaml`)
 Use multiple configs for different scopes:
 
 ```
-~/.fractary/codex/config.yaml     # User-wide defaults
-.fractary/codex/config.yaml       # Project-specific
+~/.fractary/config.yaml     # User-wide defaults
+.fractary/config.yaml       # Project-specific
 .fractary/codex.local.yaml # Local overrides (gitignored)
 ```
 

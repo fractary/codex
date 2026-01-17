@@ -2,7 +2,7 @@
 Configuration loading and management.
 
 This module provides functions for loading and managing Codex configuration
-from .fractary/codex/config.yaml files (v4.0 standard).
+from .fractary/config.yaml (unified config with codex: section).
 """
 
 import os
@@ -15,11 +15,11 @@ import yaml
 from ..errors import ConfigurationError
 from ..references.resolver import detect_current_project
 
-# Configuration file locations (v4.0 standard only)
+# Configuration file locations (unified config)
 CONFIG_FILENAMES = ["config.yaml", "config.yml"]
-CONFIG_DIRS = [".fractary/codex"]
+CONFIG_DIRS = [".fractary"]
 
-# Default configuration values (v4.0 standard)
+# Default configuration values
 DEFAULT_CACHE_DIR = ".fractary/codex/cache"
 DEFAULT_TTL = 86400  # 1 day
 
@@ -57,10 +57,10 @@ def load_config(
     *,
     allow_missing: bool = True,
 ) -> Optional[CodexConfig]:
-    """Load Codex configuration from .fractary/codex/config.yaml (v4.0 standard).
+    """Load Codex configuration from .fractary/config.yaml (unified config).
 
     This function searches for configuration files in the following order:
-    1. start_path/.fractary/codex/config.yaml
+    1. start_path/.fractary/config.yaml
     2. Parent directories (walking up to root)
     3. Not found - returns None or raises error
 
@@ -263,8 +263,15 @@ def _parse_config(raw: dict[str, Any], source_path: Path) -> CodexConfig:
     Raises:
         ConfigurationError: If required fields are missing or invalid
     """
+    # Handle unified config format (codex section)
+    if "codex" in raw and isinstance(raw["codex"], dict):
+        codex_config = raw["codex"]
+    else:
+        # Flat format (legacy or simple config)
+        codex_config = raw
+
     # Get organization (required, but can be inferred)
-    organization = raw.get("organization") or raw.get("org")
+    organization = codex_config.get("organization") or codex_config.get("org")
 
     if not organization:
         # Try to infer from git
@@ -276,10 +283,10 @@ def _parse_config(raw: dict[str, Any], source_path: Path) -> CodexConfig:
             organization = source_path.parent.parent.name
 
     # Get project (optional)
-    project = raw.get("project")
+    project = codex_config.get("project")
 
     # Get cache settings
-    cache_config = raw.get("cache", {})
+    cache_config = codex_config.get("cache", {})
     if isinstance(cache_config, dict):
         cache_dir = cache_config.get("directory", DEFAULT_CACHE_DIR)
         default_ttl = cache_config.get("default_ttl", DEFAULT_TTL)
@@ -288,12 +295,12 @@ def _parse_config(raw: dict[str, Any], source_path: Path) -> CodexConfig:
         default_ttl = DEFAULT_TTL
 
     # Get storage config
-    storage = raw.get("storage", {})
+    storage = codex_config.get("storage", {})
     if not isinstance(storage, dict):
         storage = {}
 
     # Get custom types
-    types = raw.get("types", {})
+    types = codex_config.get("types", {})
     if not isinstance(types, dict):
         types = {}
 
@@ -304,5 +311,5 @@ def _parse_config(raw: dict[str, Any], source_path: Path) -> CodexConfig:
         default_ttl=default_ttl,
         storage=storage,
         types=types,
-        raw=raw,
+        raw=raw,  # Keep original raw for reference
     )

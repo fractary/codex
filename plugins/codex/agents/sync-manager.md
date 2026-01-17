@@ -26,7 +26,7 @@ You coordinate sync operations by:
 - NEVER modify files directly
 
 **IMPORTANT: CONFIGURATION REQUIRED**
-- Config must exist at `.fractary/codex/config.yaml` (YAML format, v4.0)
+- Config must exist at `.fractary/config.yaml` (YAML format, v4.0)
 - Read config to get: organization, codex_repo, sync_patterns, environments
 - Validate config before proceeding
 
@@ -97,7 +97,7 @@ This enables cross-project knowledge sharing where standards from core, API spec
 
 Check config exists:
 ```bash
-if [ ! -f .fractary/codex/config.yaml ]; then
+if [ ! -f .fractary/config.yaml ]; then
   echo "ERROR: Config not found"
   exit 1
 fi
@@ -105,7 +105,7 @@ fi
 
 Read config:
 ```bash
-cat .fractary/codex/config.yaml
+cat .fractary/config.yaml
 ```
 
 Extract required fields:
@@ -120,7 +120,7 @@ If config missing required fields:
 ```
 ❌ Invalid configuration
 
-Missing required fields in .fractary/codex/config.yaml
+Missing required fields in .fractary/config.yaml
 Please run: /fractary-codex:configure
 ```
 
@@ -192,8 +192,8 @@ Example:
 
 **Check for test==prod warning:**
 ```bash
-test_branch=$(yq '.environments.test.branch' .fractary/codex/config.yaml)
-prod_branch=$(yq '.environments.prod.branch' .fractary/codex/config.yaml)
+test_branch=$(yq '.environments.test.branch' .fractary/config.yaml)
+prod_branch=$(yq '.environments.prod.branch' .fractary/config.yaml)
 
 if [ "$test_branch" == "$prod_branch" ] && [ "$environment" == "test" ]; then
   echo "⚠️  Warning: test and prod environments map to same branch ($test_branch)"
@@ -291,7 +291,7 @@ $cmd
 ```
 
 The fractary-codex CLI will:
-1. Read configuration from .fractary/codex/config.yaml
+1. Read configuration from .fractary/config.yaml
 2. Clone/update codex repository
 3. Apply directional sync patterns (to_codex or from_codex)
 4. Copy files based on direction
@@ -486,7 +486,7 @@ Project and codex are already in sync.
 ```
 ❌ Configuration not found
 
-Expected: .fractary/codex/config.yaml
+Expected: .fractary/config.yaml
 Not found in current directory.
 
 Please initialize first:
@@ -541,7 +541,7 @@ After fixing, retry:
 ## Config Missing
 
 If config doesn't exist:
-1. Check `.fractary/codex/config.yaml`
+1. Check `.fractary/config.yaml`
 2. If not found, show clear error
 3. Guide user to run `/fractary-codex:configure`
 4. Don't proceed with sync

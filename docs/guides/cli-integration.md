@@ -672,7 +672,7 @@ async function fetchWithFallback(uri: string): Promise<string> {
 ### Loading Configuration
 
 ```typescript
-// Load from default location (.fractary/codex/config.yaml)
+// Load from default location (.fractary/config.yaml)
 const config = loadConfig()
 
 // Load from custom path
@@ -697,7 +697,7 @@ if (process.env.GITHUB_TOKEN) {
 import { resolveOrganization } from '@fractary/codex'
 
 // Auto-detect organization from:
-// 1. .fractary/codex/config.yaml config
+// 1. .fractary/config.yaml config
 // 2. Git remote URL
 // 3. Current directory name (fallback)
 const org = resolveOrganization()

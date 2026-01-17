@@ -7,7 +7,7 @@
 > - Removed config commands (no migration support)
 > - Only 2 commands: `init` + `sync`
 > - Command → Agent architecture for reliability
-> - Config now at `.fractary/codex/config.yaml` (YAML only)
+> - Config now at `.fractary/config.yaml` (YAML only)
 
 ## Overview
 
@@ -65,7 +65,7 @@ Or specify explicitly:
 ```
 
 This sets up:
-- Configuration at `.fractary/codex/config.yaml` (YAML format, v4.0)
+- Configuration at `.fractary/config.yaml` (YAML format, v4.0)
 - Cache directory at `.fractary/codex/cache/` (auto-managed)
 - MCP server in `.mcp.json`
 
@@ -648,7 +648,7 @@ The codex plugin uses the SDK-provided MCP server from `@fractary/codex` to expo
 ```
 
 This automatically:
-1. Creates YAML configuration at `.fractary/codex/config.yaml`
+1. Creates YAML configuration at `.fractary/config.yaml`
 2. Sets up cache directory
 3. Registers SDK MCP server in `.mcp.json`
 4. Detects and migrates legacy custom MCP server (if present)
@@ -659,9 +659,9 @@ This automatically:
 ./scripts/install-mcp.sh
 
 # This configures:
-# - npx @fractary/codex mcp --config .fractary/codex/config.yaml
+# - npx @fractary/codex mcp --config .fractary/config.yaml
 # OR
-# - fractary codex mcp --config .fractary/codex/config.yaml (if global CLI installed)
+# - fractary codex mcp --config .fractary/config.yaml (if global CLI installed)
 ```
 
 **Verify:**
@@ -1031,7 +1031,7 @@ Follows [Fractary Plugin Standards](../../docs/standards/FRACTARY-PLUGIN-STANDAR
 ### v4.0.0 - CLI Integration
 
 **Phase 4: Configuration Migration**
-- YAML configuration format (`.fractary/codex/config.yaml`)
+- YAML configuration format (`.fractary/config.yaml`)
 - JSON→YAML migration tooling
 - Version detection and automatic migration
 - CLI delegation via @fractary/cli
