@@ -130,31 +130,12 @@ export function syncCommand(): Command {
         // Use proper type for sync config
         const syncConfig = config.sync as Partial<SyncConfig> | undefined;
 
-        // Resolve to_codex patterns (supports both new and legacy formats)
-        let configIncludePatterns: string[];
-        let configExcludePatterns: string[] = [];
-
-        if (syncConfig?.to_codex) {
-          const toCodex = syncConfig.to_codex;
-          // Check if new format (object with include/exclude)
-          if (typeof toCodex === 'object' && !Array.isArray(toCodex)) {
-            // New format: DirectionalSyncConfig with include/exclude
-            const directionalConfig = toCodex as { include?: string[]; exclude?: string[] };
-            configIncludePatterns = directionalConfig.include || defaultToCodexPatterns;
-            configExcludePatterns = directionalConfig.exclude || [];
-          } else if (Array.isArray(toCodex)) {
-            // Legacy format (array of patterns)
-            configIncludePatterns = toCodex;
-            configExcludePatterns = syncConfig.exclude || [];
-          } else {
-            configIncludePatterns = defaultToCodexPatterns;
-            configExcludePatterns = [];
-          }
-        } else {
-          // No to_codex config, use defaults
-          configIncludePatterns = defaultToCodexPatterns;
-          configExcludePatterns = syncConfig?.exclude || [];
-        }
+        // Use SDK to resolve patterns (handles both new and legacy formats)
+        const sdkPatterns = syncManager.getToCodexPatterns();
+        const configIncludePatterns = sdkPatterns.length > 0
+          ? sdkPatterns
+          : defaultToCodexPatterns;
+        const configExcludePatterns = syncConfig?.to_codex?.exclude || syncConfig?.exclude || [];
 
         // CLI options override config
         const includePatterns = options.include.length > 0 ? options.include : configIncludePatterns;

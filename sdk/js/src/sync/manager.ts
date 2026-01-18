@@ -84,6 +84,26 @@ export class SyncManager {
   }
 
   /**
+   * Get resolved to-codex include patterns (public accessor)
+   *
+   * Returns the resolved patterns from config, handling both new format
+   * (to_codex.include) and legacy format (default_to_codex).
+   */
+  public getToCodexPatterns(): string[] {
+    return this.resolveToCodexPatterns()
+  }
+
+  /**
+   * Get resolved from-codex include patterns (public accessor)
+   *
+   * Returns the resolved patterns from config, handling both new format
+   * (from_codex.include) and legacy format (default_from_codex).
+   */
+  public getFromCodexPatterns(): string[] {
+    return this.resolveFromCodexPatterns()
+  }
+
+  /**
    * Load the sync manifest
    */
   async loadManifest(): Promise<SyncManifest | null> {
