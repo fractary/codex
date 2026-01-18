@@ -51,31 +51,32 @@ This document summarizes the migration of the codex plugin from custom bash scri
 
 #### ✅ Phase 3: Sync Operations Migration (Complete)
 **Commit**: 6e2195c
+**Updated**: v4.2.0 - Removed intermediate skill layers entirely
 
-**Migrated Skills** (v3.0 → v4.0):
-1. `project-syncer` - Single project sync
-2. `org-syncer` - Organization-wide sync
+**Architecture** (v4.2+):
+- `sync-manager` agent invokes `fractary-codex sync` CLI directly
+- No intermediate skills (`project-syncer`, `handler-sync-github` removed)
+- CLI handles all git operations, temp directory management, and file copying
 
-**Removed**:
-- All workflow files (5 files per syncer)
+**Removed entirely** (v4.2):
+- `skills/project-syncer/` - All files deleted
+- `skills/handler-sync-github/` - All files deleted
+- All workflow files (5+ files per skill)
 - Handler coordination logic
 - Custom bash orchestration
-- Manual parallel execution
 
 **Delegated to CLI**:
-- `fractary codex sync project` - Sequential bidirectional sync
-- `fractary codex sync org` - Parallel org sync (5 repos default)
-- Repository discovery
-- Branch checkout and validation
-- Commit creation and push
-- Result aggregation
+- `fractary-codex sync --to-codex` - Push local files to codex
+- `fractary-codex sync --from-codex` - Pull files to local cache
+- `fractary-codex sync` - Bidirectional (default)
+- All repository operations, branch checkout, commit creation, push
 
 **Benefits**:
-- ~98% code reduction
-- Parallel execution handled by SDK
-- Deletion threshold safety checks
-- Dry-run support
-- Better progress tracking
+- ~100% skill code reduction (skills removed entirely)
+- Single point of execution (CLI only)
+- No opportunity for agent to hallucinate incorrect behavior
+- CLI manages temp directories in `/tmp/fractary-codex-clone/`
+- Better safety and error handling
 
 #### ✅ Phase 4: Configuration Migration (Complete)
 **Commit**: 7419114
@@ -167,7 +168,7 @@ This document summarizes the migration of the codex plugin from custom bash scri
 
 ### Code Reduction
 
-| Component | v3.0 Lines | v4.0 Lines | Reduction |
+| Component | v3.0 Lines | v4.2 Lines | Reduction |
 |-----------|-----------|-----------|-----------|
 | cli-helper | 0 | 150 | +150 (new) |
 | document-fetcher | 400 | 20 | 95% |
@@ -175,13 +176,14 @@ This document summarizes the migration of the codex plugin from custom bash scri
 | cache-clear | 380 | 22 | 94% |
 | cache-metrics | 420 | 25 | 94% |
 | cache-health | 450 | 28 | 94% |
-| project-syncer | 800 | 35 | 96% |
-| org-syncer | 950 | 40 | 96% |
+| project-syncer | 800 | 0 | 100% (removed) |
+| handler-sync-github | 600 | 0 | 100% (removed) |
+| sync-manager agent | 607 | 175 | 71% |
 | config-helper | 0 | 180 | +180 (new) |
 | codex-manager | 542 | 689 | -27% (expanded) |
-| **Total** | **~4,300** | **~1,200** | **~72%** |
+| **Total** | **~5,000** | **~1,300** | **~74%** |
 
-Note: Negative numbers indicate additions (new infrastructure or expanded functionality).
+Note: In v4.2, project-syncer and handler-sync-github were removed entirely. The sync-manager agent now invokes the CLI directly.
 
 ### Benefits Realized
 
