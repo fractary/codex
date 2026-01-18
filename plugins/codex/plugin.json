@@ -26,8 +26,7 @@
     {"name": "config-migrate", "version": "3.0.0", "description": "Migrate config", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/config-migrate/tool.yaml", "checksum": "sha256:397ce5ae0f9a58beb0083f7ddb3478ae9927c5eef628035c05c1e698e3254ab3", "size": 287},
     {"name": "document-fetch", "version": "3.0.0", "description": "Fetch documents", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/document-fetch/tool.yaml", "checksum": "sha256:ff5f965f13e0262fd22ef52cacc586995e0fd9482dd2c1cf2cdbcef673ccc9a7", "size": 295},
     {"name": "handler-http", "version": "2.0.0", "description": "HTTP handler", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/handler-http/tool.yaml", "checksum": "sha256:a1cd7fb54dd0a8c42506757b2bc1502a97f23675fcfa236bb96db10f52325122", "size": 442},
-    {"name": "repo-discoverer", "version": "2.0.0", "description": "Repo discovery", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/repo-discoverer/tool.yaml", "checksum": "sha256:c597133d95ce253b9b2fcf6bd5d69fe89d17e58001362d9df1ffb401cdace26b", "size": 507},
-    {"name": "sync-project", "version": "3.0.0", "description": "Sync project", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/sync-project/tool.yaml", "checksum": "sha256:f2d638f413a49a4ab1ce85ee89b076eef284dd91a5f08bd5246987a28ef81203", "size": 268}
+    {"name": "repo-discoverer", "version": "2.0.0", "description": "Repo discovery", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/repo-discoverer/tool.yaml", "checksum": "sha256:c597133d95ce253b9b2fcf6bd5d69fe89d17e58001362d9df1ffb401cdace26b", "size": 507}
   ],
   "config": {"default_llm": {"provider": "anthropic", "model": "claude-opus-4-5"}}
 }

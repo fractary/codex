@@ -35,7 +35,7 @@ If this fails:
 ```
 Error: fractary-codex CLI not found
 
-Install with: npm install -g @anthropic-ai/claude-code
+Install with: npm install -g fractary-codex
 Or ensure it's in your PATH.
 ```
 STOP here. Do not proceed.
@@ -46,8 +46,8 @@ Map user arguments to CLI flags:
 
 | User Argument | CLI Flag |
 |---------------|----------|
-| `--to-codex` | `--to-codex` |
-| `--from-codex` | `--from-codex` |
+| `--to-codex` | `--direction to-codex` |
+| `--from-codex` | `--direction from-codex` |
 | (neither) | (bidirectional, default) |
 | `--dry-run` | `--dry-run` |
 | `--env <env>` | `--env <env>` |
@@ -58,12 +58,12 @@ Run the appropriate command:
 
 **To-codex sync:**
 ```bash
-fractary-codex sync --to-codex [--dry-run] [--env <env>]
+fractary-codex sync --direction to-codex [--dry-run] [--env <env>]
 ```
 
 **From-codex sync:**
 ```bash
-fractary-codex sync --from-codex [--dry-run] [--env <env>]
+fractary-codex sync --direction from-codex [--dry-run] [--env <env>]
 ```
 
 **Bidirectional sync (default):**
@@ -88,8 +88,8 @@ If CLI fails: Report the CLI's error message verbatim
 <INPUTS>
 Arguments from user (passed via command):
 
-- `--to-codex`: Push local files to codex repository
-- `--from-codex`: Pull files from codex to local cache
+- `--to-codex`: Push local files to codex repository (maps to `--direction to-codex`)
+- `--from-codex`: Pull files from codex to local cache (maps to `--direction from-codex`)
 - `--dry-run`: Preview what would be synced
 - `--env <environment>`: Target environment (dev, test, staging, prod)
 
@@ -130,10 +130,10 @@ Error: fractary-codex CLI not found
 The sync command requires the fractary-codex CLI to be installed.
 
 Install with:
-  npm install -g @anthropic-ai/claude-code
+  npm install -g fractary-codex
 
 Or if using npx:
-  npx fractary-codex sync --to-codex
+  npx fractary-codex sync --direction to-codex
 ```
 </OUTPUTS>
 
