@@ -3,10 +3,20 @@ name: fractary-codex:sync
 description: Sync project with codex repository - delegates to fractary-codex:sync-manager agent
 allowed-tools: Task(fractary-codex:sync-manager)
 model: claude-haiku-4-5
-argument-hint: '[project-name] [--env <env>] [--to-codex|--from-codex|--bidirectional] [--dry-run] [--include <patterns>] [--exclude <patterns>]'
+argument-hint: '[--to-codex|--from-codex] [--dry-run] [--env <env>]'
 ---
 
-Use **Task** tool with `fractary-codex:sync-manager` agent to sync project with codex repository using provided arguments.
+Use **Task** tool with `fractary-codex:sync-manager` agent to sync project with codex repository.
+
+The sync-manager agent will invoke the `fractary-codex sync` CLI directly.
+
+**Arguments:**
+- `--to-codex`: Push local files to codex repository
+- `--from-codex`: Pull files from codex to local cache
+- `--dry-run`: Preview what would be synced (no changes made)
+- `--env <env>`: Target environment (dev, test, staging, prod)
+
+If no direction is specified, performs bidirectional sync (both to-codex and from-codex).
 
 ```
 Task(
