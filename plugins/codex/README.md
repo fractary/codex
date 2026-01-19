@@ -991,7 +991,6 @@ plugins/codex/
 │   │       └── fetch-with-permissions.md
 │   ├── cache-list/              # Cache listing skill
 │   ├── cache-clear/             # Cache clearing skill
-│   ├── handler-http/            # HTTP handler (Phase 2)
 │   ├── cli-helper/              # CLI delegation (Phase 4)
 │   └── [other skills...]
 ├── config/

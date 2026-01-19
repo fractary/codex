@@ -350,4 +350,104 @@ describe('sync/manager', () => {
       expect(updatedConfig.from_codex?.include).toEqual(['new-pattern/**/*.md'])
     })
   })
+
+  describe('Public Pattern Accessors', () => {
+    describe('getToCodexPatterns()', () => {
+      it('should return patterns from new format to_codex.include', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {
+            to_codex: {
+              include: ['docs/**/*.md', 'specs/**/*.md'],
+            },
+          },
+        })
+
+        expect(manager.getToCodexPatterns()).toEqual(['docs/**/*.md', 'specs/**/*.md'])
+      })
+
+      it('should return patterns from legacy default_to_codex', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {
+            default_to_codex: ['legacy-docs/**/*.md'],
+          },
+        })
+
+        expect(manager.getToCodexPatterns()).toEqual(['legacy-docs/**/*.md'])
+      })
+
+      it('should prefer new format over legacy format', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {
+            to_codex: {
+              include: ['new-format/**/*.md'],
+            },
+            default_to_codex: ['legacy-format/**/*.md'],
+          },
+        })
+
+        expect(manager.getToCodexPatterns()).toEqual(['new-format/**/*.md'])
+      })
+
+      it('should return empty array when no patterns configured', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {},
+        })
+
+        expect(manager.getToCodexPatterns()).toEqual([])
+      })
+    })
+
+    describe('getFromCodexPatterns()', () => {
+      it('should return patterns from new format from_codex.include', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {
+            from_codex: {
+              include: ['projects/*/docs/**/*.json'],
+            },
+          },
+        })
+
+        expect(manager.getFromCodexPatterns()).toEqual(['projects/*/docs/**/*.json'])
+      })
+
+      it('should return patterns from legacy default_from_codex', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {
+            default_from_codex: ['legacy-projects/**/*.md'],
+          },
+        })
+
+        expect(manager.getFromCodexPatterns()).toEqual(['legacy-projects/**/*.md'])
+      })
+
+      it('should prefer new format over legacy format', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {
+            from_codex: {
+              include: ['new-pattern/**/*.md'],
+            },
+            default_from_codex: ['old-pattern/**/*.md'],
+          },
+        })
+
+        expect(manager.getFromCodexPatterns()).toEqual(['new-pattern/**/*.md'])
+      })
+
+      it('should return empty array when no patterns configured', () => {
+        const manager = createSyncManager({
+          localStorage,
+          config: {},
+        })
+
+        expect(manager.getFromCodexPatterns()).toEqual([])
+      })
+    })
+  })
 })
