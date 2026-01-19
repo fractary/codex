@@ -58,8 +58,7 @@ You receive requests from other skills in this format:
 - `cache clear [--all|--expired]` - Clear cache entries
 - `cache stats` - Get cache statistics
 - `health` - Run health checks
-- `sync project [name]` - Sync project
-- `sync org` - Sync organization
+- `sync` - Sync current project
 - `init` - Initialize configuration
 - `migrate` - Migrate configuration
 - `check` - Validate references

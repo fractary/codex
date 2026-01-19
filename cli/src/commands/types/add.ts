@@ -97,8 +97,8 @@ export function typesAddCommand(): Command {
           process.exit(1);
         }
 
-        // Load YAML configuration
-        const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
+        // Load YAML configuration (unified config path)
+        const configPath = path.join(process.cwd(), '.fractary', 'config.yaml');
         const config = await readYamlConfig(configPath);
 
         // Initialize types.custom if needed

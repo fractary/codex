@@ -282,10 +282,22 @@ export function getDefaultYamlConfig(organization: string): CodexYamlConfig {
 
 /**
  * Read YAML config from file
+ *
+ * Supports both unified config format (with `codex:` section) and legacy flat format.
+ * If the config has a `codex:` key at the top level, extracts that section.
  */
 export async function readYamlConfig(configPath: string): Promise<CodexYamlConfig> {
   const content = await fs.readFile(configPath, 'utf-8');
-  const config = yaml.load(content) as CodexYamlConfig;
+  const rawConfig = yaml.load(content) as Record<string, any>;
+
+  // Handle unified config format (has `codex:` section)
+  let config: CodexYamlConfig;
+  if (rawConfig.codex && typeof rawConfig.codex === 'object') {
+    config = rawConfig.codex as CodexYamlConfig;
+  } else {
+    // Legacy flat format
+    config = rawConfig as CodexYamlConfig;
+  }
 
   if (!config.organization) {
     throw new Error('Invalid config: organization is required');

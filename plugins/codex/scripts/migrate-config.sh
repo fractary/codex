@@ -39,7 +39,7 @@ fi
 
 # Parse arguments
 SOURCE_PATH=""
-TARGET_PATH=".fractary/codex.yaml"
+TARGET_PATH=".fractary/config.yaml"
 DRY_RUN=false
 REMOVE_SOURCE=false
 

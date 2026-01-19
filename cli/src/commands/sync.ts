@@ -66,8 +66,8 @@ export function syncCommand(): Command {
     .option('--json', 'Output as JSON')
     .action(async (name: string | undefined, options) => {
       try {
-        // Load YAML config
-        const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
+        // Load YAML config (unified config path)
+        const configPath = path.join(process.cwd(), '.fractary', 'config.yaml');
         let config;
 
         try {

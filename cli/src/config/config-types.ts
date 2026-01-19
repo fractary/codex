@@ -118,6 +118,16 @@ export interface PermissionsConfig {
 }
 
 /**
+ * Directional sync configuration (v0.7.0+)
+ */
+export interface DirectionalSyncConfig {
+  /** Patterns to include (required) */
+  include: string[];
+  /** Patterns to exclude (optional) */
+  exclude?: string[];
+}
+
+/**
  * Sync configuration
  */
 export interface SyncConfig {
@@ -125,9 +135,10 @@ export interface SyncConfig {
   conflictResolution?: 'prompt' | 'local' | 'remote' | 'newest' | 'skip';
   exclude?: string[];
   rules?: SyncRule[];
-  // Directional sync patterns (added for PR #29)
-  to_codex?: string[];
-  from_codex?: string[];
+  // New format (v0.7.0+) - Recommended
+  to_codex?: DirectionalSyncConfig;
+  from_codex?: DirectionalSyncConfig;
+  // Legacy format (deprecated, backward compatible)
   default_to_codex?: string[];
   default_from_codex?: string[];
 }
