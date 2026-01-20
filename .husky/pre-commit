@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Auto-bump versions based on staged files
+node scripts/bump-versions.js --staged
+
+# Add any modified version files to the commit
+git add sdk/js/package.json cli/package.json mcp/server/package.json \
+        plugins/codex/plugin.json .claude-plugin/marketplace.json \
+        package-lock.json 2>/dev/null || true

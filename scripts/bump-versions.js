@@ -3,7 +3,12 @@
 /**
  * Auto-bump versions based on changed files
  *
- * Usage: node scripts/bump-versions.js [--check-only]
+ * Usage: node scripts/bump-versions.js [--check-only] [--staged] [--verbose]
+ *
+ * Options:
+ *   --check-only  Only check for version issues, don't modify files
+ *   --staged      Check only staged files (for pre-commit hook)
+ *   --verbose     Show detailed output
  *
  * This script:
  * 1. Detects which components have changed (SDK, CLI, MCP, Plugin)
@@ -17,6 +22,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const checkOnly = process.argv.includes('--check-only');
+const stagedOnly = process.argv.includes('--staged');
 const verbose = process.argv.includes('--verbose');
 
 // Version file locations
@@ -45,6 +51,11 @@ function log(msg) {
 
 function getChangedFiles() {
   try {
+    if (stagedOnly) {
+      // Check only staged files (used by pre-commit hook)
+      return execSync('git diff --cached --name-only', { encoding: 'utf-8' })
+        .trim().split('\n').filter(Boolean);
+    }
     // Try to get changed files vs origin/main
     const result = execSync('git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD~1', {
       encoding: 'utf-8'
