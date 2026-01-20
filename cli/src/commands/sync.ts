@@ -453,15 +453,15 @@ export function syncCommand(): Command {
             const repoManager = new RepoManager({}, codexRepoPath);
 
             // Stage all changes
-            repoManager.stageAll();
+            await repoManager.stageAll();
 
             // Commit with conventional format
-            repoManager.commit({
+            await repoManager.commit({
               message: `Sync ${result.synced} files from ${projectName}`,
             });
 
             // Push to remote
-            repoManager.push({});
+            await repoManager.push({});
 
             if (!options.json) {
               console.log(chalk.dim('  Changes pushed to codex repository'));
