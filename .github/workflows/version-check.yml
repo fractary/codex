@@ -3,13 +3,6 @@ name: Version Check
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'sdk/js/**'
-      - 'cli/**'
-      - 'mcp/server/**'
-      - 'plugins/codex/**'
-      - '.claude-plugin/**'
-      - 'package-lock.json'
 
 jobs:
   check-versions:
@@ -17,110 +10,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Need full history to compare with base
+          fetch-depth: 0
 
-      - name: Get changed files
-        id: changed
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check versions
+        id: check
         run: |
-          # Get files changed in this PR
-          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
-          echo "files<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGED" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          node scripts/bump-versions.js --check-only --verbose
+        continue-on-error: true
 
-          # Check which components changed
-          echo "sdk_changed=$(echo "$CHANGED" | grep -q '^sdk/js/src/' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          echo "cli_changed=$(echo "$CHANGED" | grep -q '^cli/src/' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          echo "mcp_changed=$(echo "$CHANGED" | grep -q '^mcp/server/src/' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-          echo "plugin_changed=$(echo "$CHANGED" | grep -qE '^plugins/codex/(agents|commands|skills|config)/' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-
-      - name: Check SDK version bump
-        if: steps.changed.outputs.sdk_changed == 'true'
+      - name: Post fix instructions
+        if: steps.check.outcome == 'failure'
         run: |
-          # Check if sdk/js/package.json version changed
-          if ! git diff origin/${{ github.base_ref }}...HEAD -- sdk/js/package.json | grep -q '"version"'; then
-            echo "::error::SDK source files changed but sdk/js/package.json version was not bumped!"
-            echo ""
-            echo "Changed SDK files:"
-            echo "${{ steps.changed.outputs.files }}" | grep '^sdk/js/src/'
-            exit 1
-          fi
-          echo "✓ SDK version was bumped"
+          echo "## ❌ Version Check Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Some versions need to be updated. Run this command locally:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "node scripts/bump-versions.js && npm install" >> $GITHUB_STEP_SUMMARY
+          echo "git add -A && git commit --amend --no-edit" >> $GITHUB_STEP_SUMMARY
+          echo "git push --force-with-lease" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
-      - name: Check CLI version bump
-        if: steps.changed.outputs.cli_changed == 'true'
+      - name: Show version summary
+        if: steps.check.outcome == 'success'
         run: |
-          if ! git diff origin/${{ github.base_ref }}...HEAD -- cli/package.json | grep -q '"version"'; then
-            echo "::error::CLI source files changed but cli/package.json version was not bumped!"
-            exit 1
-          fi
-          echo "✓ CLI version was bumped"
-
-      - name: Check MCP version bump
-        if: steps.changed.outputs.mcp_changed == 'true'
-        run: |
-          if ! git diff origin/${{ github.base_ref }}...HEAD -- mcp/server/package.json | grep -q '"version"'; then
-            echo "::error::MCP source files changed but mcp/server/package.json version was not bumped!"
-            exit 1
-          fi
-          echo "✓ MCP version was bumped"
-
-      - name: Check plugin version bump
-        if: steps.changed.outputs.plugin_changed == 'true'
-        run: |
-          if ! git diff origin/${{ github.base_ref }}...HEAD -- plugins/codex/plugin.json | grep -q '"version"'; then
-            echo "::error::Plugin files changed but plugins/codex/plugin.json version was not bumped!"
-            exit 1
-          fi
-          echo "✓ Plugin version was bumped"
-
-      - name: Check SDK dependency alignment
-        run: |
-          SDK_VERSION=$(node -p "require('./sdk/js/package.json').version")
-          SDK_MAJOR_MINOR=$(echo $SDK_VERSION | cut -d. -f1,2)
-
-          # Check CLI dependency
-          CLI_SDK_DEP=$(node -p "require('./cli/package.json').dependencies['@fractary/codex']")
-          CLI_SDK_MIN=$(echo $CLI_SDK_DEP | sed 's/[\^~]//' | cut -d. -f1,2)
-
-          if [ "$CLI_SDK_MIN" != "$SDK_MAJOR_MINOR" ]; then
-            echo "::error::CLI @fractary/codex dependency ($CLI_SDK_DEP) does not include SDK version $SDK_VERSION"
-            echo "Update cli/package.json: \"@fractary/codex\": \"^$SDK_MAJOR_MINOR.0\""
-            exit 1
-          fi
-          echo "✓ CLI SDK dependency ($CLI_SDK_DEP) includes SDK $SDK_VERSION"
-
-          # Check MCP dependency
-          MCP_SDK_DEP=$(node -p "require('./mcp/server/package.json').dependencies['@fractary/codex']")
-          MCP_SDK_MIN=$(echo $MCP_SDK_DEP | sed 's/[\^~]//' | cut -d. -f1,2)
-
-          if [ "$MCP_SDK_MIN" != "$SDK_MAJOR_MINOR" ]; then
-            echo "::error::MCP @fractary/codex dependency ($MCP_SDK_DEP) does not include SDK version $SDK_VERSION"
-            echo "Update mcp/server/package.json: \"@fractary/codex\": \"^$SDK_MAJOR_MINOR.0\""
-            exit 1
-          fi
-          echo "✓ MCP SDK dependency ($MCP_SDK_DEP) includes SDK $SDK_VERSION"
-
-      - name: Check marketplace version sync
-        run: |
-          PLUGIN_VERSION=$(node -p "require('./plugins/codex/plugin.json').version")
-          MARKETPLACE_PLUGIN_VERSION=$(node -p "require('./.claude-plugin/marketplace.json').plugins[0].version")
-
-          if [ "$PLUGIN_VERSION" != "$MARKETPLACE_PLUGIN_VERSION" ]; then
-            echo "::error::Plugin version ($PLUGIN_VERSION) does not match marketplace plugin version ($MARKETPLACE_PLUGIN_VERSION)"
-            echo "Update .claude-plugin/marketplace.json plugins[0].version to match plugins/codex/plugin.json"
-            exit 1
-          fi
-          echo "✓ Plugin version ($PLUGIN_VERSION) matches marketplace"
-
-      - name: Summary
-        run: |
-          echo "## Version Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## ✓ Version Check Passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Component | Version |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------|---------|" >> $GITHUB_STEP_SUMMARY
           echo "| SDK | $(node -p "require('./sdk/js/package.json').version") |" >> $GITHUB_STEP_SUMMARY
-          echo "| CLI | $(node -p "require('./cli/package.json').version") |" >> $GITHUB_STEP_SUMMARY
-          echo "| MCP | $(node -p "require('./mcp/server/package.json').version") |" >> $GITHUB_STEP_SUMMARY
+          echo "| CLI | $(node -p "require('./cli/package.json').version") (SDK: $(node -p "require('./cli/package.json').dependencies['@fractary/codex']")) |" >> $GITHUB_STEP_SUMMARY
+          echo "| MCP | $(node -p "require('./mcp/server/package.json').version") (SDK: $(node -p "require('./mcp/server/package.json').dependencies['@fractary/codex']")) |" >> $GITHUB_STEP_SUMMARY
           echo "| Plugin | $(node -p "require('./plugins/codex/plugin.json').version") |" >> $GITHUB_STEP_SUMMARY
           echo "| Marketplace | $(node -p "require('./.claude-plugin/marketplace.json').metadata.version") |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if versions incorrect
+        if: steps.check.outcome == 'failure'
+        run: exit 1
