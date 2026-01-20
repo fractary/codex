@@ -167,6 +167,7 @@ export interface McpConfig {
 export interface CodexYamlConfig {
   organization: string;
   project?: string;
+  codex_repo?: string;
   cacheDir?: string;
   storage?: StorageProviderConfig[];
   types?: TypesConfig;
