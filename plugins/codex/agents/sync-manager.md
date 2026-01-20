@@ -157,7 +157,7 @@ For reference only - you don't need to do any of this:
 
 **To-codex direction:**
 1. Reads config from `.fractary/config.yaml`
-2. Scans local project for files matching `sync_patterns.to_codex`
+2. Scans local project for files matching `sync.to_codex.include` patterns
 3. Clones codex to TEMP directory: `/tmp/fractary-codex-clone/{org}-{repo}-{pid}`
 4. Copies files from project to codex clone
 5. Commits and pushes to codex remote

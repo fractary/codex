@@ -18,6 +18,15 @@ The sync-manager agent will invoke the `fractary-codex sync` CLI directly.
 
 If no direction is specified, performs bidirectional sync (both to-codex and from-codex).
 
+**CRITICAL: This is a READ-ONLY operation**
+- NEVER modify `.fractary/config.yaml` or any configuration files
+- NEVER add, remove, or change sync patterns
+- NEVER "fix" configuration if sync finds no files
+- If sync fails or finds no files, report the error and STOP
+- The user must manually fix their own configuration
+
+After the sync-manager agent returns, DO NOT take any follow-up actions to "help" fix problems. Simply report the results.
+
 ```
 Task(
   subagent_type="fractary-codex:sync-manager",
