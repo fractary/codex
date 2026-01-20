@@ -199,10 +199,10 @@ export function syncCommand(): Command {
 
         let plan;
         let routingScan;
+        let codexRepoPath: string | undefined;
 
         // Use routing-aware sync for from-codex direction
         if (direction === 'from-codex') {
-          let codexRepoPath: string;
 
           try {
             const { ensureCodexCloned } = await import('../utils/codex-repository.js');
@@ -267,15 +267,43 @@ export function syncCommand(): Command {
           plan = planWithRouting;
           routingScan = planWithRouting.routingScan;
         } else {
-          // For to-codex: sourceFiles = local files to upload, targetFiles = empty (assume nothing in codex)
-          // This makes all matched files show as "create" operations
+          // To-codex direction: clone codex, copy files, commit, push
+
+          try {
+            const { ensureCodexCloned } = await import('../utils/codex-repository.js');
+
+            if (!options.json) {
+              console.log(chalk.blue('ℹ Cloning/updating codex repository...'));
+            }
+
+            // Clone codex to temp directory
+            codexRepoPath = await ensureCodexCloned(config, {
+              branch: targetBranch
+            });
+
+            if (!options.json) {
+              console.log(chalk.dim(`  Codex cloned to: ${codexRepoPath}`));
+            }
+          } catch (error: any) {
+            console.error(chalk.red('Error:'), 'Failed to clone codex repository');
+            console.error(chalk.dim(`  ${error.message}`));
+            process.exit(1);
+          }
+
+          // For to-codex: sourceFiles = local files to upload, targetFiles = empty (assume all files are new)
           plan = await syncManager.createPlan(
             config.organization,
             projectName,
             sourceDir,
-            [],  // Empty target - we don't scan codex for to-codex direction
+            [],  // Empty target - treat all files as creates
             syncOptions
           );
+
+          // Set actual paths for execution
+          // Source: local project directory
+          // Target: codex repo / org / project
+          plan.source = sourceDir;
+          plan.target = path.join(codexRepoPath, config.organization, projectName);
         }
 
         if (plan.totalFiles === 0) {
@@ -413,6 +441,35 @@ export function syncCommand(): Command {
         const startTime = Date.now();
         const result = await syncManager.executePlan(plan, syncOptions);
         const duration = Date.now() - startTime;
+
+        // For to-codex: commit and push changes using @fractary/core RepoManager
+        if (direction === 'to-codex' && codexRepoPath && result.synced > 0) {
+          try {
+            if (!options.json) {
+              console.log(chalk.blue('Committing and pushing to codex...'));
+            }
+
+            const { RepoManager } = await import('@fractary/core/repo');
+            const repoManager = new RepoManager({}, codexRepoPath);
+
+            // Stage all changes
+            await repoManager.stageAll();
+
+            // Commit with conventional format
+            await repoManager.commit({
+              message: `Sync ${result.synced} files from ${projectName}`,
+            });
+
+            // Push to remote
+            await repoManager.push({});
+
+            if (!options.json) {
+              console.log(chalk.dim('  Changes pushed to codex repository'));
+            }
+          } catch (error: any) {
+            console.error(chalk.red('Error pushing to codex:'), error.message);
+          }
+        }
 
         // Summary
         console.log('');

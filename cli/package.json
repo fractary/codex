@@ -1,6 +1,6 @@
 {
   "name": "@fractary/codex-cli",
-  "version": "0.10.4",
+  "version": "0.10.6",
   "description": "Command-line interface for Fractary Codex knowledge management",
   "keywords": [
     "codex",
@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@fractary/codex": "^0.11.0",
+    "@fractary/core": "^0.3.3",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "glob": "^10.3.10",
