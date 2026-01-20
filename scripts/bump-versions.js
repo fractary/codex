@@ -73,7 +73,14 @@ function getChangedFiles() {
 }
 
 function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (e) {
+    throw new Error(`Failed to parse JSON in ${filePath}: ${e.message}`);
+  }
 }
 
 function writeJson(filePath, data) {
@@ -101,91 +108,100 @@ function checkVersionBumped(changedFiles, component) {
 }
 
 // Main logic
-const changedFiles = getChangedFiles();
-log(`Changed files: ${changedFiles.length}`);
+function main() {
+  const changedFiles = getChangedFiles();
+  log(`Changed files: ${changedFiles.length}`);
 
-const updates = [];
-const errors = [];
+  const updates = [];
+  const errors = [];
 
-// Check each component
-for (const [component, dirs] of Object.entries(SOURCE_DIRS)) {
-  const sourceChanged = checkSourceChanged(changedFiles, component);
-  const versionBumped = checkVersionBumped(changedFiles, component);
+  // Check each component
+  for (const [component, dirs] of Object.entries(SOURCE_DIRS)) {
+    const sourceChanged = checkSourceChanged(changedFiles, component);
+    const versionBumped = checkVersionBumped(changedFiles, component);
 
-  if (sourceChanged && !versionBumped) {
-    const pkg = readJson(VERSION_FILES[component]);
-    const oldVersion = pkg.version;
-    const newVersion = bumpPatch(oldVersion);
+    if (sourceChanged && !versionBumped) {
+      const pkg = readJson(VERSION_FILES[component]);
+      const oldVersion = pkg.version;
+      const newVersion = bumpPatch(oldVersion);
 
-    if (checkOnly) {
-      errors.push(`${component.toUpperCase()}: source changed but version not bumped (${oldVersion})`);
-    } else {
-      pkg.version = newVersion;
-      writeJson(VERSION_FILES[component], pkg);
-      updates.push(`${component.toUpperCase()}: ${oldVersion} → ${newVersion}`);
+      if (checkOnly) {
+        errors.push(`${component.toUpperCase()}: source changed but version not bumped (${oldVersion})`);
+      } else {
+        pkg.version = newVersion;
+        writeJson(VERSION_FILES[component], pkg);
+        updates.push(`${component.toUpperCase()}: ${oldVersion} → ${newVersion}`);
+      }
     }
   }
-}
 
-// Check SDK dependency alignment
-const sdkPkg = readJson(VERSION_FILES.sdk);
-const sdkVersion = sdkPkg.version;
-const sdkMajorMinor = getMajorMinor(sdkVersion);
+  // Check SDK dependency alignment
+  const sdkPkg = readJson(VERSION_FILES.sdk);
+  const sdkVersion = sdkPkg.version;
+  const sdkMajorMinor = getMajorMinor(sdkVersion);
 
-for (const dependent of SDK_DEPENDENTS) {
-  const pkg = readJson(VERSION_FILES[dependent]);
-  const currentDep = pkg.dependencies['@fractary/codex'];
-  const currentMin = getMajorMinor(currentDep.replace(/[\^~]/, ''));
+  for (const dependent of SDK_DEPENDENTS) {
+    const pkg = readJson(VERSION_FILES[dependent]);
+    const currentDep = pkg.dependencies['@fractary/codex'];
+    const currentMin = getMajorMinor(currentDep.replace(/[\^~]/, ''));
 
-  if (currentMin !== sdkMajorMinor) {
-    const newDep = `^${sdkMajorMinor}.0`;
+    if (currentMin !== sdkMajorMinor) {
+      const newDep = `^${sdkMajorMinor}.0`;
 
-    if (checkOnly) {
-      errors.push(`${dependent.toUpperCase()}: SDK dependency ${currentDep} doesn't include SDK ${sdkVersion}`);
-    } else {
-      pkg.dependencies['@fractary/codex'] = newDep;
-      writeJson(VERSION_FILES[dependent], pkg);
-      updates.push(`${dependent.toUpperCase()} SDK dep: ${currentDep} → ${newDep}`);
+      if (checkOnly) {
+        errors.push(`${dependent.toUpperCase()}: SDK dependency ${currentDep} doesn't include SDK ${sdkVersion}`);
+      } else {
+        pkg.dependencies['@fractary/codex'] = newDep;
+        writeJson(VERSION_FILES[dependent], pkg);
+        updates.push(`${dependent.toUpperCase()} SDK dep: ${currentDep} → ${newDep}`);
+      }
     }
   }
-}
 
-// Check marketplace sync with plugin
-const pluginPkg = readJson(VERSION_FILES.plugin);
-const marketplacePkg = readJson(VERSION_FILES.marketplace);
-const pluginVersion = pluginPkg.version;
-const marketplacePluginVersion = marketplacePkg.plugins[0].version;
+  // Check marketplace sync with plugin
+  const pluginPkg = readJson(VERSION_FILES.plugin);
+  const marketplacePkg = readJson(VERSION_FILES.marketplace);
+  const pluginVersion = pluginPkg.version;
+  const marketplacePluginVersion = marketplacePkg.plugins[0].version;
 
-if (pluginVersion !== marketplacePluginVersion) {
+  if (pluginVersion !== marketplacePluginVersion) {
+    if (checkOnly) {
+      errors.push(`MARKETPLACE: plugin version ${marketplacePluginVersion} != plugin.json ${pluginVersion}`);
+    } else {
+      marketplacePkg.plugins[0].version = pluginVersion;
+      // Also bump marketplace metadata version
+      marketplacePkg.metadata.version = bumpPatch(marketplacePkg.metadata.version);
+      writeJson(VERSION_FILES.marketplace, marketplacePkg);
+      updates.push(`MARKETPLACE: plugin version → ${pluginVersion}`);
+      updates.push(`MARKETPLACE: metadata version → ${marketplacePkg.metadata.version}`);
+    }
+  }
+
+  // Output results
   if (checkOnly) {
-    errors.push(`MARKETPLACE: plugin version ${marketplacePluginVersion} != plugin.json ${pluginVersion}`);
+    if (errors.length > 0) {
+      console.log('Version issues found:');
+      errors.forEach(e => console.log(`  ❌ ${e}`));
+      console.log('\nRun: node scripts/bump-versions.js');
+      process.exit(1);
+    } else {
+      console.log('✓ All versions are properly aligned');
+      process.exit(0);
+    }
   } else {
-    marketplacePkg.plugins[0].version = pluginVersion;
-    // Also bump marketplace metadata version
-    marketplacePkg.metadata.version = bumpPatch(marketplacePkg.metadata.version);
-    writeJson(VERSION_FILES.marketplace, marketplacePkg);
-    updates.push(`MARKETPLACE: plugin version → ${pluginVersion}`);
-    updates.push(`MARKETPLACE: metadata version → ${marketplacePkg.metadata.version}`);
+    if (updates.length > 0) {
+      console.log('Updated versions:');
+      updates.forEach(u => console.log(`  ✓ ${u}`));
+    } else {
+      console.log('No version updates needed');
+    }
   }
 }
 
-// Output results
-if (checkOnly) {
-  if (errors.length > 0) {
-    console.log('Version issues found:');
-    errors.forEach(e => console.log(`  ❌ ${e}`));
-    console.log('\nRun: node scripts/bump-versions.js');
-    process.exit(1);
-  } else {
-    console.log('✓ All versions are properly aligned');
-    process.exit(0);
-  }
-} else {
-  if (updates.length > 0) {
-    console.log('Updated versions:');
-    updates.forEach(u => console.log(`  ✓ ${u}`));
-    console.log('\nDon\'t forget to run: npm install');
-  } else {
-    console.log('No version updates needed');
-  }
+// Run with error handling
+try {
+  main();
+} catch (e) {
+  console.error(`Error: ${e.message}`);
+  process.exit(1);
 }
