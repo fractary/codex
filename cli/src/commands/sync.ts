@@ -263,7 +263,7 @@ export function syncCommand(): Command {
             codexRepoPath,
             {
               ...syncOptions,
-              codexRepo: (config as any).codex_repo, // For codex:// URI {codex_repo} placeholder
+              codexRepo: 'codex_repo' in config ? (config as { codex_repo?: string }).codex_repo : undefined,
             }
           );
 

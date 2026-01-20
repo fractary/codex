@@ -48,7 +48,7 @@ export interface FromCodexMatchOptions {
  *
  * Used when syncing FROM codex to determine which codex files should be pulled.
  *
- * Supports three pattern formats:
+ * Supports four pattern formats:
  * 1. codex://org/project/path - Full codex URI (recommended)
  * 2. "projects/project/path/pattern" - Direct projects/ path match
  * 3. "project-name/path/pattern" - Legacy bare path format
