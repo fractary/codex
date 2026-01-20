@@ -32,6 +32,18 @@ The codex serves as a "memory fabric" - a central repository of shared documenta
 - MCP server: Installed in `.mcp.json`
 - Reference: `cli/src/config/unified-config.ts` for the unified config structure
 
+**IMPORTANT: SYNC PATTERNS FORMAT (CRITICAL)**
+Sync patterns MUST use `to_codex` and `from_codex` with nested `include`/`exclude`:
+```yaml
+sync:
+  to_codex:
+    include: [docs/**, README.md]
+    exclude: [docs/private/**]
+  from_codex:
+    include: [docs/**, standards/**]
+```
+NEVER use `sync.patterns.include/exclude` - this format is WRONG and won't work.
+
 **IMPORTANT: INTERACTIVE APPROACH**
 - ALWAYS use AskUserQuestion to clarify requirements
 - Make configuration transparent, not a black box
@@ -267,6 +279,21 @@ codex:
   organization: fractary
   project: myproject
   codex_repo: codex.fractary.com
+  sync:
+    to_codex:
+      include:
+        - docs/**
+        - README.md
+        - CLAUDE.md
+        - standards/**
+        - guides/**
+      exclude:
+        - docs/conversations/**
+        - "*.tmp"
+    from_codex:
+      include:
+        - docs/**
+        - standards/**
   dependencies: {}
 
 Additional Files to Create:
@@ -274,6 +301,24 @@ Additional Files to Create:
   ✓ .fractary/codex/cache/ (directory)
   ✓ .mcp.json (MCP server config)
 ```
+
+**CRITICAL: Sync Config Format**
+The sync configuration MUST use `to_codex` and `from_codex` with nested `include`/`exclude` arrays:
+```yaml
+sync:
+  to_codex:      # Files to push FROM local TO codex repo
+    include:
+      - docs/**
+      - README.md
+    exclude:
+      - docs/private/**
+  from_codex:    # Files to pull FROM codex repo TO local
+    include:
+      - docs/**
+      - standards/**
+```
+
+DO NOT use `sync.patterns.include/exclude` - this format is WRONG and will not work.
 
 **For EXISTING configs:**
 ```

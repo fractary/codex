@@ -25,42 +25,56 @@
       "description": "Codex core repository name (e.g., codex.fractary.com)",
       "pattern": "^codex\\.[a-zA-Z0-9-]+\\.[a-z]{2,}$"
     },
-    "sync_patterns": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Glob patterns for files to sync to/from codex",
-      "default": [
-        "docs/**",
-        "CLAUDE.md",
-        "README.md",
-        ".claude/**"
-      ]
-    },
-    "exclude_patterns": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Glob patterns for files to exclude from sync",
-      "default": [
-        "**/.git/**",
-        "**/node_modules/**",
-        "**/.env",
-        "**/*.log"
-      ]
+    "sync": {
+      "type": "object",
+      "description": "Sync configuration with directional patterns (v0.7.0+ format)",
+      "properties": {
+        "to_codex": {
+          "type": "object",
+          "description": "Files to push FROM local TO codex repository",
+          "properties": {
+            "include": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns for files to sync to codex",
+              "default": ["docs/**", "CLAUDE.md", "README.md", ".claude/**"]
+            },
+            "exclude": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns to exclude from to-codex sync"
+            }
+          }
+        },
+        "from_codex": {
+          "type": "object",
+          "description": "Files to pull FROM codex repository TO local",
+          "properties": {
+            "include": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns for files to sync from codex",
+              "default": ["docs/**", "standards/**"]
+            },
+            "exclude": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Glob patterns to exclude from from-codex sync"
+            }
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Global exclude patterns applied to both directions",
+          "default": ["**/.git/**", "**/node_modules/**", "**/.env", "**/*.log"]
+        }
+      }
     },
     "auto_sync": {
       "type": "boolean",
       "description": "Enable automatic sync on repository changes",
       "default": false
-    },
-    "sync_direction": {
-      "type": "string",
-      "enum": ["to-codex", "from-codex", "bidirectional"],
-      "description": "Default sync direction for operations",
-      "default": "bidirectional"
     },
     "environments": {
       "type": "object",

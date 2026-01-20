@@ -108,8 +108,8 @@ export class CodexClient {
     const { resolveEnvVarsInConfig } = await import('../config/config-types');
 
     try {
-      // Load YAML configuration
-      const configPath = path.join(process.cwd(), '.fractary', 'codex', 'config.yaml');
+      // Load YAML configuration (unified config path)
+      const configPath = path.join(process.cwd(), '.fractary', 'config.yaml');
       let config;
 
       try {

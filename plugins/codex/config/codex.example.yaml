@@ -10,36 +10,45 @@ organization: fractary
 # Codex repository (naming convention: codex.{org}.{tld})
 codex_repo: codex.fractary.com
 
-# Sync patterns: Files to include in sync operations
-sync_patterns:
-  - "docs/**"
-  - "CLAUDE.md"
-  - "README.md"
-  - ".claude/**"
-  - "standards/**"
-  - "guides/**"
+# Sync configuration (v0.7.0+ format)
+# Uses directional patterns: to_codex (push local→codex) and from_codex (pull codex→local)
+sync:
+  # Files to push FROM local TO codex repository
+  to_codex:
+    include:
+      - "docs/**"
+      - "CLAUDE.md"
+      - "README.md"
+      - ".claude/**"
+      - "standards/**"
+      - "guides/**"
+    exclude:
+      - "docs/private/**"
+      - "docs/drafts/**"
 
-# Exclude patterns: Files to skip in sync operations
-exclude_patterns:
-  - "**/.git/**"
-  - "**/node_modules/**"
-  - "**/.env"
-  - "**/.env.*"
-  - "**/*.log"
-  - "**/dist/**"
-  - "**/build/**"
-  - "**/.DS_Store"
-  - "**/credentials.json"
-  - "**/*secret*"
-  - "**/*password*"
-  - "docs/private/**"
-  - "docs/drafts/**"
+  # Files to pull FROM codex repository TO local
+  from_codex:
+    include:
+      - "docs/**"
+      - "standards/**"
+      - "guides/**"
+
+  # Global exclude patterns (applied to both directions)
+  exclude:
+    - "**/.git/**"
+    - "**/node_modules/**"
+    - "**/.env"
+    - "**/.env.*"
+    - "**/*.log"
+    - "**/dist/**"
+    - "**/build/**"
+    - "**/.DS_Store"
+    - "**/credentials.json"
+    - "**/*secret*"
+    - "**/*password*"
 
 # Auto-sync: Automatically sync on commit (requires hooks)
 auto_sync: false
-
-# Default sync direction
-sync_direction: bidirectional  # Options: to-codex, from-codex, bidirectional
 
 # Environment-to-branch mappings for codex repository
 environments:
