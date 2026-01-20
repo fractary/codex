@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Auto-bump versions based on staged files
+# This hook automatically bumps component versions when source files are staged
+
+# Run version bump script
+OUTPUT=$(node scripts/bump-versions.js --staged 2>&1)
+EXIT_CODE=$?
+
+# Show output to user so they know what happened
+if [ -n "$OUTPUT" ]; then
+  echo "$OUTPUT"
+fi
+
+# Exit if script failed
+if [ $EXIT_CODE -ne 0 ]; then
+  echo "Version bump failed. Use 'git commit --no-verify' to bypass."
+  exit $EXIT_CODE
+fi
+
+# Stage any modified version files (only if they exist and were modified)
+VERSION_FILES="sdk/js/package.json cli/package.json mcp/server/package.json plugins/codex/plugin.json .claude-plugin/marketplace.json"
+
+STAGED_FILES=""
+for file in $VERSION_FILES; do
+  if [ -f "$file" ] && git diff --name-only "$file" | grep -q .; then
+    STAGED_FILES="$STAGED_FILES $file"
+  fi
+done
+
+if [ -n "$STAGED_FILES" ]; then
+  echo "Auto-staging version files:$STAGED_FILES"
+  git add $STAGED_FILES
+fi
