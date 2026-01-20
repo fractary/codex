@@ -50,7 +50,7 @@
     "prepublishOnly": "npm run build && npm run test"
   },
   "dependencies": {
-    "@fractary/codex": "^0.11.0",
+    "@fractary/codex": "^0.12.0",
     "commander": "^11.1.0",
     "js-yaml": "^4.1.0"
   },
