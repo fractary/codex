@@ -184,18 +184,26 @@ export class SyncManager {
     targetFiles: FileInfo[],
     options?: SyncOptions
   ): Promise<SyncPlan> {
-    let sourceFiles = await this.listLocalFiles(sourceDir)
+    let sourceFiles: FileInfo[]
 
-    // For to-codex direction, filter files based on to_codex config patterns
-    if (options?.direction === 'to-codex') {
-      const toCodexPatterns = this.resolveToCodexPatterns()
+    // Use pre-matched sourceFiles if provided (bypasses internal scanning)
+    if (options?.sourceFiles && options.sourceFiles.length > 0) {
+      sourceFiles = options.sourceFiles
+    } else {
+      // Fall back to internal file scanning
+      sourceFiles = await this.listLocalFiles(sourceDir)
 
-      if (toCodexPatterns.length > 0) {
-        const { matchToCodexPattern } = await import('./directional-patterns.js')
+      // For to-codex direction, filter files based on to_codex config patterns
+      if (options?.direction === 'to-codex') {
+        const toCodexPatterns = this.resolveToCodexPatterns()
 
-        sourceFiles = sourceFiles.filter((file) =>
-          matchToCodexPattern(file.path, toCodexPatterns)
-        )
+        if (toCodexPatterns.length > 0) {
+          const { matchToCodexPattern } = await import('./directional-patterns.js')
+
+          sourceFiles = sourceFiles.filter((file) =>
+            matchToCodexPattern(file.path, toCodexPatterns)
+          )
+        }
       }
     }
 

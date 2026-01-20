@@ -136,6 +136,12 @@ export interface SyncOptions {
   timeout?: number
   /** Progress callback */
   onProgress?: (current: number, total: number, file: string) => void
+  /**
+   * Pre-matched source files (bypasses internal file scanning).
+   * When provided, createPlan will use these files instead of scanning the sourceDir.
+   * Useful when the caller has already performed glob matching.
+   */
+  sourceFiles?: Array<{ path: string; size: number; mtime: number; hash?: string }>
 }
 
 /**

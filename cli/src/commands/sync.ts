@@ -81,16 +81,21 @@ export function syncCommand(): Command {
         // Dynamic import to avoid loading SDK at module time
         const { createSyncManager, createLocalStorage, detectCurrentProject } = await import('@fractary/codex');
 
-        // Determine project name
+        // Determine project name (priority: CLI arg > config > git detection)
         let projectName = name;
         if (!projectName) {
+          // First try config file (readYamlConfig extracts the codex section)
+          projectName = config.project || undefined;
+        }
+        if (!projectName) {
+          // Fall back to git remote detection
           const detected = detectCurrentProject();
           projectName = detected.project || undefined;
         }
 
         if (!projectName) {
           console.error(chalk.red('Error:'), 'Could not determine project name.');
-          console.log(chalk.dim('Provide project name as argument or run from a git repository.'));
+          console.log(chalk.dim('Provide project name as argument, set codex.project in config, or run from a git repository.'));
           process.exit(1);
         }
 
@@ -187,7 +192,9 @@ export function syncCommand(): Command {
           dryRun: options.dryRun,
           force: options.force,
           include: includePatterns,
-          exclude: excludePatterns
+          exclude: excludePatterns,
+          // Pass pre-matched files to SDK (bypasses SDK's internal non-recursive scanning)
+          sourceFiles: targetFiles
         };
 
         let plan;
@@ -260,11 +267,13 @@ export function syncCommand(): Command {
           plan = planWithRouting;
           routingScan = planWithRouting.routingScan;
         } else {
+          // For to-codex: sourceFiles = local files to upload, targetFiles = empty (assume nothing in codex)
+          // This makes all matched files show as "create" operations
           plan = await syncManager.createPlan(
             config.organization,
             projectName,
             sourceDir,
-            targetFiles,
+            [],  // Empty target - we don't scan codex for to-codex direction
             syncOptions
           );
         }
