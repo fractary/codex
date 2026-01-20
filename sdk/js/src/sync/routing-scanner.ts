@@ -44,6 +44,8 @@ export interface RoutingScanOptions {
   targetProject: string
   /** Organization name (e.g., "corthosai") */
   org: string
+  /** Codex repository name (e.g., "codex.fractary.com") for {codex_repo} placeholder */
+  codexRepo?: string
   /** Routing rules configuration (optional, uses defaults if not provided) */
   rules?: SyncRules
   /** Storage provider for reading files */
@@ -118,6 +120,7 @@ export async function scanCodexWithRouting(
     codexDir,
     targetProject,
     org,
+    codexRepo,
     rules,
     storage,
     skipNoFrontmatter = false,
@@ -134,13 +137,21 @@ export async function scanCodexWithRouting(
 
   // Import directional pattern matcher and expand placeholders if using from_codex patterns
   let expandedFromCodexPatterns = fromCodexPatterns
-  let matchFromCodexPattern: ((filePath: string, patterns: string[], targetProject: string) => boolean) | null = null
+  let matchFromCodexPattern: ((
+    filePath: string,
+    patterns: string[],
+    targetProject: string,
+    options?: { org?: string; codexRepo?: string }
+  ) => boolean) | null = null
 
   if (fromCodexPatterns && fromCodexPatterns.length > 0) {
     const module = await import('./directional-patterns.js')
     matchFromCodexPattern = module.matchFromCodexPattern
-    // Expand {project} placeholder in patterns
-    expandedFromCodexPatterns = module.expandPlaceholders(fromCodexPatterns, targetProject)
+    // Expand placeholders in patterns ({project}, {org}, {codex_repo})
+    expandedFromCodexPatterns = module.expandPlaceholders(fromCodexPatterns, targetProject, {
+      org,
+      codexRepo,
+    })
   }
 
   // Step 1: List ALL files recursively in entire codex repository
@@ -184,7 +195,10 @@ export async function scanCodexWithRouting(
 
       if (matchFromCodexPattern && expandedFromCodexPatterns && expandedFromCodexPatterns.length > 0) {
         // Use directional from_codex patterns (takes precedence, no frontmatter needed)
-        shouldSync = matchFromCodexPattern(filePath, expandedFromCodexPatterns, targetProject)
+        shouldSync = matchFromCodexPattern(filePath, expandedFromCodexPatterns, targetProject, {
+          org,
+          codexRepo,
+        })
 
         // Still parse metadata for the file info, but don't use for routing
         parseResult = parseMetadata(content, { strict: false })

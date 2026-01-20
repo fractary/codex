@@ -9,6 +9,8 @@ import {
   extractProjectFromCodexPath,
   getRelativePath,
   expandPlaceholders,
+  type FromCodexMatchOptions,
+  type ExpandPlaceholderOptions,
 } from '../../../src/sync/directional-patterns.js'
 
 describe('matchToCodexPattern', () => {
@@ -200,6 +202,136 @@ describe('matchFromCodexPattern', () => {
       ).toBe(true)
     })
   })
+
+  describe('codex:// URI patterns', () => {
+    it('should match explicit codex:// URI with org/project/path', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/etl.corthion.ai/docs/schema/data.json',
+          ['codex://fractary/etl.corthion.ai/docs/schema/**/*.json'],
+          'lake.corthonomy.ai',
+          { org: 'fractary' }
+        )
+      ).toBe(true)
+    })
+
+    it('should not match when project differs in codex:// URI', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/api.corthodex.ai/docs/schema/data.json',
+          ['codex://fractary/etl.corthion.ai/docs/schema/**/*.json'],
+          'lake.corthonomy.ai',
+          { org: 'fractary' }
+        )
+      ).toBe(false)
+    })
+
+    it('should match codex:// URI with {project} placeholder', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/lake.corthonomy.ai/docs/api.md',
+          ['codex://fractary/{project}/docs/**'],
+          'lake.corthonomy.ai',
+          { org: 'fractary' }
+        )
+      ).toBe(true)
+    })
+
+    it('should match codex:// URI with {codex_repo} placeholder', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/codex.fractary.com/docs/standards/api.md',
+          ['codex://fractary/{codex_repo}/docs/**'],
+          'lake.corthonomy.ai',
+          { org: 'fractary', codexRepo: 'codex.fractary.com' }
+        )
+      ).toBe(true)
+    })
+
+    it('should match codex:// URI with {org} placeholder', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/etl.corthion.ai/docs/file.md',
+          ['codex://{org}/etl.corthion.ai/docs/**'],
+          'lake.corthonomy.ai',
+          { org: 'fractary' }
+        )
+      ).toBe(true)
+    })
+
+    it('should match codex:// URI without path (matches all files in project)', () => {
+      expect(
+        matchFromCodexPattern(
+          'projects/etl.corthion.ai/any/deep/path/file.md',
+          ['codex://fractary/etl.corthion.ai'],
+          'lake.corthonomy.ai',
+          { org: 'fractary' }
+        )
+      ).toBe(true)
+    })
+
+    it('should handle multiple codex:// patterns', () => {
+      const patterns = [
+        'codex://fractary/etl.corthion.ai/docs/**',
+        'codex://fractary/{codex_repo}/standards/**',
+        'codex://fractary/{project}/**',
+      ]
+
+      // Matches first pattern
+      expect(
+        matchFromCodexPattern(
+          'projects/etl.corthion.ai/docs/api.md',
+          patterns,
+          'lake.corthonomy.ai',
+          { org: 'fractary', codexRepo: 'codex.fractary.com' }
+        )
+      ).toBe(true)
+
+      // Matches second pattern
+      expect(
+        matchFromCodexPattern(
+          'projects/codex.fractary.com/standards/coding.md',
+          patterns,
+          'lake.corthonomy.ai',
+          { org: 'fractary', codexRepo: 'codex.fractary.com' }
+        )
+      ).toBe(true)
+
+      // Matches third pattern (own project)
+      expect(
+        matchFromCodexPattern(
+          'projects/lake.corthonomy.ai/README.md',
+          patterns,
+          'lake.corthonomy.ai',
+          { org: 'fractary', codexRepo: 'codex.fractary.com' }
+        )
+      ).toBe(true)
+    })
+
+    it('should skip codex:// patterns with unexpanded placeholders', () => {
+      // When codexRepo is not provided, {codex_repo} won't expand
+      expect(
+        matchFromCodexPattern(
+          'projects/codex.fractary.com/docs/file.md',
+          ['codex://fractary/{codex_repo}/docs/**'],
+          'lake.corthonomy.ai',
+          { org: 'fractary' } // No codexRepo provided
+        )
+      ).toBe(false)
+    })
+
+    it('should handle codex:// URI with incomplete path', () => {
+      // URI with only org (no project) should not match
+      expect(
+        matchFromCodexPattern(
+          'projects/etl.corthion.ai/docs/file.md',
+          ['codex://fractary'],
+          'lake.corthonomy.ai',
+          { org: 'fractary' }
+        )
+      ).toBe(false)
+    })
+  })
 })
 
 describe('extractProjectFromCodexPath', () => {
@@ -297,5 +429,62 @@ describe('expandPlaceholders', () => {
       'my.project/README.md',
       'other/**',
     ])
+  })
+
+  describe('with org and codexRepo options', () => {
+    it('should expand {org} placeholder', () => {
+      const result = expandPlaceholders(
+        ['codex://{org}/project/docs/**'],
+        'my.project',
+        { org: 'fractary' }
+      )
+      expect(result).toEqual(['codex://fractary/project/docs/**'])
+    })
+
+    it('should expand {codex_repo} placeholder', () => {
+      const result = expandPlaceholders(
+        ['codex://fractary/{codex_repo}/docs/**'],
+        'my.project',
+        { codexRepo: 'codex.fractary.com' }
+      )
+      expect(result).toEqual(['codex://fractary/codex.fractary.com/docs/**'])
+    })
+
+    it('should expand all placeholders together', () => {
+      const result = expandPlaceholders(
+        [
+          'codex://{org}/{codex_repo}/docs/**',
+          'codex://{org}/{project}/**',
+          '{project}/local/**',
+        ],
+        'my.project',
+        { org: 'fractary', codexRepo: 'codex.fractary.com' }
+      )
+      expect(result).toEqual([
+        'codex://fractary/codex.fractary.com/docs/**',
+        'codex://fractary/my.project/**',
+        'my.project/local/**',
+      ])
+    })
+
+    it('should leave unexpanded placeholders when options not provided', () => {
+      const result = expandPlaceholders(
+        ['codex://{org}/{codex_repo}/docs/**'],
+        'my.project'
+        // No options provided
+      )
+      // {org} and {codex_repo} remain unexpanded
+      expect(result).toEqual(['codex://{org}/{codex_repo}/docs/**'])
+    })
+
+    it('should only expand provided placeholders', () => {
+      const result = expandPlaceholders(
+        ['codex://{org}/{codex_repo}/docs/**'],
+        'my.project',
+        { org: 'fractary' } // Only org, no codexRepo
+      )
+      // {codex_repo} remains unexpanded
+      expect(result).toEqual(['codex://fractary/{codex_repo}/docs/**'])
+    })
   })
 })

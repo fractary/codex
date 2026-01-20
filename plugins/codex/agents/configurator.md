@@ -40,8 +40,15 @@ sync:
     include: [docs/**, README.md]
     exclude: [docs/private/**]
   from_codex:
-    include: [docs/**, standards/**]
+    include:
+      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex repo
+      - "codex://{org}/{codex_repo}/standards/**" # Shared standards
 ```
+The `from_codex` patterns use `codex://` URIs with placeholders:
+- `{org}`: Organization name (from config)
+- `{project}`: Current project name
+- `{codex_repo}`: Codex repository name (from config)
+
 NEVER use `sync.patterns.include/exclude` - this format is WRONG and won't work.
 
 **IMPORTANT: INTERACTIVE APPROACH**
@@ -292,8 +299,9 @@ codex:
         - "*.tmp"
     from_codex:
       include:
-        - docs/**
-        - standards/**
+        - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex repo
+        - "codex://{org}/{codex_repo}/standards/**" # Shared standards
+        - "codex://{org}/{codex_repo}/guides/**"    # Shared guides
   dependencies: {}
 
 Additional Files to Create:
@@ -312,11 +320,14 @@ sync:
       - README.md
     exclude:
       - docs/private/**
-  from_codex:    # Files to pull FROM codex repo TO local
+  from_codex:    # Files to pull FROM codex repo TO local (use codex:// URIs)
     include:
-      - docs/**
-      - standards/**
+      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs
+      - "codex://{org}/{codex_repo}/standards/**" # Shared standards
 ```
+
+The `from_codex` patterns use `codex://` URI format: `codex://org/project/path`
+- Placeholders: `{org}`, `{project}`, `{codex_repo}` - expanded from config
 
 DO NOT use `sync.patterns.include/exclude` - this format is WRONG and will not work.
 

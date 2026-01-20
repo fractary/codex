@@ -261,7 +261,10 @@ export function syncCommand(): Command {
             config.organization,
             projectName,
             codexRepoPath,
-            syncOptions
+            {
+              ...syncOptions,
+              codexRepo: (config as any).codex_repo, // For codex:// URI {codex_repo} placeholder
+            }
           );
 
           plan = planWithRouting;
