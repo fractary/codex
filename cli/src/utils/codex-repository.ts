@@ -48,10 +48,10 @@ function spawnAsync(command: string, args: string[], options: { cwd: string }): 
 }
 
 /**
- * Extended config interface with codex_repository field
+ * Extended config interface with codex_repo field
  */
 interface CodexConfigWithRepo extends CodexYamlConfig {
-  codex_repository?: string;
+  codex_repo?: string;
 }
 
 /**
@@ -101,7 +101,7 @@ function validateGitHubName(name: string, type: 'organization' | 'repository'): 
  * Includes process ID to prevent race conditions
  */
 export function getTempCodexPath(config: CodexConfigWithRepo): string {
-  const codexRepo = config.codex_repository || 'codex';
+  const codexRepo = config.codex_repo || 'codex';
 
   // Sanitize path components to prevent path traversal
   const sanitizedOrg = sanitizePathComponent(config.organization);
@@ -132,7 +132,7 @@ export async function isValidGitRepo(repoPath: string): Promise<boolean> {
  * Construct the git repository URL from config
  */
 export function getCodexRepoUrl(config: CodexConfigWithRepo): string {
-  const codexRepo = config.codex_repository || 'codex';
+  const codexRepo = config.codex_repo || 'codex';
 
   // Validate GitHub names to prevent URL injection
   validateGitHubName(config.organization, 'organization');

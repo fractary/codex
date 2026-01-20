@@ -244,14 +244,14 @@ export function syncCommand(): Command {
               console.log(chalk.dim('  1. Check file/directory permissions'));
               console.log(chalk.dim('  2. Ensure you have access to the repository'));
             } else if (error.message.includes('not found') || error.message.includes('does not exist')) {
-              console.log(chalk.dim(`  Repository not found: ${config.organization}/${(config as any).codex_repository || 'codex'}`));
+              console.log(chalk.dim(`  Repository not found: ${config.organization}/${(config as any).codex_repo || 'codex'}`));
               console.log(chalk.dim('  1. Verify the repository exists on GitHub'));
               console.log(chalk.dim('  2. Check organization and repository names in config'));
             } else {
               // Generic troubleshooting for other errors
               console.log(chalk.dim('  1. Ensure git is installed: git --version'));
               console.log(chalk.dim('  2. Check GitHub auth: gh auth status'));
-              console.log(chalk.dim(`  3. Verify repo exists: ${config.organization}/${(config as any).codex_repository || 'codex'}`));
+              console.log(chalk.dim(`  3. Verify repo exists: ${config.organization}/${(config as any).codex_repo || 'codex'}`));
             }
             process.exit(1);
           }
