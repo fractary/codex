@@ -450,7 +450,7 @@ export function syncCommand(): Command {
             }
 
             const { RepoManager } = await import('@fractary/core/repo');
-            const repoManager = new RepoManager({}, codexRepoPath);
+            const repoManager = new RepoManager({ platform: 'github' }, codexRepoPath);
 
             // Stage all changes
             await repoManager.stageAll();
