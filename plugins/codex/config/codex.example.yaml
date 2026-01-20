@@ -27,11 +27,15 @@ sync:
       - "docs/drafts/**"
 
   # Files to pull FROM codex repository TO local
+  # Use codex:// URIs with placeholders: {org}, {project}, {codex_repo}
   from_codex:
     include:
-      - "docs/**"
-      - "standards/**"
-      - "guides/**"
+      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex
+      - "codex://{org}/{codex_repo}/standards/**" # Shared standards
+      - "codex://{org}/{codex_repo}/guides/**"    # Shared guides
+      # Examples of other patterns:
+      # - "codex://{org}/{project}/**"             # Own project files from codex
+      # - "codex://{org}/other.project/specs/**"   # Specific project's specs
 
   # Global exclude patterns (applied to both directions)
   exclude:

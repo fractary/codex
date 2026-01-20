@@ -250,7 +250,7 @@ export class SyncManager {
     org: string,
     project: string,
     codexDir: string,
-    options?: SyncOptions
+    options?: SyncOptions & { codexRepo?: string }
   ): Promise<SyncPlan & { routingScan?: RoutingScanResult }> {
     // Step 1: Scan entire codex with routing evaluation
     // Resolve patterns using new helper functions (supports both new and legacy formats)
@@ -260,6 +260,7 @@ export class SyncManager {
       codexDir,
       targetProject: project,
       org,
+      codexRepo: options?.codexRepo, // For codex:// URI {codex_repo} placeholder
       rules: undefined, // Use default routing rules (preventSelfSync, preventCodexSync, etc.)
       storage: this.localStorage,
       fromCodexPatterns: fromCodexPatterns.length > 0 ? fromCodexPatterns : undefined,

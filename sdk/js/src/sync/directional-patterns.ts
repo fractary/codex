@@ -3,9 +3,22 @@
  *
  * Provides functions to evaluate if files should sync based on directional
  * sync configuration patterns.
+ *
+ * URI Format: codex://org/project/path
+ * - org: Organization name (e.g., "fractary")
+ * - project: Project name (e.g., "etl.corthion.ai")
+ * - path: File path within project (e.g., "docs/**")
+ *
+ * Supported placeholders:
+ * - {org}: Resolves to configured organization
+ * - {project}: Resolves to target project name
+ * - {codex_repo}: Resolves to codex repository name (e.g., "codex.fractary.com")
  */
 
 import { matchPattern } from '../core/patterns/matcher.js'
+
+/** Codex URI prefix */
+const CODEX_URI_PREFIX = 'codex://'
 
 /**
  * Check if a local file path matches to_codex patterns
@@ -21,29 +34,54 @@ export function matchToCodexPattern(filePath: string, patterns: string[]): boole
 }
 
 /**
+ * Options for from_codex pattern matching
+ */
+export interface FromCodexMatchOptions {
+  /** Organization name for {org} placeholder */
+  org?: string
+  /** Codex repository name for {codex_repo} placeholder */
+  codexRepo?: string
+}
+
+/**
  * Check if a codex file path matches from_codex patterns
  *
  * Used when syncing FROM codex to determine which codex files should be pulled.
- * Supports two pattern formats:
- * - "project-name/path/pattern" - matches files from specific project
- * - "path/pattern" - matches files from target project itself
+ *
+ * Supports four pattern formats:
+ * 1. codex://org/project/path - Full codex URI (recommended)
+ * 2. "projects/project/path/pattern" - Direct projects/ path match
+ * 3. "project-name/path/pattern" - Legacy bare path format
+ * 4. "path/pattern" - Legacy format, matches files from target project
+ *
+ * @param codexFilePath - File path in codex repo (e.g., "projects/etl.corthion.ai/docs/file.md")
+ * @param patterns - Array of patterns to match against
+ * @param targetProject - Target project name for implicit patterns
+ * @param options - Optional org and codexRepo for placeholder expansion
  */
 export function matchFromCodexPattern(
   codexFilePath: string,
   patterns: string[],
-  targetProject: string
+  targetProject: string,
+  options?: FromCodexMatchOptions
 ): boolean {
   if (!patterns || patterns.length === 0) {
     return false
   }
 
   return patterns.some((pattern) => {
-    // Special case: patterns starting with "projects/" should match directly
-    // This handles codex repositories with a projects/ subdirectory structure
+    // Handle codex:// URI format (recommended)
+    if (pattern.startsWith(CODEX_URI_PREFIX)) {
+      return matchCodexUri(pattern, codexFilePath, targetProject, options)
+    }
+
+    // Legacy support: patterns starting with "projects/" match directly
     if (pattern.startsWith('projects/')) {
       return matchPattern(pattern, codexFilePath)
     }
 
+    // Legacy support: bare path patterns
+    // These patterns work with both flat and projects/ codex structures
     // Check if pattern includes a project prefix
     // Project names contain dots (e.g., "etl.corthion.ai")
     // Path segments don't (e.g., "docs")
@@ -71,6 +109,56 @@ export function matchFromCodexPattern(
 }
 
 /**
+ * Parse and match a codex:// URI pattern against a file path
+ *
+ * URI format: codex://org/project/path
+ * Maps to codex repo structure: projects/{project}/path
+ *
+ * @param uriPattern - The codex:// URI pattern (e.g., "codex://fractary/etl.corthion.ai/docs/**")
+ * @param codexFilePath - File path in codex repo (e.g., "projects/etl.corthion.ai/docs/file.md")
+ * @param targetProject - Target project name for {project} placeholder
+ * @param options - Optional org and codexRepo for placeholder expansion
+ */
+function matchCodexUri(
+  uriPattern: string,
+  codexFilePath: string,
+  targetProject: string,
+  options?: FromCodexMatchOptions
+): boolean {
+  // Parse: codex://org/project/path
+  let withoutPrefix = uriPattern.slice(CODEX_URI_PREFIX.length)
+
+  // Expand placeholders BEFORE parsing
+  withoutPrefix = withoutPrefix
+    .replace(/{org}/g, options?.org || '')
+    .replace(/{project}/g, targetProject)
+    .replace(/{codex_repo}/g, options?.codexRepo || '')
+
+  const parts = withoutPrefix.split('/')
+
+  // Need at least org and project
+  if (parts.length < 2) {
+    return false
+  }
+
+  // org is parts[0] - we don't use it for matching (org is for cache path namespacing)
+  const project = parts[1]
+  const pathPattern = parts.slice(2).join('/')
+
+  // Skip if project is empty (e.g., placeholder wasn't expanded)
+  if (!project) {
+    return false
+  }
+
+  // Match against codex repo structure: projects/{project}/path
+  const fullPattern = pathPattern
+    ? `projects/${project}/${pathPattern}`
+    : `projects/${project}/**`
+
+  return matchPattern(fullPattern, codexFilePath)
+}
+
+/**
  * Extract project name from codex file path
  */
 export function extractProjectFromCodexPath(codexFilePath: string): string | null {
@@ -93,16 +181,47 @@ export function getRelativePath(codexFilePath: string): string | null {
 }
 
 /**
+ * Options for placeholder expansion
+ */
+export interface ExpandPlaceholderOptions {
+  /** Organization name for {org} placeholder */
+  org?: string
+  /** Codex repository name for {codex_repo} placeholder */
+  codexRepo?: string
+}
+
+/**
  * Expand placeholders in patterns
- * Supports {project} placeholder which expands to the target project name
+ *
+ * Supported placeholders:
+ * - {project}: Target project name
+ * - {org}: Organization name
+ * - {codex_repo}: Codex repository name
+ *
+ * @param patterns - Array of patterns to expand
+ * @param targetProject - Target project name for {project} placeholder
+ * @param options - Optional org and codexRepo for additional placeholders
  */
 export function expandPlaceholders(
   patterns: string[] | undefined,
-  targetProject: string
+  targetProject: string,
+  options?: ExpandPlaceholderOptions
 ): string[] | undefined {
   if (!patterns) {
     return patterns
   }
 
-  return patterns.map((pattern) => pattern.replace(/{project}/g, targetProject))
+  return patterns.map((pattern) => {
+    let expanded = pattern.replace(/{project}/g, targetProject)
+
+    if (options?.org) {
+      expanded = expanded.replace(/{org}/g, options.org)
+    }
+
+    if (options?.codexRepo) {
+      expanded = expanded.replace(/{codex_repo}/g, options.codexRepo)
+    }
+
+    return expanded
+  })
 }

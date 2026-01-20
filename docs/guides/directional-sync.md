@@ -30,10 +30,12 @@ sync:
     - "CLAUDE.md"
     - "README.md"
 
-  # What I pull from codex
+  # What I pull from codex (use codex:// URIs)
   from_codex:
-    - "other-project.name/path/pattern"
-    - "my-project.name/**"  # Pull my own files too
+    - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex repo
+    - "codex://{org}/{codex_repo}/standards/**" # Shared standards
+    - "codex://{org}/{project}/**"              # Own project files
+    - "codex://{org}/other.project/specs/**"    # Other project's specs
 ```
 
 ### Pattern Format
@@ -47,13 +49,17 @@ sync:
   - `"README.md"` - Specific file
 
 **from_codex patterns:**
-- Format: `"project-name/path/pattern"`
-- Or just `"path/pattern"` for own project files
+- Format: `codex://org/project/path/pattern` (recommended)
 - Support glob patterns
+- Supported placeholders:
+  - `{org}` - Organization name (from config)
+  - `{project}` - Current project name
+  - `{codex_repo}` - Codex repository name (from config)
 - Examples:
-  - `"etl.corthion.ai/docs/schema/**/*.json"` - All JSON schemas from ETL project
-  - `"core.corthodex.ai/docs/standards/**"` - All standards from core project
-  - `"lake.corthonomy.ai/**"` - All my own project files from codex
+  - `"codex://{org}/{codex_repo}/docs/**"` - All docs from codex repo
+  - `"codex://{org}/{codex_repo}/standards/**"` - All standards from codex repo
+  - `"codex://{org}/{project}/**"` - All my own project files from codex
+  - `"codex://fractary/etl.corthion.ai/docs/schema/**/*.json"` - Explicit project reference
 
 ## Usage
 
@@ -106,9 +112,9 @@ sync:
 ```yaml
 sync:
   from_codex:
-    - "etl.corthion.ai/docs/schema/**/*.json"
-    - "etl.corthion.ai/docs/schema/**/*.md"
-    - "lake.corthonomy.ai/**"  # Own files
+    - "codex://{org}/etl.corthion.ai/docs/schema/**/*.json"
+    - "codex://{org}/etl.corthion.ai/docs/schema/**/*.md"
+    - "codex://{org}/{project}/**"  # Own files
 ```
 
 **Workflow:**
@@ -136,9 +142,9 @@ sync:
 ```yaml
 sync:
   from_codex:
-    - "core.corthodex.ai/docs/standards/**"
-    - "core.corthodex.ai/docs/templates/**"
-    - "any-project/**"  # Own files
+    - "codex://{org}/{codex_repo}/standards/**"   # Shared standards from codex repo
+    - "codex://{org}/{codex_repo}/templates/**"   # Shared templates
+    - "codex://{org}/{project}/**"                # Own files
 ```
 
 ### Case 3: Selective File Sharing
@@ -152,8 +158,8 @@ sync:
     # Not pushing: internal/, tests/, etc.
 
   from_codex:
-    - "core.corthodex.ai/docs/standards/**"
-    - "api.project/**"
+    - "codex://{org}/{codex_repo}/standards/**"
+    - "codex://{org}/{project}/**"
 ```
 
 ## Priority and Overrides
@@ -210,7 +216,7 @@ sync:
 ```yaml
 sync:
   from_codex:
-    - "etl.corthion.ai/docs/schema/**/*"
+    - "codex://{org}/etl.corthion.ai/docs/schema/**/*"
 ```
 
 **File: etl.corthion.ai/docs/schema/users.json** (no frontmatter needed!)
@@ -228,13 +234,19 @@ sync:
 
 ## Advanced Patterns
 
-### Wildcard Matching
+### Placeholder Usage
 
 ```yaml
 sync:
   from_codex:
-    - "*.corthodex.ai/docs/standards/**"  # All corthodex projects
-    - "etl.*/docs/schema/**"               # All ETL projects
+    # Pull from codex repository (shared org docs)
+    - "codex://{org}/{codex_repo}/docs/**"
+
+    # Pull own project's files
+    - "codex://{org}/{project}/**"
+
+    # Pull specific project's files
+    - "codex://{org}/etl.corthion.ai/schemas/**"
 ```
 
 ### Specific File Types
@@ -316,8 +328,8 @@ sync:
 ```yaml
 sync:
   from_codex:
-    - "other-project/docs/**"
-    - "my-project/**"  # Don't forget this!
+    - "codex://{org}/other-project/docs/**"
+    - "codex://{org}/{project}/**"  # Don't forget this!
 ```
 
 ### 3. Group Related Patterns
