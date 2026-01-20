@@ -301,9 +301,9 @@ export function syncCommand(): Command {
 
           // Set actual paths for execution
           // Source: local project directory
-          // Target: codex repo / org / project
+          // Target: codex repo / projects / project
           plan.source = sourceDir;
-          plan.target = path.join(codexRepoPath, config.organization, projectName);
+          plan.target = path.join(codexRepoPath, 'projects', projectName);
         }
 
         if (plan.totalFiles === 0) {
