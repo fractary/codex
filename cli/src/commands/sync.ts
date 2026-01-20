@@ -453,18 +453,25 @@ export function syncCommand(): Command {
             const repoManager = new RepoManager({ platform: 'github' }, codexRepoPath);
 
             // Stage all changes
-            await repoManager.stageAll();
+            repoManager.stageAll();
 
-            // Commit with conventional format
-            await repoManager.commit({
-              message: `Sync ${result.synced} files from ${projectName}`,
-            });
+            // Check if there are any changes to commit
+            if (repoManager.isClean()) {
+              if (!options.json) {
+                console.log(chalk.dim('  No changes to push - codex is already up to date'));
+              }
+            } else {
+              // Commit with conventional format
+              repoManager.commit({
+                message: `Sync ${result.synced} files from ${projectName}`,
+              });
 
-            // Push to remote
-            await repoManager.push({});
+              // Push to remote
+              repoManager.push({});
 
-            if (!options.json) {
-              console.log(chalk.dim('  Changes pushed to codex repository'));
+              if (!options.json) {
+                console.log(chalk.dim('  Changes pushed to codex repository'));
+              }
             }
           } catch (error: any) {
             console.error(chalk.red('Error pushing to codex:'), error.message);
