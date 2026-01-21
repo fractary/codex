@@ -3,36 +3,18 @@
  * CLI entry point for @fractary/codex-mcp-server
  *
  * Provides MCP server with stdio transport.
+ * Uses SDK utilities for configuration handling to avoid duplication.
  */
 
 import { Command } from 'commander'
-import { createCacheManager, createStorageManager } from '@fractary/codex'
-import { readFileSync } from 'fs'
-import * as yaml from 'js-yaml'
+import {
+  createCacheManager,
+  createStorageManager,
+  readUnifiedConfig,
+  type UnifiedConfig,
+  type CodexYamlConfig,
+} from '@fractary/codex'
 import { McpServer } from './server.js'
-
-/**
- * Recursively expand environment variables in config object
- * Supports ${VAR_NAME} syntax
- */
-function expandEnvVars(obj: any): any {
-  if (typeof obj === 'string') {
-    return obj.replace(/\$\{([^}]+)\}/g, (_, varName) => {
-      return process.env[varName] || `\${${varName}}`
-    })
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(item => expandEnvVars(item))
-  }
-  if (obj !== null && typeof obj === 'object') {
-    const result: Record<string, any> = {}
-    for (const [key, value] of Object.entries(obj)) {
-      result[key] = expandEnvVars(value)
-    }
-    return result
-  }
-  return obj
-}
 
 const program = new Command()
 
@@ -42,26 +24,21 @@ program
   .version('0.8.0')
   .option('--config <path>', 'Path to config file', '.fractary/config.yaml')
   .action(async (options) => {
-    // Load configuration
-    let config: Record<string, unknown> = {}
+    // Load configuration using SDK utilities
+    let codexConfig: CodexYamlConfig | undefined = undefined
+    let fileConfig: unknown = undefined
+
     try {
-      const configFile = readFileSync(options.config, 'utf-8')
-      const rawConfig = yaml.load(configFile) as Record<string, unknown>
+      // Use SDK's readUnifiedConfig which handles unified format and env var expansion
+      const unifiedConfig: UnifiedConfig = await readUnifiedConfig(options.config, {
+        expandEnv: true,
+      })
 
-      // Handle unified config format (codex section) or legacy flat format
-      if (rawConfig && typeof rawConfig === 'object' && 'codex' in rawConfig) {
-        // Unified config - extract codex section and merge with top-level
-        config = {
-          ...(rawConfig.codex as Record<string, unknown>),
-          // Preserve file section if present (for file plugin integration)
-          file: rawConfig.file,
-        }
-      } else {
-        config = rawConfig || {}
-      }
+      // Extract codex section (SDK already expanded env vars)
+      codexConfig = unifiedConfig.codex
 
-      // Expand environment variables in config (${VAR_NAME} syntax)
-      config = expandEnvVars(config)
+      // Preserve file section if present (for file plugin integration)
+      fileConfig = unifiedConfig.file
     } catch (error) {
       // Config file is optional - continue with defaults
       if (options.config !== '.fractary/config.yaml') {
@@ -70,22 +47,30 @@ program
     }
 
     // Initialize storage and cache managers
-    const storageConfig: Record<string, unknown> = {
-      ...((config.storage as Record<string, unknown>) || {}),
+    const storageConfig: Record<string, unknown> = {}
+
+    // Add storage configuration if present
+    if (codexConfig?.storage) {
+      Object.assign(storageConfig, { providers: codexConfig.storage })
     }
 
     // Add archive config if present
-    if (config.archive) {
+    if (codexConfig?.archive) {
       storageConfig.s3Archive = {
-        projects: (config.archive as Record<string, unknown>).projects || {},
+        projects: codexConfig.archive.projects || {},
         fractaryCli: process.env.FRACTARY_CLI || 'fractary',
       }
     }
 
+    // Add file plugin config if present
+    if (fileConfig) {
+      storageConfig.file = fileConfig
+    }
+
     const storage = createStorageManager(storageConfig)
     const cache = createCacheManager({
-      cacheDir: (config.cache as Record<string, unknown>)?.cacheDir as string || '.fractary/codex/cache',
-      ...(config.cache as Record<string, unknown>),
+      cacheDir: codexConfig?.cacheDir || codexConfig?.cache?.cacheDir || '.fractary/codex/cache',
+      ...(codexConfig?.cache || {}),
     })
 
     // Set storage manager on cache
