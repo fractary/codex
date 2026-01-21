@@ -40,9 +40,18 @@ program
       // Preserve file section if present (for file plugin integration)
       fileConfig = unifiedConfig.file
     } catch (error) {
-      // Config file is optional - continue with defaults
+      // Config file is optional for the default path, but log errors for debugging
+      const errorMessage = error instanceof Error ? error.message : String(error)
       if (options.config !== '.fractary/config.yaml') {
+        // Non-default config was explicitly requested but failed to load
         console.error(`Warning: Could not load config file: ${options.config}`)
+        console.error(`  Error: ${errorMessage}`)
+      } else {
+        // Default config - only log at debug level (to stderr) if it exists but is invalid
+        // Missing default config is fine, but parse errors should be visible
+        if (!errorMessage.includes('ENOENT')) {
+          console.error(`Warning: Config file exists but could not be parsed: ${errorMessage}`)
+        }
       }
     }
 

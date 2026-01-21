@@ -70,14 +70,26 @@ export type StorageProviderConfig =
 
 /**
  * Cache configuration
+ *
+ * Note: Both `directory` and `cacheDir` are supported for backward compatibility.
+ * - `cacheDir` is the preferred field name (matches CLI and top-level config)
+ * - `directory` is the legacy field name (used in older cache-specific configs)
+ * When both are present, `cacheDir` takes precedence.
  */
 export interface CacheConfig {
+  /** @deprecated Use cacheDir instead. Legacy field for backward compatibility. */
   directory?: string
+  /** Directory for storing cache files (preferred) */
   cacheDir?: string
+  /** Default TTL in seconds for cached entries */
   defaultTtl?: number
+  /** Maximum total size of cache in bytes */
   maxSize?: number
+  /** Maximum number of entries in memory cache */
   maxMemoryEntries?: number
+  /** Maximum size of memory cache in bytes */
   maxMemorySize?: number
+  /** Whether to persist cache to disk */
   enablePersistence?: boolean
 }
 
@@ -161,10 +173,25 @@ export interface McpConfig {
 }
 
 /**
+ * Project archive configuration
+ */
+export interface ProjectArchiveConfig {
+  /** S3 bucket for archived files */
+  bucket?: string
+  /** S3 prefix/path for archived files */
+  prefix?: string
+  /** Storage class (STANDARD, GLACIER, etc.) */
+  storageClass?: string
+}
+
+/**
  * Archive configuration
+ *
+ * Configures S3-based archival for project artifacts.
  */
 export interface ArchiveConfig {
-  projects?: Record<string, unknown>
+  /** Per-project archive settings */
+  projects?: Record<string, ProjectArchiveConfig>
 }
 
 /**
@@ -257,11 +284,14 @@ export async function readCodexConfig(
   const rawConfig = yaml.load(content) as Record<string, unknown>
 
   // Handle unified config format (has `codex:` section)
+  // Note: We use double cast (as unknown as T) because js-yaml returns
+  // a generic object type that doesn't overlap with our strict interface.
+  // The runtime check (rawConfig?.codex && typeof ...) ensures safety.
   let config: CodexYamlConfig
   if (rawConfig?.codex && typeof rawConfig.codex === 'object') {
     config = rawConfig.codex as unknown as CodexYamlConfig
   } else {
-    // Legacy flat format
+    // Legacy flat format - treat entire config as CodexYamlConfig
     config = rawConfig as unknown as CodexYamlConfig
   }
 
@@ -316,10 +346,15 @@ export async function readUnifiedConfig(
  * Check if a config file uses the unified format
  */
 export function isUnifiedConfig(config: unknown): config is UnifiedConfig {
+  if (config === null || typeof config !== 'object') {
+    return false
+  }
+  const maybeUnified = config as Record<string, unknown>
+  // Check for codex section that is a non-null object
+  // Note: typeof null === 'object' in JS, so we need explicit null check
   return (
-    config !== null &&
-    typeof config === 'object' &&
-    'codex' in config &&
-    typeof (config as Record<string, unknown>).codex === 'object'
+    'codex' in maybeUnified &&
+    maybeUnified.codex !== null &&
+    typeof maybeUnified.codex === 'object'
   )
 }
