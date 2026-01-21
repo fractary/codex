@@ -1,19 +1,20 @@
 /**
  * Configuration migration utility
  *
- * Converts legacy v2.x JSON config to v3.0 YAML format
+ * Converts legacy v2.x JSON config to v3.0 YAML format.
+ * Uses SDK utilities where possible to avoid code duplication.
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as yaml from 'js-yaml';
+import * as fs from 'fs/promises'
+import * as path from 'path'
+import * as yaml from 'js-yaml'
 import {
   type CodexYamlConfig,
   type LegacyCodexConfig,
   type StorageProviderConfig,
-  parseDuration,
-  parseSize
-} from './config-types';
+} from './config-types'
+// Re-export readCodexConfig from SDK for backward compatibility
+export { readCodexConfig as readYamlConfig } from '@fractary/codex'
 
 /**
  * Migration result
@@ -280,28 +281,3 @@ export function getDefaultYamlConfig(organization: string): CodexYamlConfig {
   };
 }
 
-/**
- * Read YAML config from file
- *
- * Supports both unified config format (with `codex:` section) and legacy flat format.
- * If the config has a `codex:` key at the top level, extracts that section.
- */
-export async function readYamlConfig(configPath: string): Promise<CodexYamlConfig> {
-  const content = await fs.readFile(configPath, 'utf-8');
-  const rawConfig = yaml.load(content) as Record<string, any>;
-
-  // Handle unified config format (has `codex:` section)
-  let config: CodexYamlConfig;
-  if (rawConfig.codex && typeof rawConfig.codex === 'object') {
-    config = rawConfig.codex as CodexYamlConfig;
-  } else {
-    // Legacy flat format
-    config = rawConfig as CodexYamlConfig;
-  }
-
-  if (!config.organization) {
-    throw new Error('Invalid config: organization is required');
-  }
-
-  return config;
-}

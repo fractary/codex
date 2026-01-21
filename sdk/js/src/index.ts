@@ -315,3 +315,51 @@ export {
   migrateFileReferences,
   generateReferenceMigrationSummary,
 } from './migration/index.js'
+
+// Environment variable utilities
+export {
+  expandEnvVars,
+  expandEnvVarsInConfig,
+  hasEnvVars,
+  extractEnvVarNames,
+  type ExpandEnvOptions,
+} from './core/env/index.js'
+
+// YAML configuration utilities
+export {
+  readCodexConfig,
+  readUnifiedConfig,
+  isUnifiedConfig,
+  type CodexYamlConfig,
+  type UnifiedConfig,
+  type ReadConfigOptions,
+  type StorageProviderType as YamlStorageProviderType,
+  type LocalStorageConfig as YamlLocalStorageConfig,
+  type GitHubStorageConfig as YamlGitHubStorageConfig,
+  type HttpStorageConfig as YamlHttpStorageConfig,
+  type S3StorageConfig as YamlS3StorageConfig,
+  type StorageProviderConfig as YamlStorageProviderConfig,
+  type CacheConfig as YamlCacheConfig,
+  type CustomTypeConfig as YamlCustomTypeConfig,
+  type TypesConfig as YamlTypesConfig,
+  type PermissionLevel as YamlPermissionLevel,
+  type PermissionRule as YamlPermissionRule,
+  type PermissionsConfig as YamlPermissionsConfig,
+  type DirectionalSyncConfig,
+  type SyncRule as YamlSyncRule,
+  type SyncConfig as YamlSyncConfig,
+  type McpConfig as YamlMcpConfig,
+  type ArchiveConfig,
+  type FileConfig,
+} from './core/yaml/index.js'
+
+// Core utilities (parsing, formatting)
+export {
+  parseDuration,
+  parseSize,
+  formatBytes,
+  formatDuration,
+  formatSeconds,
+  isValidDuration,
+  isValidSize,
+} from './core/utils/index.js'
