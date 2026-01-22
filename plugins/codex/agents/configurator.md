@@ -41,8 +41,7 @@ sync:
     exclude: [docs/private/**]
   from_codex:
     include:
-      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex repo
-      - "codex://{org}/{codex_repo}/standards/**" # Shared standards
+      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs (includes standards, guides)
 ```
 The `from_codex` patterns use `codex://` URIs with placeholders:
 - `{org}`: Organization name (from config)
@@ -205,6 +204,44 @@ Use AskUserQuestion to gather essential information:
    - "Custom (I'll specify patterns)"
    - Other
 
+   **CRITICAL: Pattern Mappings for Each Option**
+
+   When user selects "Standard":
+   ```yaml
+   sync:
+     to_codex:
+       include:
+         - docs/**
+         - README.md
+         - CLAUDE.md
+       exclude:
+         - docs/conversations/**
+         - "*.tmp"
+     from_codex:
+       include:
+         - "codex://{org}/{codex_repo}/docs/**"
+   ```
+
+   When user selects "Minimal":
+   ```yaml
+   sync:
+     to_codex:
+       include:
+         - docs/**
+         - README.md
+     from_codex:
+       include:
+         - "codex://{org}/{codex_repo}/docs/**"
+   ```
+
+   Note: Standards and guides are within the docs folder, so a single `codex://{org}/{codex_repo}/docs/**` pattern covers all shared documentation.
+
+   **IMPORTANT:** The `from_codex` patterns MUST use `codex://` URI format with placeholders.
+   - `{org}` expands to organization name from config
+   - `{codex_repo}` expands to codex repository name from config
+   - NEVER use plain patterns like `docs/**` or `standards/**` in `from_codex`
+   - Plain patterns are ONLY valid for `to_codex` (local files to push)
+
 4. **Auto-sync**:
    Ask: "Should files sync automatically on commit?"
    Options:
@@ -292,16 +329,12 @@ codex:
         - docs/**
         - README.md
         - CLAUDE.md
-        - standards/**
-        - guides/**
       exclude:
         - docs/conversations/**
         - "*.tmp"
     from_codex:
       include:
-        - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex repo
-        - "codex://{org}/{codex_repo}/standards/**" # Shared standards
-        - "codex://{org}/{codex_repo}/guides/**"    # Shared guides
+        - "codex://{org}/{codex_repo}/docs/**"      # Shared docs (includes standards, guides)
   dependencies: {}
 
 Additional Files to Create:
@@ -322,12 +355,12 @@ sync:
       - docs/private/**
   from_codex:    # Files to pull FROM codex repo TO local (use codex:// URIs)
     include:
-      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs
-      - "codex://{org}/{codex_repo}/standards/**" # Shared standards
+      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs (includes standards, guides)
 ```
 
-The `from_codex` patterns use `codex://` URI format: `codex://org/project/path`
+The `from_codex` patterns MUST use `codex://` URI format: `codex://org/repo/path`
 - Placeholders: `{org}`, `{project}`, `{codex_repo}` - expanded from config
+- NEVER use plain patterns like `docs/**` in `from_codex` - always use `codex://` URIs
 
 DO NOT use `sync.patterns.include/exclude` - this format is WRONG and will not work.
 
