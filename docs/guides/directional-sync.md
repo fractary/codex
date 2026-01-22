@@ -32,8 +32,7 @@ sync:
 
   # What I pull from codex (use codex:// URIs)
   from_codex:
-    - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex repo
-    - "codex://{org}/{codex_repo}/standards/**" # Shared standards
+    - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex repo (includes standards, guides)
     - "codex://{org}/{project}/**"              # Own project files
     - "codex://{org}/other.project/specs/**"    # Other project's specs
 ```
@@ -56,8 +55,7 @@ sync:
   - `{project}` - Current project name
   - `{codex_repo}` - Codex repository name (from config)
 - Examples:
-  - `"codex://{org}/{codex_repo}/docs/**"` - All docs from codex repo
-  - `"codex://{org}/{codex_repo}/standards/**"` - All standards from codex repo
+  - `"codex://{org}/{codex_repo}/docs/**"` - All docs from codex repo (includes standards, guides)
   - `"codex://{org}/{project}/**"` - All my own project files from codex
   - `"codex://fractary/etl.corthion.ai/docs/schema/**/*.json"` - Explicit project reference
 
@@ -128,23 +126,21 @@ cd /path/to/lake.corthonomy.ai
 /fractary-codex:sync --from-codex
 ```
 
-### Case 2: Share Standards Across All Projects
+### Case 2: Share Docs (Standards, Guides) Across All Projects
 
 **core.corthodex.ai/.fractary/config.yaml:**
 ```yaml
 sync:
   to_codex:
-    - "docs/standards/**/*.md"
-    - "docs/templates/**/*"
+    - "docs/**/*.md"                # All docs including standards, guides
 ```
 
 **any-project/.fractary/config.yaml:**
 ```yaml
 sync:
   from_codex:
-    - "codex://{org}/{codex_repo}/standards/**"   # Shared standards from codex repo
-    - "codex://{org}/{codex_repo}/templates/**"   # Shared templates
-    - "codex://{org}/{project}/**"                # Own files
+    - "codex://{org}/{codex_repo}/docs/**"   # Shared docs from codex repo (includes standards, guides)
+    - "codex://{org}/{project}/**"           # Own files
 ```
 
 ### Case 3: Selective File Sharing
@@ -158,7 +154,7 @@ sync:
     # Not pushing: internal/, tests/, etc.
 
   from_codex:
-    - "codex://{org}/{codex_repo}/standards/**"
+    - "codex://{org}/{codex_repo}/docs/**"   # Shared docs (includes standards, guides)
     - "codex://{org}/{project}/**"
 ```
 

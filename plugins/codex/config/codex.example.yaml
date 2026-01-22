@@ -30,9 +30,7 @@ sync:
   # Use codex:// URIs with placeholders: {org}, {project}, {codex_repo}
   from_codex:
     include:
-      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex
-      - "codex://{org}/{codex_repo}/standards/**" # Shared standards
-      - "codex://{org}/{codex_repo}/guides/**"    # Shared guides
+      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs from codex (includes standards, guides)
       # Examples of other patterns:
       # - "codex://{org}/{project}/**"             # Own project files from codex
       # - "codex://{org}/other.project/specs/**"   # Specific project's specs
