@@ -37,7 +37,7 @@ The plugin bundles an MCP server at `plugins/codex/mcp-server/dist/cli.js` (467K
 2. **Working Directory Conflict**
    - MCP server binary located in plugin directory (`~/.claude/plugins/marketplaces/fractary-codex/`)
    - Server expects to run from project directory to access:
-     - `.fractary/codex/config.yaml` (relative path)
+     - `.fractary/config.yaml` (relative path)
      - `.fractary/codex/cache/` (relative path)
      - Project files via `process.cwd()` (storage manager default)
    - Cannot satisfy both requirements simultaneously
@@ -62,7 +62,7 @@ The plugin bundles an MCP server at `plugins/codex/mcp-server/dist/cli.js` (467K
 
 **Mechanism:** Use `npx @fractary/codex-mcp` to run server from npm registry without local installation.
 
-**Configuration Location:** Project's `.claude/settings.json` instead of plugin's `.mcp.json`
+**Configuration Location:** Project's `.mcp.json` (per-project MCP configuration)
 
 ### New MCP Configuration Format
 
@@ -71,7 +71,7 @@ The plugin bundles an MCP server at `plugins/codex/mcp-server/dist/cli.js` (467K
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"],
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"],
       "env": {}
     }
   }
@@ -118,7 +118,7 @@ elif [[ "$existing_args" == "@fractary/codex-mcp" ]]; then
 # Before
 args: ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/codex.yaml"],
 # After
-args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"],
+args: ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"],
 ```
 
 **Line 126-127:** Output metadata wrong
@@ -128,7 +128,7 @@ mcp_package: "@fractary/codex-mcp-server",
 config_path: ".fractary/codex.yaml",
 # After
 mcp_package: "@fractary/codex-mcp",
-config_path: ".fractary/codex/config.yaml",
+config_path: ".fractary/config.yaml",
 ```
 
 #### File: `plugins/codex/scripts/setup-cache-dir.sh`
@@ -197,7 +197,7 @@ cache_path="${CODEX_CACHE_PATH:-.fractary/codex/cache}"
 MCP Server:
   Package: @fractary/codex-mcp@0.3.3 (npm registry)
   Method: npx (no local installation required)
-  Config: .fractary/codex/config.yaml
+  Config: .fractary/config.yaml
 ```
 
 **Purpose:** Inform users how MCP server is installed and configured
@@ -279,7 +279,7 @@ MCP Server:
 - [ ] **Fresh installation:** Project with no existing config
 - [ ] **Fresh installation:** Project with empty `.claude/` directory
 - [ ] **Migration:** v4.3.3 with old bundled MCP config
-- [ ] **Merge:** Existing `.claude/settings.json` with other MCP servers
+- [ ] **Merge:** Existing `.mcp.json` with other MCP servers
 - [ ] **Preserve config:** User chooses to keep existing `config.yaml`
 - [ ] **Overwrite config:** User chooses to overwrite existing `config.yaml`
 - [ ] **Legacy format:** JSON config exists, prompts for migration
@@ -293,7 +293,7 @@ MCP Server:
 - [ ] **Document fetch:** Can fetch documents from codex
 - [ ] **Cache operations:** Can list, clear, check cache
 - [ ] **Search:** Can search codex documents
-- [ ] **Config access:** Server reads `.fractary/codex/config.yaml`
+- [ ] **Config access:** Server reads `.fractary/config.yaml`
 - [ ] **Cache access:** Server writes to `.fractary/codex/cache/`
 
 ### Edge Cases
@@ -437,7 +437,7 @@ MCP Server:
 - [ ] All bundled MCP server files removed from plugin
 - [ ] Plugin size reduced by ~450KB
 - [ ] MCP server runs from project directory with correct cwd
-- [ ] Config file `.fractary/codex/config.yaml` accessible to server
+- [ ] Config file `.fractary/config.yaml` accessible to server
 - [ ] Cache directory `.fractary/codex/cache/` writable by server
 - [ ] All existing MCP server functionality preserved
 - [ ] No regressions in plugin commands or agents
@@ -590,16 +590,15 @@ MCP Server:
 - Server can't access project files
 - 467KB bundled server in plugin
 
-### After (v5.0.0)
+### After (v5.0.0+)
 
-**Project-level:** `.claude/settings.json`
+**Project-level:** `.mcp.json`
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"],
-      "env": {}
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }

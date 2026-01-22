@@ -1109,23 +1109,23 @@ const MCP_TOOLS = [
 
 ### 8.4 MCP Registration
 
-The MCP server is registered in Claude settings:
+The MCP server is registered in `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
-      "command": "node",
-      "args": [
-        "/path/to/node_modules/@fractary/codex/bin/codex-mcp.js"
-      ],
-      "env": {
-        "CODEX_CONFIG_PATH": "/path/to/project/.fractary/plugins/codex/config.json"
-      }
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
 ```
+
+The `@fractary/codex-mcp` package is the standalone MCP server that:
+- Runs via npx (no local installation needed)
+- Reads the unified config at `.fractary/config.yaml`
+- Provides codex:// URI resolution and caching
 
 ---
 
