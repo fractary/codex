@@ -1,41 +1,41 @@
 {
-    "name": "fractary-codex",
-    "owner": {
-      "name": "The Fractary",
-      "email": "admin@fractary.com",
-      "url": "https://github.com/fractary"
-    },
-    "metadata": {
-      "description": "Knowledge infrastructure for AI agents - universal references, multi-tier caching, storage abstraction",
-      "version": "3.6.2",
-      "pluginRoot": "./plugins"
-    },
-    "plugins": [
-      {
-        "name": "fractary-codex",
-        "source": "./plugins/codex",
-        "description": "Project documentation and org-wide synchronization to and from organization central codex",
-        "version": "5.8.1",
-        "author": {
-          "name": "The Fractary",
-          "url": "https://github.com/fractary"
-        },
-        "homepage": "https://github.com/fractary/codex/tree/main/plugins/codex",
-        "repository": "https://github.com/fractary/codex/tree/main/plugins/codex",
-        "license": "MIT",
-        "keywords": [
-          "documentation"
-        ],
-        "category": "documentation",
-        "strict": true,
-        "commands": [
-          "./commands/configure.md",
-          "./commands/sync.md"
-        ],
-        "agents": [
-          "./agents/configurator.md",
-          "./agents/sync-manager.md"
-        ]
-      }
-    ]
-  }
+  "name": "fractary-codex",
+  "owner": {
+    "name": "The Fractary",
+    "email": "admin@fractary.com",
+    "url": "https://github.com/fractary"
+  },
+  "metadata": {
+    "description": "Knowledge infrastructure for AI agents - universal references, multi-tier caching, storage abstraction",
+    "version": "3.6.3",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "fractary-codex",
+      "source": "./plugins/codex",
+      "description": "Project documentation and org-wide synchronization to and from organization central codex",
+      "version": "5.8.2",
+      "author": {
+        "name": "The Fractary",
+        "url": "https://github.com/fractary"
+      },
+      "homepage": "https://github.com/fractary/codex/tree/main/plugins/codex",
+      "repository": "https://github.com/fractary/codex/tree/main/plugins/codex",
+      "license": "MIT",
+      "keywords": [
+        "documentation"
+      ],
+      "category": "documentation",
+      "strict": true,
+      "commands": [
+        "./commands/configure.md",
+        "./commands/sync.md"
+      ],
+      "agents": [
+        "./agents/configurator.md",
+        "./agents/sync-manager.md"
+      ]
+    }
+  ]
+}
