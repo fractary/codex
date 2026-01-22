@@ -426,95 +426,44 @@ If user selects "Yes":
 
 ## Step 5: Apply Configuration
 
-### Option A: CLI Available (Preferred)
+### Use CLI (Preferred)
 
-1. Check CLI availability:
-```
-USE SKILL: cli-helper
-Operation: validate-cli
+The CLI's `config init` command handles all configuration setup including:
+- Creating `.fractary/config.yaml` (unified config)
+- Setting up cache directory (`.fractary/codex/cache/`)
+- Installing MCP server in `.mcp.json`
+- Creating `.fractary/.gitignore`
+
+**For NEW configs, run:**
+```bash
+# Use npx if fractary CLI is not globally installed
+npx @fractary/cli config init \
+  --org <organization> \
+  --project <project> \
+  --codex-repo <codex-repo>
+
+# Or if fractary CLI is globally installed:
+fractary config init \
+  --org <organization> \
+  --project <project> \
+  --codex-repo <codex-repo>
 ```
 
-2. If available, use CLI to create/update config:
-```
-USE SKILL: cli-helper
-Operation: invoke-cli
-Parameters: {
-  "command": "init" or "config",
-  "args": [appropriate args based on requirements],
-  "parse_output": true
+Replace `<organization>`, `<project>`, and `<codex-repo>` with the actual values gathered from user input.
+
+**Important:** The CLI creates the correct MCP configuration automatically:
+```json
+{
+  "mcpServers": {
+    "fractary-codex": {
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
+    }
+  }
 }
 ```
 
-### Option B: CLI Unavailable (Fallback)
-
-**IMPORTANT: Track Pre-existing State for Rollback**
-
-Before making any changes, record what already exists:
-```bash
-# Track pre-existing files for potential rollback
-mcp_existed=false
-if [ -f .mcp.json ]; then
-  mcp_existed=true
-  # Backup existing .mcp.json before modification
-  cp .mcp.json .mcp.json.pre-codex-config
-fi
-
-config_existed=false
-if [ -f .fractary/config.yaml ]; then
-  config_existed=true
-fi
-
-cache_existed=false
-if [ -d .fractary/codex/cache ]; then
-  cache_existed=true
-fi
-```
-
-For NEW configs:
-
-1. Create config directory:
-```bash
-mkdir -p .fractary
-```
-
-2. Write unified config file:
-```
-USE TOOL: Write
-File: .fractary/config.yaml
-Content: |
-  # Fractary Unified Configuration
-  # See: docs/guides/configuration.md
-
-  codex:
-    schema_version: "2.0"
-    organization: <organization>
-    project: <project>
-    codex_repo: <codex-repo>
-    dependencies: {}
-
-  # Optional: file plugin section can be added later
-  # file:
-  #   schema_version: "2.0"
-  #   sources: {}
-```
-
-3. Setup cache directory:
-```bash
-if [ ! -f plugins/codex/scripts/setup-cache-dir.sh ]; then
-  echo "ERROR: Required script not found: plugins/codex/scripts/setup-cache-dir.sh"
-  exit 1
-fi
-bash plugins/codex/scripts/setup-cache-dir.sh
-```
-
-4. Install MCP server:
-```bash
-if [ ! -f plugins/codex/scripts/install-mcp.sh ]; then
-  echo "ERROR: Required script not found: plugins/codex/scripts/install-mcp.sh"
-  exit 1
-fi
-bash plugins/codex/scripts/install-mcp.sh
-```
+Do NOT use bash scripts or manually construct MCP configurations - always delegate to the CLI.
 
 For EXISTING configs:
 
@@ -987,40 +936,32 @@ If a skill fails:
 3. Provide clear resolution steps
 4. User can fix and retry
 
-## Script Failure
+## CLI Failure
 
-**If a required script is missing:**
-1. Check for script existence before calling
-2. Display error showing which script is missing
-3. Explain likely cause (incomplete plugin installation)
-4. Provide resolution steps:
-   - Verify plugin installation
-   - Re-clone/re-install plugin if needed
-   - Check file permissions
-5. Exit without partial configuration
+**If CLI is not available:**
+1. Try using `npx @fractary/cli` instead of `fractary` command
+2. If npx fails, check Node.js and npm installation
+3. Provide manual installation instructions
 
 Example error:
 ```
-❌ Configuration failed: Required script not found
+❌ Configuration failed: CLI not available
 
-Missing: plugins/codex/scripts/setup-cache-dir.sh
-
-This suggests the codex plugin installation is incomplete or corrupted.
+The fractary CLI is required for configuration.
 
 Resolution:
-1. Verify plugin files: ls -la plugins/codex/scripts/
-2. Re-install plugin if files are missing
-3. Check file permissions if files exist
+1. Install globally: npm install -g @fractary/cli
+2. Or use npx: npx @fractary/cli config init --org <org> --codex-repo <repo>
+3. Ensure Node.js >= 18 is installed
 
-Do not proceed with manual workarounds - fix the installation.
+Do not attempt manual configuration - use the CLI.
 ```
 
-**If a setup script fails during execution:**
-1. Show the script output
+**If CLI command fails during execution:**
+1. Show the CLI error output
 2. Explain what went wrong
-3. Provide manual setup instructions
-4. Don't leave partially configured state
-5. Offer rollback if config was partially created
+3. CLI handles its own rollback - no manual cleanup needed
+4. Provide guidance on fixing the underlying issue
 
 ## Permission Errors
 
@@ -1137,26 +1078,19 @@ For EXISTING configurations (failed during update):
 
 **Example Error with Rollback:**
 ```
-❌ Configuration failed at step 3: Cache directory setup
+❌ Configuration failed: CLI command error
 
-Completed steps:
-  ✓ Config file created: .fractary/config.yaml (UNIFIED)
-  ✓ MCP server configured: .mcp.json
-  ✗ Cache directory setup failed
+Error: fractary config init failed with exit code 1
 
-Error: plugins/codex/scripts/setup-cache-dir.sh: Permission denied
+CLI Output:
+  Error: Permission denied creating .fractary/codex/cache/
 
-Rollback options:
-1. Remove partial configuration (clean slate)
-2. Keep config and fix manually
-3. Cancel (leave as-is)
+Resolution:
+1. Check directory permissions: ls -la .fractary/
+2. Ensure write access to project root
+3. Retry: /fractary-codex:configure
 
-If keeping partial config, complete setup manually:
-  1. Fix permissions: chmod +x plugins/codex/scripts/setup-cache-dir.sh
-  2. Run script: bash plugins/codex/scripts/setup-cache-dir.sh
-  3. Restart Claude Code
-
-Or rollback and retry: /fractary-codex:configure
+The CLI handles rollback automatically - no manual cleanup needed.
 ```
 
 **Critical Rules:**

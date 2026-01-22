@@ -157,6 +157,103 @@ async function fileExists(filePath: string): Promise<boolean> {
   }
 }
 
+/**
+ * MCP server configuration result
+ */
+export interface McpInstallResult {
+  installed: boolean;
+  migrated: boolean;
+  alreadyInstalled: boolean;
+  backupPath?: string;
+}
+
+/**
+ * Install or update MCP server configuration in .mcp.json
+ *
+ * This is the centralized logic for MCP configuration. Plugins should
+ * call the CLI instead of implementing their own MCP installation logic.
+ *
+ * @param projectRoot - Project root directory
+ * @param configPath - Path to config file (relative to project root)
+ * @param options - Installation options
+ */
+export async function installMcpServer(
+  projectRoot: string,
+  configPath: string = '.fractary/config.yaml',
+  options: { backup?: boolean } = {}
+): Promise<McpInstallResult> {
+  const mcpJsonPath = path.join(projectRoot, '.mcp.json');
+  const { backup = true } = options;
+
+  let existingConfig: any = { mcpServers: {} };
+  let backupPath: string | undefined;
+  let migrated = false;
+
+  // Read existing .mcp.json if it exists
+  if (await fileExists(mcpJsonPath)) {
+    try {
+      const content = await fs.readFile(mcpJsonPath, 'utf-8');
+      existingConfig = JSON.parse(content);
+
+      // Create backup if requested
+      if (backup) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
+        backupPath = `${mcpJsonPath}.backup.${timestamp}`;
+        await fs.writeFile(backupPath, content);
+      }
+    } catch {
+      // Invalid JSON, start fresh
+      existingConfig = { mcpServers: {} };
+    }
+  }
+
+  // Ensure mcpServers object exists
+  if (!existingConfig.mcpServers) {
+    existingConfig.mcpServers = {};
+  }
+
+  // Check if already installed with correct configuration
+  const existing = existingConfig.mcpServers['fractary-codex'];
+  if (existing) {
+    const existingCommand = existing.command;
+    const existingArgs = existing.args || [];
+
+    // Check if it's the correct current format
+    if (existingCommand === 'npx' && existingArgs.includes('@fractary/codex-mcp')) {
+      return {
+        installed: false,
+        migrated: false,
+        alreadyInstalled: true,
+        backupPath
+      };
+    }
+
+    // Old format detected - will migrate
+    if (existingCommand === 'node' || existingArgs.includes('@fractary/codex')) {
+      migrated = true;
+    }
+  }
+
+  // Install the correct MCP server configuration
+  existingConfig.mcpServers['fractary-codex'] = {
+    command: 'npx',
+    args: ['-y', '@fractary/codex-mcp', '--config', configPath]
+  };
+
+  // Write updated .mcp.json
+  await fs.writeFile(
+    mcpJsonPath,
+    JSON.stringify(existingConfig, null, 2) + '\n'
+  );
+
+  return {
+    installed: true,
+    migrated,
+    alreadyInstalled: false,
+    backupPath
+  };
+}
+
 export function initCommand(): Command {
   const cmd = new Command('init');
 
@@ -166,6 +263,7 @@ export function initCommand(): Command {
     .option('--project <name>', 'Project name (default: derived from directory)')
     .option('--codex-repo <name>', 'Codex repository name (e.g., "codex.fractary.com")')
     .option('--force', 'Overwrite existing configuration')
+    .option('--no-mcp', 'Skip MCP server installation')
     .action(async (options) => {
       try {
         console.log(chalk.blue('Initializing unified Fractary configuration...\n'));
@@ -307,6 +405,23 @@ export function initCommand(): Command {
           console.log(chalk.green('✓'), chalk.dim('.fractary/config.yaml (merged with existing)'));
         }
 
+        // Install MCP server configuration (unless --no-mcp)
+        if (options.mcp !== false) {
+          console.log('\nConfiguring MCP server...');
+          const mcpResult = await installMcpServer(process.cwd(), '.fractary/config.yaml');
+
+          if (mcpResult.alreadyInstalled) {
+            console.log(chalk.green('✓'), chalk.dim('.mcp.json (already configured)'));
+          } else if (mcpResult.migrated) {
+            console.log(chalk.green('✓'), chalk.dim('.mcp.json (migrated from old format)'));
+            if (mcpResult.backupPath) {
+              console.log(chalk.dim(`  Backup: ${path.basename(mcpResult.backupPath)}`));
+            }
+          } else if (mcpResult.installed) {
+            console.log(chalk.green('✓'), chalk.dim('.mcp.json (created)'));
+          }
+        }
+
         // Success message
         console.log(chalk.green('\n✓ Unified configuration initialized successfully!\n'));
 
@@ -322,6 +437,7 @@ export function initCommand(): Command {
 
         console.log(chalk.bold('\nCodex plugin:'));
         console.log(chalk.dim('  - Cache: .fractary/codex/cache/'));
+        console.log(chalk.dim('  - MCP Server: @fractary/codex-mcp (via npx)'));
         console.log(chalk.dim('  - Dependencies: (none configured)'));
 
         console.log(chalk.bold('\nGit Authentication:'));
@@ -331,11 +447,11 @@ export function initCommand(): Command {
         console.log(chalk.dim('  Or set GITHUB_TOKEN environment variable.'));
 
         console.log(chalk.bold('\nNext steps:'));
-        console.log(chalk.dim('  1. Verify codex repository access: gh repo view ' + org + '/' + codexRepo));
-        console.log(chalk.dim('  2. Configure AWS credentials for S3 access (if using file plugin)'));
-        console.log(chalk.dim('  3. Edit .fractary/config.yaml to add external project dependencies'));
-        console.log(chalk.dim('  4. Access current project files: codex://specs/SPEC-001.md'));
-        console.log(chalk.dim('  5. Access external projects: codex://org/project/docs/README.md'));
+        console.log(chalk.dim('  1. Restart Claude Code to load the MCP server'));
+        console.log(chalk.dim('  2. Verify codex repository access: gh repo view ' + org + '/' + codexRepo));
+        console.log(chalk.dim('  3. Configure AWS credentials for S3 access (if using file plugin)'));
+        console.log(chalk.dim('  4. Edit .fractary/config.yaml to add external project dependencies'));
+        console.log(chalk.dim('  5. Reference docs via codex:// URIs (auto-fetched by MCP)'));
 
       } catch (error: any) {
         console.error(chalk.red('Error:'), error.message);
