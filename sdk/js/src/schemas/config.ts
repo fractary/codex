@@ -60,12 +60,18 @@ export type DirectionalSyncConfig = z.infer<typeof DirectionalSyncConfigSchema>
 export const FromCodexSyncConfigSchema = DirectionalSyncConfigSchema.refine(
   (config) => {
     // Validate that all include patterns use codex:// URI format
-    return config.include.every((pattern) => pattern.startsWith('codex://'))
+    const includeValid = config.include.every((pattern) =>
+      pattern.startsWith('codex://')
+    )
+    // Validate exclude patterns too (if present)
+    const excludeValid =
+      !config.exclude ||
+      config.exclude.every((pattern) => pattern.startsWith('codex://'))
+    return includeValid && excludeValid
   },
   {
     message:
       'from_codex patterns must use codex:// URI format (e.g., "codex://{org}/{codex_repo}/docs/**"). Plain paths like "docs/**" are not valid for from_codex.',
-    path: ['include'],
   }
 )
 

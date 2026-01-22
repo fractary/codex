@@ -5,6 +5,45 @@ All notable changes to @fractary/codex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.3] - 2026-01-22
+
+### Changed
+
+- **BREAKING: `from_codex` patterns now require `codex://` URI format**
+  - Both `include` and `exclude` patterns in `from_codex` must use `codex://` URIs
+  - Plain paths like `docs/**` are no longer valid for `from_codex`
+  - This validation was previously only documented in the plugin configurator; now enforced at schema level
+  - Affects: CLI, MCP server, SDK consumers, and direct YAML configuration
+
+  **Before (now invalid):**
+  ```yaml
+  sync:
+    from_codex:
+      include:
+        - docs/**
+        - standards/**
+  ```
+
+  **After (valid):**
+  ```yaml
+  sync:
+    from_codex:
+      include:
+        - "codex://{org}/{codex_repo}/docs/**"
+      exclude:
+        - "codex://{org}/{codex_repo}/docs/private/**"
+  ```
+
+### Added
+
+- `FromCodexSyncConfigSchema` - New Zod schema that validates `from_codex` patterns
+- Schema validation tests for `codex://` URI requirement (17 new tests)
+
+### Fixed
+
+- Plugin version bump to 5.8.2 (was missing for configurator changes)
+- Marketplace manifest version synced to 5.8.2 (was at 5.7.2)
+
 ## [0.8.0] - 2026-01-12
 
 ### Added

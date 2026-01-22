@@ -88,6 +88,28 @@ describe('FromCodexSyncConfigSchema', () => {
       })
       expect(result.success).toBe(false)
     })
+
+    it('should reject plain paths in exclude', () => {
+      const result = FromCodexSyncConfigSchema.safeParse({
+        include: ['codex://org/repo/docs/**'],
+        exclude: ['docs/private/**'], // Should also be codex:// URI
+      })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0].message).toContain('codex:// URI format')
+      }
+    })
+
+    it('should reject mixed valid include but invalid exclude', () => {
+      const result = FromCodexSyncConfigSchema.safeParse({
+        include: ['codex://org/repo/docs/**'],
+        exclude: [
+          'codex://org/repo/docs/private/**', // valid
+          '*.tmp', // invalid
+        ],
+      })
+      expect(result.success).toBe(false)
+    })
   })
 })
 
