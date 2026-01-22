@@ -41,12 +41,14 @@ sync:
     exclude: [docs/private/**]
   from_codex:
     include:
-      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs (includes standards, guides)
+      - "codex://fractary/codex.fractary.com/docs/**"   # Use ACTUAL org/codex_repo values
 ```
-The `from_codex` patterns use `codex://` URIs with placeholders:
-- `{org}`: Organization name (from config)
-- `{project}`: Current project name
-- `{codex_repo}`: Codex repository name (from config)
+The `from_codex` patterns use `codex://` URIs with the format `codex://org/repo/path`.
+
+**CRITICAL: When generating config, substitute actual values:**
+- Replace `{org}` with actual organization name (e.g., "fractary")
+- Replace `{codex_repo}` with actual codex repository name (e.g., "codex.fractary.com")
+- NEVER write literal `{org}` or `{codex_repo}` placeholders to the config file
 
 NEVER use `sync.patterns.include/exclude` - this format is WRONG and won't work.
 
@@ -206,7 +208,11 @@ Use AskUserQuestion to gather essential information:
 
    **CRITICAL: Pattern Mappings for Each Option**
 
-   When user selects "Standard":
+   **IMPORTANT:** When generating the config file, you MUST replace `{org}` and `{codex_repo}` placeholders
+   with the actual values from the configuration (e.g., `codex://fractary/codex.fractary.com/docs/**`).
+   The placeholders shown below are templates - substitute actual values when writing to file.
+
+   When user selects "Standard" (example with org=fractary, codex_repo=codex.fractary.com):
    ```yaml
    sync:
      to_codex:
@@ -219,10 +225,10 @@ Use AskUserQuestion to gather essential information:
          - "*.tmp"
      from_codex:
        include:
-         - "codex://{org}/{codex_repo}/docs/**"
+         - "codex://fractary/codex.fractary.com/docs/**"   # Replace with actual org/codex_repo values
    ```
 
-   When user selects "Minimal":
+   When user selects "Minimal" (example with org=fractary, codex_repo=codex.fractary.com):
    ```yaml
    sync:
      to_codex:
@@ -231,14 +237,15 @@ Use AskUserQuestion to gather essential information:
          - README.md
      from_codex:
        include:
-         - "codex://{org}/{codex_repo}/docs/**"
+         - "codex://fractary/codex.fractary.com/docs/**"   # Replace with actual org/codex_repo values
    ```
 
-   Note: Standards and guides are within the docs folder, so a single `codex://{org}/{codex_repo}/docs/**` pattern covers all shared documentation.
+   Note: Standards and guides are within the docs folder, so a single `codex://<org>/<codex_repo>/docs/**` pattern covers all shared documentation.
 
-   **IMPORTANT:** The `from_codex` patterns MUST use `codex://` URI format with placeholders.
-   - `{org}` expands to organization name from config
-   - `{codex_repo}` expands to codex repository name from config
+   **IMPORTANT:** The `from_codex` patterns MUST use `codex://` URI format with ACTUAL values.
+   - Use the actual organization name (e.g., "fractary"), NOT `{org}`
+   - Use the actual codex repository name (e.g., "codex.fractary.com"), NOT `{codex_repo}`
+   - NEVER write literal placeholders like `{org}` or `{codex_repo}` to the config file
    - NEVER use plain patterns like `docs/**` or `standards/**` in `from_codex`
    - Plain patterns are ONLY valid for `to_codex` (local files to push)
 
@@ -334,7 +341,7 @@ codex:
         - "*.tmp"
     from_codex:
       include:
-        - "codex://{org}/{codex_repo}/docs/**"      # Shared docs (includes standards, guides)
+        - "codex://fractary/codex.fractary.com/docs/**"   # Shared docs (use actual org/codex_repo values)
   dependencies: {}
 
 Additional Files to Create:
@@ -342,6 +349,10 @@ Additional Files to Create:
   ✓ .fractary/codex/cache/ (directory)
   ✓ .mcp.json (MCP server config)
 ```
+
+**IMPORTANT:** The from_codex patterns MUST use actual values, not placeholders.
+Replace `{org}` with the organization value (e.g., "fractary") and `{codex_repo}` with
+the codex repository value (e.g., "codex.fractary.com").
 
 **CRITICAL: Sync Config Format**
 The sync configuration MUST use `to_codex` and `from_codex` with nested `include`/`exclude` arrays:
@@ -353,13 +364,15 @@ sync:
       - README.md
     exclude:
       - docs/private/**
-  from_codex:    # Files to pull FROM codex repo TO local (use codex:// URIs)
+  from_codex:    # Files to pull FROM codex repo TO local (use codex:// URIs with ACTUAL values)
     include:
-      - "codex://{org}/{codex_repo}/docs/**"      # Shared docs (includes standards, guides)
+      - "codex://fractary/codex.fractary.com/docs/**"   # Use actual org/codex_repo, not placeholders
 ```
 
 The `from_codex` patterns MUST use `codex://` URI format: `codex://org/repo/path`
-- Placeholders: `{org}`, `{project}`, `{codex_repo}` - expanded from config
+- **ALWAYS substitute actual values** for organization and codex_repo when writing config
+- Example: If org="fractary" and codex_repo="codex.fractary.com", write `codex://fractary/codex.fractary.com/docs/**`
+- NEVER write literal `{org}` or `{codex_repo}` placeholders to the config file
 - NEVER use plain patterns like `docs/**` in `from_codex` - always use `codex://` URIs
 
 DO NOT use `sync.patterns.include/exclude` - this format is WRONG and will not work.
@@ -1217,6 +1230,15 @@ codex:
   organization: fractary
   project: myproject
   codex_repo: codex.fractary.com
+  sync:
+    to_codex:
+      include:
+        - docs/**
+        - README.md
+        - CLAUDE.md
+    from_codex:
+      include:
+        - "codex://fractary/codex.fractary.com/docs/**"
   dependencies: {}
 
 Additional Files to Create:
