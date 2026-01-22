@@ -179,14 +179,14 @@ codex://specs/SPEC-001.md
 ### Cache Behavior
 
 **Current Project** (file plugin sources):
-- ✅ Always reads fresh from disk
-- ❌ Never cached
-- ⚡ Optimal for active development
+- Always reads fresh from disk
+- Never cached
+- Optimal for active development
 
 **External Projects** (dependencies):
-- ✅ Cached with TTL
-- 🔄 Stale-while-revalidate support
-- 💾 Persisted across sessions
+- Cached with TTL
+- Stale-while-revalidate support
+- Persisted across sessions
 
 ### Storage Provider Priority
 
@@ -376,11 +376,6 @@ Transparently access archived documents from S3-compatible storage (S3, R2, GCS)
 
 **Note:** This provider enables **read-only** access to archived documents. It works via the [fractary CLI](https://github.com/fractary/cli) and requires per-project configuration. See [Archive Configuration](#archive-configuration) for details.
 
-```yaml
-# Archive configuration is per-project, not a general storage provider
-# See Archive Configuration section below for full setup
-```
-
 The S3 Archive storage provider is automatically registered when archive configuration is present. Documents are accessed with the same `codex://org/project/path` URI regardless of whether they're in the active project or archived.
 
 **Storage Priority with Archives:**
@@ -539,15 +534,6 @@ docs/api.md       → archive/docs/fractary/auth-service/docs/api.md
 logs/session.md   → archive/logs/fractary/auth-service/logs/session.md
 ```
 
-**Custom prefix:**
-```yaml
-archive:
-  projects:
-    fractary/project:
-      prefix: archived-docs/
-      # Result: archived-docs/specs/fractary/project/specs/WORK-123.md
-```
-
 ### Pattern Matching
 
 Use glob patterns to limit which files are eligible for archive lookup:
@@ -564,98 +550,6 @@ archive:
 ```
 
 **No patterns specified** = all files eligible (checked in archive if not found locally)
-
-### Complete Example
-
-```yaml
-organizationSlug: fractary
-
-cache:
-  dir: .fractary/codex/cache
-  maxMemorySize: 104857600  # 100 MB
-  defaultTtl: 3600          # 1 hour
-
-storage:
-  providers:
-    - type: local
-      basePath: ./knowledge
-    - type: github
-      token: ${GITHUB_TOKEN}
-
-# Archive configuration
-archive:
-  projects:
-    # Production service - archive completed specs
-    fractary/auth-service:
-      enabled: true
-      handler: s3
-      bucket: fractary-prod-archives
-      prefix: archive/
-      patterns:
-        - specs/**
-        - docs/**
-
-    # API gateway - use Cloudflare R2
-    fractary/api-gateway:
-      enabled: true
-      handler: r2
-      bucket: api-archives
-      patterns:
-        - specs/**
-
-    # Development project - local archive for testing
-    fractary/dev-project:
-      enabled: true
-      handler: local
-```
-
-### MCP Server Configuration
-
-When using the Codex MCP server, archive configuration is loaded from the same config file:
-
-```json
-// .claude/settings.json
-{
-  "mcpServers": {
-    "fractary-codex": {
-      "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
-    }
-  }
-}
-```
-
-The MCP server automatically enables archive providers based on your configuration.
-
-### Requirements
-
-1. **fractary CLI installed:**
-   ```bash
-   npm install -g @fractary/cli
-   ```
-
-2. **Cloud storage credentials configured** (for S3/R2/GCS)
-
-3. **Archive structure in place** following the path conventions
-
-### How It Works
-
-1. User requests: `codex://fractary/project/specs/WORK-123.md`
-2. Codex checks:
-   - ✅ Local filesystem: `specs/WORK-123.md`
-   - ❌ Not found locally
-   - ✅ Archive configured for `fractary/project`
-   - ✅ Path matches pattern `specs/**`
-   - ✅ Fetch from S3: `archive/specs/fractary/project/specs/WORK-123.md`
-3. Returns content with source: `s3-archive`
-4. Caches result for TTL period
-
-### Limitations
-
-- **Read-only:** Archive storage is read-only (no write/update operations)
-- **Current project only:** Archive provider only checks archives for the current project
-- **Requires fractary CLI:** Uses fractary CLI for cloud storage access
-- **exists() performance:** Checking file existence downloads the full file (optimization planned)
 
 ## Type Registry
 
@@ -915,7 +809,7 @@ cacheDir: ${CODEX_CACHE_DIR:-.fractary/codex/cache}
 ```yaml
 storage:
   - type: github
-    token: ghp_1234567890abcdef  # ❌ Hardcoded token
+    token: ghp_1234567890abcdef  # Hardcoded token
 ```
 
 **Do:**
@@ -923,7 +817,7 @@ storage:
 ```yaml
 storage:
   - type: github
-    token: ${GITHUB_TOKEN}  # ✅ Environment variable
+    token: ${GITHUB_TOKEN}  # Environment variable
 ```
 
 ### 2. Organize by Environment
@@ -1123,6 +1017,7 @@ storage:
 
 ## See Also
 
-- [API Reference](./api-reference.md) - Detailed API documentation
-- [CLI Integration Guide](./cli-integration.md) - Integration patterns
-- [Troubleshooting](./troubleshooting.md) - Common issues and solutions
+- [JavaScript SDK](./sdk/js/) - JS/TS SDK documentation
+- [Python SDK](./sdk/py/) - Python SDK documentation
+- [CLI Documentation](./cli/) - Command-line interface
+- [MCP Server](./mcp-server/) - AI agent integration
