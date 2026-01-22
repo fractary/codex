@@ -266,10 +266,21 @@ Required manual configuration in `.claude/config.json`:
 /fractary-codex:configure --org fractary --codex codex.fractary.com
 
 # Or install MCP separately
-./scripts/install-mcp.sh
+./plugins/codex/scripts/install-mcp.sh
 ```
 
-The MCP server is now registered in `.claude/settings.json` and uses the config path to find the cache.
+The MCP server is now registered in `.mcp.json` using the `@fractary/codex-mcp` npm package:
+
+```json
+{
+  "mcpServers": {
+    "fractary-codex": {
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
+    }
+  }
+}
+```
 
 ## Handling Breaking Changes
 

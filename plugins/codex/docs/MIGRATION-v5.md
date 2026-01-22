@@ -13,10 +13,10 @@ Version 5.0.0 changes how the MCP server is installed and configured. The bundle
 - Used `${CLAUDE_PLUGIN_ROOT}` variable (didn't work)
 - Server couldn't access project files
 
-### After (v5.0.0): Per-Project Installation
+### After (v5.0.0+): Per-Project Installation
 
 - MCP server installed per-project via npx
-- Configuration in project's `.claude/settings.json`
+- Configuration in project's `.mcp.json`
 - Uses `@fractary/codex-mcp` from npm registry
 - Server runs from project directory (can access config and cache)
 
@@ -97,16 +97,16 @@ Then restart Claude Code.
 - Server couldn't access project files
 - Large bundled server file in plugin
 
-### New Configuration (v5.0.0)
+### New Configuration (v5.0.0+)
 
-**Location**: Project's `.claude/settings.json`
+**Location**: Project's `.mcp.json`
 
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/codex/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
@@ -114,7 +114,7 @@ Then restart Claude Code.
 
 **Benefits**:
 - Runs from project directory (correct working directory)
-- Can access `.fractary/codex/config.yaml`
+- Can access `.fractary/config.yaml` (unified config with `codex:` section)
 - Can write to `.fractary/codex/cache/`
 - Uses latest version from npm registry
 - No bundled server in plugin
@@ -129,8 +129,8 @@ Then restart Claude Code.
 - "Failed to reconnect" error
 
 **Solution**:
-1. Check `.claude/settings.json` exists and has correct configuration
-2. Verify config file exists: `cat .fractary/codex/config.yaml`
+1. Check `.mcp.json` exists and has correct configuration
+2. Verify config file exists: `cat .fractary/config.yaml`
 3. Restart Claude Code
 4. Check for MCP errors in Claude Code logs
 
@@ -141,7 +141,7 @@ Then restart Claude Code.
 - Old plugin path in error messages
 
 **Solution**:
-1. Edit `.claude/settings.json`
+1. Edit `.mcp.json`
 2. Remove old `fractary-codex` MCP server entry
 3. Run `/fractary-codex:configure` to recreate with new format
 4. Restart Claude Code
@@ -161,13 +161,13 @@ Then restart Claude Code.
 npm install -g @fractary/codex-mcp
 ```
 
-Then update `.claude/settings.json`:
+Then update `.mcp.json`:
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
       "command": "fractary-codex-mcp",
-      "args": ["--config", ".fractary/codex/config.yaml"]
+      "args": ["--config", ".fractary/config.yaml"]
     }
   }
 }

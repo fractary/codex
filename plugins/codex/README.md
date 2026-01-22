@@ -638,7 +638,7 @@ Converts deprecated `@codex/project/path` references to `codex://org/project/pat
 
 ## MCP Integration
 
-The codex plugin uses the SDK-provided MCP server from `@fractary/codex` to expose cached documents as resources with on-demand fetching.
+The codex plugin uses the standalone MCP server from `@fractary/codex-mcp` npm package to expose cached documents as resources with on-demand fetching.
 
 ### Setup
 
@@ -655,13 +655,11 @@ This automatically:
 
 **Manual:**
 ```bash
-# Install the SDK MCP server
-./scripts/install-mcp.sh
+# Install the MCP server
+./plugins/codex/scripts/install-mcp.sh
 
-# This configures:
-# - npx @fractary/codex mcp --config .fractary/config.yaml
-# OR
-# - fractary codex mcp --config .fractary/config.yaml (if global CLI installed)
+# This configures .mcp.json to use:
+# - npx -y @fractary/codex-mcp --config .fractary/config.yaml
 ```
 
 **Verify:**
@@ -935,12 +933,12 @@ codex_sync_include: ["your-project"]
 **Check:**
 ```bash
 /fractary-codex:validate-setup
-ls plugins/codex/mcp-server/dist/
+npx -y @fractary/codex-mcp --help
 ```
 
 **Fix:**
 1. Run `/fractary-codex:configure` to configure MCP
-2. Restart Claude
+2. Restart Claude Code
 3. Fetch some documents: `/fractary-codex:fetch codex://org/project/file.md`
 
 ### Slow Fetches
@@ -1089,8 +1087,8 @@ Follows [Fractary Plugin Standards](../../docs/standards/FRACTARY-PLUGIN-STANDAR
 
 ### Required
 
-- **@fractary/codex SDK** (for MCP server, installed automatically via npx)
-- **@fractary/cli** (optional - global install for faster operations, falls back to npx)
+- **@fractary/codex-mcp** (MCP server, installed automatically via npx)
+- **@fractary/cli** (optional - global install for faster operations)
 - **jq** (JSON processing)
 - **yq** (YAML processing, for v4.0 config migration)
 - **bash** (scripts)

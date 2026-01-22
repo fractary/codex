@@ -365,11 +365,11 @@ If you encounter issues during migration:
 
 ## MCP Server Migration (v4.1+)
 
-As of v4.1, the codex plugin uses the SDK-provided MCP server from `@fractary/codex` instead of the custom TypeScript implementation.
+As of v4.1+, the codex plugin uses the standalone MCP server from `@fractary/codex-mcp` npm package instead of a custom TypeScript implementation or local paths.
 
 ### What's Changing
 
-**Before** (v4.0):
+**Before** (v4.0 - old custom server):
 ```json
 {
   "mcpServers": {
@@ -385,31 +385,22 @@ As of v4.1, the codex plugin uses the SDK-provided MCP server from `@fractary/co
 }
 ```
 
-**After** (v4.1):
+**After** (current - standalone MCP package):
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["@fractary/codex", "mcp", "--config", ".fractary/codex/config.yaml"],
-      "env": {}
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
 ```
 
-Or with global CLI:
-```json
-{
-  "mcpServers": {
-    "fractary-codex": {
-      "command": "fractary",
-      "args": ["codex", "mcp", "--config", ".fractary/codex/config.yaml"],
-      "env": {}
-    }
-  }
-}
-```
+**IMPORTANT**: The MCP server is now:
+- Located in `.mcp.json` (not `.claude/settings.json`)
+- Using `@fractary/codex-mcp` npm package (not local paths)
+- Config at `.fractary/config.yaml` (unified config with `codex:` section)
 
 ### Automatic Migration
 
@@ -421,8 +412,8 @@ The MCP server configuration is automatically migrated when you run:
 
 The installation script will:
 1. Detect if you have the old custom MCP server configured
-2. Create a backup of your `.claude/settings.json`
-3. Update to the SDK MCP server configuration
+2. Create a backup of your `.mcp.json`
+3. Update to the standalone MCP server configuration (`@fractary/codex-mcp`)
 4. Preserve all functionality
 
 ### Manual Migration
@@ -431,40 +422,50 @@ If you need to migrate manually:
 
 1. **Backup current settings**:
    ```bash
-   cp .claude/settings.json .claude/settings.json.backup
+   cp .mcp.json .mcp.json.backup
    ```
 
 2. **Update MCP configuration**:
-   Edit `.claude/settings.json` and replace the `fractary-codex` entry with the new SDK format shown above.
+   Edit `.mcp.json` and replace the `fractary-codex` entry:
+   ```json
+   {
+     "mcpServers": {
+       "fractary-codex": {
+         "command": "npx",
+         "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
+       }
+     }
+   }
+   ```
 
 3. **Restart Claude Code** to load the new MCP server.
 
 4. **Verify**: Test with a codex:// URI reference in your work.
 
-### Benefits of SDK MCP Server
+### Benefits of Standalone MCP Server
 
-- **Maintenance**: No custom code to maintain (SDK handles updates)
-- **Disk Space**: ~50MB saved (removed custom server + node_modules)
+- **Maintenance**: No custom code to maintain (npm package handles updates)
+- **Disk Space**: No local node_modules needed (npx handles it)
 - **Feature Parity**: All MCP tools work the same way
-- **Consistency**: Single source of truth (@fractary/codex SDK)
-- **Better Errors**: SDK provides clearer error messages
+- **Consistency**: Single source of truth (`@fractary/codex-mcp` package)
+- **Better Errors**: Package provides clearer error messages
 
 ### Troubleshooting
 
 **Issue**: "MCP server not responding"
 
-**Solution**: Ensure @fractary/codex is installed:
+**Solution**: Ensure the MCP package works:
 ```bash
-# Check version
-npx @fractary/codex --version
+# Test the MCP package
+npx -y @fractary/codex-mcp --help
 
-# Or install globally
-npm install -g @fractary/codex
+# Verify config exists
+cat .fractary/config.yaml
 ```
 
 **Issue**: "Config file not found"
 
-**Solution**: Ensure `.fractary/codex/config.yaml` exists at project root. Run `/fractary-codex:configure` if missing.
+**Solution**: Ensure `.fractary/config.yaml` exists at project root. Run `/fractary-codex:configure` if missing.
 
 ## Next Steps
 
@@ -474,7 +475,7 @@ After migration:
 2. ✅ Test sync: `/fractary-codex:sync-project --dry-run`
 3. ✅ Test fetch: Use codex:// URIs in your work
 4. ✅ Review new YAML config for customization opportunities
-5. ✅ Commit new config to git: `git add .fractary/codex/config.yaml`
+5. ✅ Commit new config to git: `git add .fractary/config.yaml .mcp.json`
 
 ---
 

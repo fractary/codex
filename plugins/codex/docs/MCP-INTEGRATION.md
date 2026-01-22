@@ -43,24 +43,19 @@ The easiest way to set up the MCP server is via the init command:
 ```
 
 This will:
-1. Create configuration at `.fractary/plugins/codex/config.json`
+1. Create configuration at `.fractary/config.yaml` (unified config with `codex:` section)
 2. Set up cache directory at `.fractary/codex/cache/`
-3. Install MCP server in `.claude/settings.json`
+3. Install MCP server in `.mcp.json`
 4. Initialize cache index
 
 ### Manual Setup
 
-**1. Build the MCP server:**
+**1. Run the install script:**
 ```bash
-cd plugins/codex/mcp-server
-npm install
-npm run build
+./plugins/codex/scripts/install-mcp.sh
 ```
 
-**2. Run the install script:**
-```bash
-./scripts/install-mcp.sh
-```
+This installs the `@fractary/codex-mcp` npm package via npx - no local build needed.
 
 **3. Restart Claude** to load the MCP server.
 
@@ -305,28 +300,43 @@ Sources define where documents can be fetched from:
 
 ### MCP Server Registration
 
-The MCP server is registered in `.claude/settings.json`:
+The MCP server is registered in `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "/absolute/path/to/plugins/codex/mcp-server/dist/index.js"
-      ],
-      "env": {
-        "CODEX_CONFIG_PATH": "/absolute/path/to/project/.fractary/plugins/codex/config.json"
-      }
+        "-y",
+        "@fractary/codex-mcp",
+        "--config",
+        ".fractary/config.yaml"
+      ]
     }
   }
 }
 ```
 
-The server reads `CODEX_CONFIG_PATH` to find:
+The server reads the config file specified via `--config` to find:
 - Cache location (`.fractary/codex/cache/`)
 - Source configuration
 - TTL and offline settings
+
+Alternatively, you can set the config path via environment variable:
+```json
+{
+  "mcpServers": {
+    "fractary-codex": {
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp"],
+      "env": {
+        "FRACTARY_CONFIG": ".fractary/config.yaml"
+      }
+    }
+  }
+}
+```
 
 ## Context7 Integration
 
@@ -344,7 +354,7 @@ The server reads `CODEX_CONFIG_PATH` to find:
 
 **Step 2: Add Context7 MCP server**
 
-In `.claude/settings.json`:
+In `.mcp.json`:
 ```json
 {
   "mcpServers": {
@@ -356,8 +366,8 @@ In `.claude/settings.json`:
       }
     },
     "fractary-codex": {
-      "command": "node",
-      "args": ["..."]
+      "command": "npx",
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
@@ -394,7 +404,7 @@ This checks:
 ### MCP Server Not Appearing
 
 1. **Check Node.js version:** `node --version` (must be >= 18)
-2. **Verify build:** `ls plugins/codex/mcp-server/dist/`
+2. **Verify npx works:** `npx -y @fractary/codex-mcp --help`
 3. **Check Claude logs** for MCP errors
 4. **Restart Claude** completely
 
