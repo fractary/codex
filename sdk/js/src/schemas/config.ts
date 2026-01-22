@@ -44,17 +44,51 @@ export const DirectionalSyncConfigSchema = z.object({
 export type DirectionalSyncConfig = z.infer<typeof DirectionalSyncConfigSchema>
 
 /**
+ * Schema for from_codex sync config with URI validation
+ *
+ * from_codex patterns MUST use codex:// URIs to specify which files
+ * to pull from the codex repository. Plain paths are not valid.
+ *
+ * Valid patterns:
+ * - "codex://org/repo/docs/**"
+ * - "codex://{org}/{codex_repo}/docs/**" (with placeholders)
+ *
+ * Invalid patterns:
+ * - "docs/**" (plain path - won't work)
+ * - "standards/**" (plain path - won't work)
+ */
+export const FromCodexSyncConfigSchema = DirectionalSyncConfigSchema.refine(
+  (config) => {
+    // Validate that all include patterns use codex:// URI format
+    const includeValid = config.include.every((pattern) =>
+      pattern.startsWith('codex://')
+    )
+    // Validate exclude patterns too (if present)
+    const excludeValid =
+      !config.exclude ||
+      config.exclude.every((pattern) => pattern.startsWith('codex://'))
+    return includeValid && excludeValid
+  },
+  {
+    message:
+      'from_codex patterns must use codex:// URI format (e.g., "codex://{org}/{codex_repo}/docs/**"). Plain paths like "docs/**" are not valid for from_codex.',
+  }
+)
+
+export type FromCodexSyncConfig = z.infer<typeof FromCodexSyncConfigSchema>
+
+/**
  * Schema for directional sync configuration
  *
  * Defines what files sync TO codex (push) and FROM codex (pull)
  */
 export const DirectionalSyncSchema = z.object({
   // New format (v0.7.0+) - Recommended
-  // Patterns for files to push from this project to codex
+  // Patterns for files to push from this project to codex (plain paths)
   to_codex: DirectionalSyncConfigSchema.optional(),
 
-  // Patterns for files to pull from codex to this project
-  from_codex: DirectionalSyncConfigSchema.optional(),
+  // Patterns for files to pull from codex to this project (codex:// URIs required)
+  from_codex: FromCodexSyncConfigSchema.optional(),
 
   // Global exclude patterns (applied to both directions)
   exclude: z.array(z.string()).optional(),
