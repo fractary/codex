@@ -197,12 +197,15 @@ export async function installMcpServer(
 
       // Create backup if requested
       if (backup) {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
-        backupPath = `${mcpJsonPath}.backup.${timestamp}`;
+        // Include milliseconds and random suffix to prevent collisions
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 18);
+        const suffix = Math.random().toString(36).substring(2, 6);
+        backupPath = `${mcpJsonPath}.backup.${timestamp}-${suffix}`;
         await fs.writeFile(backupPath, content);
       }
     } catch {
-      // Invalid JSON, start fresh
+      // Invalid JSON - warn user and start fresh
+      console.log(chalk.yellow('⚠ Warning: .mcp.json contains invalid JSON, starting fresh'));
       existingConfig = { mcpServers: {} };
     }
   }
