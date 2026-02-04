@@ -6,9 +6,11 @@
  * - CLI (config init command)
  * - MCP Plugin (configurator agent)
  *
- * When updating presets, regenerate the plugin's sync-presets.json:
- *   npx ts-node scripts/generate-sync-presets.ts
+ * IMPORTANT: When updating presets here, also update the corresponding
+ * JSON file at plugins/codex/config/sync-presets.json to keep them in sync.
  */
+
+import { ValidationError } from '../../errors/index.js'
 
 /**
  * Configuration schema version
@@ -16,7 +18,7 @@
 export const CONFIG_SCHEMA_VERSION = '2.0' as const
 
 /**
- * Directional sync configuration for a preset
+ * Directional sync configuration (mutable version for generated configs)
  */
 export interface SyncPresetConfig {
   to_codex: {
@@ -30,15 +32,24 @@ export interface SyncPresetConfig {
 }
 
 /**
- * Sync preset definition
+ * Sync preset definition (readonly for preset definitions)
  */
 export interface SyncPreset {
   /** Preset identifier */
-  name: string
+  readonly name: string
   /** Human-readable description */
-  description: string
+  readonly description: string
   /** Sync configuration */
-  config: SyncPresetConfig
+  readonly config: {
+    readonly to_codex: {
+      readonly include: readonly string[]
+      readonly exclude?: readonly string[]
+    }
+    readonly from_codex: {
+      readonly include: readonly string[]
+      readonly exclude?: readonly string[]
+    }
+  }
 }
 
 /**
@@ -118,21 +129,41 @@ export function getSyncPresetNames(): string[] {
 /**
  * Substitute placeholders in sync patterns
  *
- * Replaces `{org}` and `{codex_repo}` with actual values.
+ * Replaces all occurrences of `{org}` and `{codex_repo}` with actual values.
  *
  * @param patterns - Patterns with placeholders
- * @param org - Organization name
- * @param codexRepo - Codex repository name
+ * @param org - Organization name (must be non-empty)
+ * @param codexRepo - Codex repository name (must be non-empty)
  * @returns Patterns with placeholders replaced
+ * @throws ValidationError if org or codexRepo is empty
  */
 export function substitutePatternPlaceholders(
-  patterns: string[],
+  patterns: readonly string[],
   org: string,
   codexRepo: string
 ): string[] {
+  if (!org || typeof org !== 'string' || org.trim() === '') {
+    throw new ValidationError('org must be a non-empty string')
+  }
+  if (!codexRepo || typeof codexRepo !== 'string' || codexRepo.trim() === '') {
+    throw new ValidationError('codexRepo must be a non-empty string')
+  }
+
   return patterns.map((pattern) =>
-    pattern.replace('{org}', org).replace('{codex_repo}', codexRepo)
+    pattern.replace(/\{org\}/g, org).replace(/\{codex_repo\}/g, codexRepo)
   )
+}
+
+/**
+ * Options for generating sync config from preset
+ */
+export interface GenerateSyncConfigOptions {
+  /**
+   * Whether to include DEFAULT_GLOBAL_EXCLUDES in the generated config.
+   * When true, global excludes are merged into to_codex.exclude.
+   * @default false
+   */
+  includeGlobalExcludes?: boolean
 }
 
 /**
@@ -141,24 +172,35 @@ export function substitutePatternPlaceholders(
  * @param presetName - Preset name
  * @param org - Organization name
  * @param codexRepo - Codex repository name
+ * @param options - Generation options
  * @returns Sync config with placeholders substituted, or undefined if preset not found
  */
 export function generateSyncConfigFromPreset(
   presetName: string,
   org: string,
-  codexRepo: string
+  codexRepo: string,
+  options?: GenerateSyncConfigOptions
 ): SyncPresetConfig | undefined {
   const preset = getSyncPreset(presetName)
   if (!preset) {
     return undefined
   }
 
+  // Build exclude list, optionally including global excludes
+  let toCodexExclude: string[] | undefined
+  if (options?.includeGlobalExcludes) {
+    toCodexExclude = [
+      ...(preset.config.to_codex.exclude || []),
+      ...DEFAULT_GLOBAL_EXCLUDES,
+    ]
+  } else if (preset.config.to_codex.exclude) {
+    toCodexExclude = [...preset.config.to_codex.exclude]
+  }
+
   return {
     to_codex: {
       include: [...preset.config.to_codex.include],
-      exclude: preset.config.to_codex.exclude
-        ? [...preset.config.to_codex.exclude]
-        : undefined,
+      exclude: toCodexExclude,
     },
     from_codex: {
       include: substitutePatternPlaceholders(

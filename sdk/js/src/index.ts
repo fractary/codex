@@ -130,6 +130,7 @@ export {
   type ResolveOrgOptions,
   type SyncPreset,
   type SyncPresetConfig,
+  type GenerateSyncConfigOptions,
 } from './core/config/index.js'
 
 // Routing

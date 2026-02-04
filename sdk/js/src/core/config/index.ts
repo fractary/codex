@@ -23,4 +23,5 @@ export {
   generateSyncConfigFromPreset,
   type SyncPreset,
   type SyncPresetConfig,
+  type GenerateSyncConfigOptions,
 } from './sync-presets.js'
