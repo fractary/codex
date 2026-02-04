@@ -137,45 +137,25 @@ describe('substitutePatternPlaceholders', () => {
     expect(result).toEqual([])
   })
 
-  test('throws ValidationError for empty org', () => {
+  test.each([
+    ['empty org', '', 'repo'],
+    ['whitespace-only org', '   ', 'repo'],
+    ['null org', null, 'repo'],
+    ['undefined org', undefined, 'repo'],
+  ])('throws ValidationError for %s', (_, org, repo) => {
     expect(() =>
-      substitutePatternPlaceholders(['pattern'], '', 'repo')
+      substitutePatternPlaceholders(['pattern'], org as any, repo as string)
     ).toThrow(ValidationError)
   })
 
-  test('throws ValidationError for whitespace-only org', () => {
+  test.each([
+    ['empty codexRepo', 'org', ''],
+    ['whitespace-only codexRepo', 'org', '  '],
+    ['null codexRepo', 'org', null],
+    ['undefined codexRepo', 'org', undefined],
+  ])('throws ValidationError for %s', (_, org, repo) => {
     expect(() =>
-      substitutePatternPlaceholders(['pattern'], '   ', 'repo')
-    ).toThrow(ValidationError)
-  })
-
-  test('throws ValidationError for empty codexRepo', () => {
-    expect(() =>
-      substitutePatternPlaceholders(['pattern'], 'org', '')
-    ).toThrow(ValidationError)
-  })
-
-  test('throws ValidationError for whitespace-only codexRepo', () => {
-    expect(() =>
-      substitutePatternPlaceholders(['pattern'], 'org', '  ')
-    ).toThrow(ValidationError)
-  })
-
-  test('throws ValidationError for null/undefined org', () => {
-    expect(() =>
-      substitutePatternPlaceholders(['pattern'], null as any, 'repo')
-    ).toThrow(ValidationError)
-    expect(() =>
-      substitutePatternPlaceholders(['pattern'], undefined as any, 'repo')
-    ).toThrow(ValidationError)
-  })
-
-  test('throws ValidationError for null/undefined codexRepo', () => {
-    expect(() =>
-      substitutePatternPlaceholders(['pattern'], 'org', null as any)
-    ).toThrow(ValidationError)
-    expect(() =>
-      substitutePatternPlaceholders(['pattern'], 'org', undefined as any)
+      substitutePatternPlaceholders(['pattern'], org as string, repo as any)
     ).toThrow(ValidationError)
   })
 })
@@ -247,5 +227,73 @@ describe('generateSyncConfigFromPreset', () => {
 
     // config2 should not be affected
     expect(config2?.to_codex.include).not.toContain('extra/**')
+  })
+})
+
+describe('sync-presets.json validation', () => {
+  test('JSON file matches TypeScript source for standard preset', async () => {
+    const fs = await import('fs/promises')
+    const path = await import('path')
+
+    // Read the JSON file relative to the SDK root
+    const jsonPath = path.resolve(__dirname, '../../../../../plugins/codex/config/sync-presets.json')
+    const jsonContent = await fs.readFile(jsonPath, 'utf-8')
+    const jsonPresets = JSON.parse(jsonContent)
+
+    // Validate standard preset matches
+    expect(jsonPresets.presets.standard.name).toBe(SYNC_PATTERN_PRESETS.standard.name)
+    expect(jsonPresets.presets.standard.description).toBe(SYNC_PATTERN_PRESETS.standard.description)
+    expect(jsonPresets.presets.standard.config.to_codex.include).toEqual(
+      [...SYNC_PATTERN_PRESETS.standard.config.to_codex.include]
+    )
+    expect(jsonPresets.presets.standard.config.to_codex.exclude).toEqual(
+      SYNC_PATTERN_PRESETS.standard.config.to_codex.exclude
+        ? [...SYNC_PATTERN_PRESETS.standard.config.to_codex.exclude]
+        : undefined
+    )
+    expect(jsonPresets.presets.standard.config.from_codex.include).toEqual(
+      [...SYNC_PATTERN_PRESETS.standard.config.from_codex.include]
+    )
+  })
+
+  test('JSON file matches TypeScript source for minimal preset', async () => {
+    const fs = await import('fs/promises')
+    const path = await import('path')
+
+    const jsonPath = path.resolve(__dirname, '../../../../../plugins/codex/config/sync-presets.json')
+    const jsonContent = await fs.readFile(jsonPath, 'utf-8')
+    const jsonPresets = JSON.parse(jsonContent)
+
+    // Validate minimal preset matches
+    expect(jsonPresets.presets.minimal.name).toBe(SYNC_PATTERN_PRESETS.minimal.name)
+    expect(jsonPresets.presets.minimal.description).toBe(SYNC_PATTERN_PRESETS.minimal.description)
+    expect(jsonPresets.presets.minimal.config.to_codex.include).toEqual(
+      [...SYNC_PATTERN_PRESETS.minimal.config.to_codex.include]
+    )
+    expect(jsonPresets.presets.minimal.config.from_codex.include).toEqual(
+      [...SYNC_PATTERN_PRESETS.minimal.config.from_codex.include]
+    )
+  })
+
+  test('JSON schema_version matches TypeScript constant', async () => {
+    const fs = await import('fs/promises')
+    const path = await import('path')
+
+    const jsonPath = path.resolve(__dirname, '../../../../../plugins/codex/config/sync-presets.json')
+    const jsonContent = await fs.readFile(jsonPath, 'utf-8')
+    const jsonPresets = JSON.parse(jsonContent)
+
+    expect(jsonPresets.schema_version).toBe(CONFIG_SCHEMA_VERSION)
+  })
+
+  test('JSON default_global_excludes matches TypeScript constant', async () => {
+    const fs = await import('fs/promises')
+    const path = await import('path')
+
+    const jsonPath = path.resolve(__dirname, '../../../../../plugins/codex/config/sync-presets.json')
+    const jsonContent = await fs.readFile(jsonPath, 'utf-8')
+    const jsonPresets = JSON.parse(jsonContent)
+
+    expect(jsonPresets.default_global_excludes).toEqual([...DEFAULT_GLOBAL_EXCLUDES])
   })
 })
