@@ -30,6 +30,7 @@ The codex serves as a "memory fabric" - a central repository of shared documenta
 - Config location: `.fractary/config.yaml` (UNIFIED config with `codex:` section)
 - Cache location: `.fractary/codex/cache/`
 - MCP server: Installed in `.mcp.json`
+- Sync presets: `plugins/codex/config/sync-presets.json` (SINGLE SOURCE OF TRUTH for default patterns)
 - Reference: `cli/src/config/unified-config.ts` for the unified config structure
 
 **IMPORTANT: SYNC PATTERNS FORMAT (CRITICAL)**
@@ -199,48 +200,32 @@ Use AskUserQuestion to gather essential information:
    - **Re-validate** any user-provided name
 
 3. **Sync Patterns**:
+   First, read the sync presets file to get the available options:
+   ```
+   USE TOOL: Read
+   File: plugins/codex/config/sync-presets.json
+   ```
+
    Ask: "Which files should be synced with the codex?"
    Options:
-   - "Standard (docs, README, CLAUDE.md, standards, guides)" (Recommended)
+   - "Standard (docs, README, CLAUDE.md)" (Recommended)
    - "Minimal (docs and README only)"
    - "Custom (I'll specify patterns)"
    - Other
 
-   **CRITICAL: Pattern Mappings for Each Option**
+   **CRITICAL: Use Presets from sync-presets.json**
 
-   **IMPORTANT:** When generating the config file, you MUST replace `{org}` and `{codex_repo}` placeholders
-   with the actual values from the configuration (e.g., `codex://fractary/codex.fractary.com/docs/**`).
-   The placeholders shown below are templates - substitute actual values when writing to file.
+   The sync presets are defined in `plugins/codex/config/sync-presets.json`. This is the single source of truth
+   for default sync patterns. When generating config:
 
-   When user selects "Standard" (example with org=fractary, codex_repo=codex.fractary.com):
-   ```yaml
-   sync:
-     to_codex:
-       include:
-         - docs/**
-         - README.md
-         - CLAUDE.md
-       exclude:
-         - docs/conversations/**
-         - "*.tmp"
-     from_codex:
-       include:
-         - "codex://fractary/codex.fractary.com/docs/**"   # Replace with actual org/codex_repo values
-   ```
+   1. Read the presets file to get the `standard` or `minimal` preset config
+   2. Replace `{org}` and `{codex_repo}` placeholders with actual values
+   3. Write the resulting config to `.fractary/config.yaml`
 
-   When user selects "Minimal" (example with org=fractary, codex_repo=codex.fractary.com):
-   ```yaml
-   sync:
-     to_codex:
-       include:
-         - docs/**
-         - README.md
-     from_codex:
-       include:
-         - "codex://fractary/codex.fractary.com/docs/**"   # Replace with actual org/codex_repo values
-   ```
-
-   Note: Standards and guides are within the docs folder, so a single `codex://<org>/<codex_repo>/docs/**` pattern covers all shared documentation.
+   Example: For org="fractary", codex_repo="codex.fractary.com", using "standard" preset:
+   - Read `presets.standard.config` from sync-presets.json
+   - Replace `{org}` → `fractary` and `{codex_repo}` → `codex.fractary.com` in from_codex patterns
+   - Result: `codex://fractary/codex.fractary.com/docs/**`
 
    **IMPORTANT:** The `from_codex` patterns MUST use `codex://` URI format with ACTUAL values.
    - Use the actual organization name (e.g., "fractary"), NOT `{org}`
@@ -320,28 +305,22 @@ Based on gathered requirements:
 3. Create a clear summary of what will be created/changed:
 
 **For NEW configs:**
+
+Read the sync presets from `plugins/codex/config/sync-presets.json` and apply the selected preset
+with actual org/codex_repo values substituted. Example output for "standard" preset:
+
 ```
 📋 Proposed Configuration
 ─────────────────────────
 Config File: .fractary/config.yaml
 
 codex:
-  schema_version: "2.0"
-  organization: fractary
-  project: myproject
-  codex_repo: codex.fractary.com
+  schema_version: "<from sync-presets.json>"
+  organization: <actual org>
+  project: <actual project>
+  codex_repo: <actual codex_repo>
   sync:
-    to_codex:
-      include:
-        - docs/**
-        - README.md
-        - CLAUDE.md
-      exclude:
-        - docs/conversations/**
-        - "*.tmp"
-    from_codex:
-      include:
-        - "codex://fractary/codex.fractary.com/docs/**"   # Shared docs (use actual org/codex_repo values)
+    <from selected preset in sync-presets.json, with {org} and {codex_repo} substituted>
   dependencies: {}
 
 Additional Files to Create:
@@ -351,23 +330,13 @@ Additional Files to Create:
 ```
 
 **IMPORTANT:** The from_codex patterns MUST use actual values, not placeholders.
-Replace `{org}` with the organization value (e.g., "fractary") and `{codex_repo}` with
-the codex repository value (e.g., "codex.fractary.com").
+Replace `{org}` with the organization value and `{codex_repo}` with the codex repository value.
 
 **CRITICAL: Sync Config Format**
-The sync configuration MUST use `to_codex` and `from_codex` with nested `include`/`exclude` arrays:
-```yaml
-sync:
-  to_codex:      # Files to push FROM local TO codex repo
-    include:
-      - docs/**
-      - README.md
-    exclude:
-      - docs/private/**
-  from_codex:    # Files to pull FROM codex repo TO local (use codex:// URIs with ACTUAL values)
-    include:
-      - "codex://fractary/codex.fractary.com/docs/**"   # Use actual org/codex_repo, not placeholders
-```
+
+Sync patterns are defined in `plugins/codex/config/sync-presets.json`. Read this file to get the
+correct patterns for each preset. The sync configuration MUST use `to_codex` and `from_codex`
+with nested `include`/`exclude` arrays.
 
 The `from_codex` patterns MUST use `codex://` URI format: `codex://org/repo/path`
 - **ALWAYS substitute actual values** for organization and codex_repo when writing config
@@ -1152,12 +1121,15 @@ Options: Yes (Recommended) / No, specify different values
 
 [User selects: Yes]
 
-[Builds proposed config]
+[Reads sync presets from plugins/codex/config/sync-presets.json]
+[User selects "Standard" preset]
+[Builds proposed config using preset with actual values substituted]
 [Displays proposed configuration]
 
 📋 Proposed Configuration (UNIFIED)
 ───────────────────────────────────
 Config File: .fractary/config.yaml
+Sync Preset: standard (from sync-presets.json)
 
 codex:
   schema_version: "2.0"
@@ -1170,6 +1142,8 @@ codex:
         - docs/**
         - README.md
         - CLAUDE.md
+      exclude:
+        - "*.tmp"
     from_codex:
       include:
         - "codex://fractary/codex.fractary.com/docs/**"

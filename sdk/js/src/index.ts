@@ -118,8 +118,19 @@ export {
   getDefaultConfig,
   getDefaultDirectories,
   getDefaultRules,
+  // Sync presets (centralized source of truth)
+  CONFIG_SCHEMA_VERSION,
+  SYNC_PATTERN_PRESETS,
+  DEFAULT_GLOBAL_EXCLUDES,
+  getSyncPreset,
+  getSyncPresetNames,
+  substitutePatternPlaceholders,
+  generateSyncConfigFromPreset,
   type LoadConfigOptions,
   type ResolveOrgOptions,
+  type SyncPreset,
+  type SyncPresetConfig,
+  type GenerateSyncConfigOptions,
 } from './core/config/index.js'
 
 // Routing

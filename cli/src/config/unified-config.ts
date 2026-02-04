@@ -10,6 +10,7 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as yaml from 'js-yaml'
+import { CONFIG_SCHEMA_VERSION } from '@fractary/codex'
 
 /**
  * Unified configuration structure
@@ -91,7 +92,7 @@ export function getDefaultUnifiedConfig(organization: string, project: string, c
 
   return {
     file: {
-      schema_version: '2.0',
+      schema_version: CONFIG_SCHEMA_VERSION,
       sources: {
         specs: {
           type: 's3',
@@ -128,7 +129,7 @@ export function getDefaultUnifiedConfig(organization: string, project: string, c
       },
     },
     codex: {
-      schema_version: '2.0',
+      schema_version: CONFIG_SCHEMA_VERSION,
       organization,
       project,
       codex_repo: codexRepo,
@@ -195,7 +196,7 @@ export function mergeUnifiedConfigs(existing: UnifiedConfig, updates: UnifiedCon
   // Merge file configuration
   if (updates.file || existing.file) {
     merged.file = {
-      schema_version: updates.file?.schema_version || existing.file?.schema_version || '2.0',
+      schema_version: updates.file?.schema_version || existing.file?.schema_version || CONFIG_SCHEMA_VERSION,
       sources: {
         ...(existing.file?.sources || {}),
         ...(updates.file?.sources || {}),
@@ -206,7 +207,7 @@ export function mergeUnifiedConfigs(existing: UnifiedConfig, updates: UnifiedCon
   // Merge codex configuration
   if (updates.codex || existing.codex) {
     merged.codex = {
-      schema_version: updates.codex?.schema_version || existing.codex?.schema_version || '2.0',
+      schema_version: updates.codex?.schema_version || existing.codex?.schema_version || CONFIG_SCHEMA_VERSION,
       organization: updates.codex?.organization || existing.codex?.organization || 'default',
       project: updates.codex?.project || existing.codex?.project || 'default',
       codex_repo: updates.codex?.codex_repo || existing.codex?.codex_repo || '',
