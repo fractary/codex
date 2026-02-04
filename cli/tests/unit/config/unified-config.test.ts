@@ -20,7 +20,10 @@ describe('unified-config', () => {
       expect(config.codex?.organization).toBe('myorg');
       expect(config.codex?.project).toBe('myproject');
       expect(config.codex?.codex_repo).toBe('codex.myorg.com');
-      expect(config.codex?.dependencies).toEqual({});
+      // Default config includes the codex repo with GITHUB_TOKEN
+      expect(config.codex?.remotes).toEqual({
+        'myorg/codex.myorg.com': { token: '${GITHUB_TOKEN}' }
+      });
     });
 
     it('should include file plugin configuration', () => {
@@ -56,7 +59,7 @@ describe('unified-config', () => {
           organization: 'org1',
           project: 'proj1',
           codex_repo: '',
-          dependencies: {}
+          remotes: {}
         }
       };
 
@@ -66,7 +69,7 @@ describe('unified-config', () => {
           organization: 'org2',
           project: 'proj2',
           codex_repo: 'codex.org2.com',
-          dependencies: {}
+          remotes: {}
         }
       };
 
@@ -82,7 +85,7 @@ describe('unified-config', () => {
           organization: 'org',
           project: 'proj',
           codex_repo: 'codex.existing.com',
-          dependencies: {}
+          remotes: {}
         }
       };
 
@@ -92,7 +95,7 @@ describe('unified-config', () => {
           organization: 'org',
           project: 'proj',
           codex_repo: '',
-          dependencies: {}
+          remotes: {}
         }
       };
 
@@ -101,14 +104,14 @@ describe('unified-config', () => {
       expect(merged.codex?.codex_repo).toBe('codex.existing.com');
     });
 
-    it('should merge dependencies from both configs', () => {
+    it('should merge remotes from both configs', () => {
       const existing: UnifiedConfig = {
         codex: {
           schema_version: '2.0',
           organization: 'org',
           project: 'proj',
           codex_repo: 'codex.org.com',
-          dependencies: { dep1: 'v1' }
+          remotes: { 'org/repo1': { token: '${TOKEN1}' } }
         }
       };
 
@@ -118,13 +121,16 @@ describe('unified-config', () => {
           organization: 'org',
           project: 'proj',
           codex_repo: 'codex.org.com',
-          dependencies: { dep2: 'v2' }
+          remotes: { 'org/repo2': { token: '${TOKEN2}' } }
         }
       };
 
       const merged = mergeUnifiedConfigs(existing, updates);
 
-      expect(merged.codex?.dependencies).toEqual({ dep1: 'v1', dep2: 'v2' });
+      expect(merged.codex?.remotes).toEqual({
+        'org/repo1': { token: '${TOKEN1}' },
+        'org/repo2': { token: '${TOKEN2}' }
+      });
     });
 
     it('should prefer updates organization over existing', () => {
@@ -134,7 +140,7 @@ describe('unified-config', () => {
           organization: 'oldorg',
           project: 'proj',
           codex_repo: 'codex.org.com',
-          dependencies: {}
+          remotes: {}
         }
       };
 
@@ -144,7 +150,7 @@ describe('unified-config', () => {
           organization: 'neworg',
           project: 'proj',
           codex_repo: 'codex.org.com',
-          dependencies: {}
+          remotes: {}
         }
       };
 

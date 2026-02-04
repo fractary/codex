@@ -321,7 +321,9 @@ codex:
   codex_repo: <actual codex_repo>
   sync:
     <from selected preset in sync-presets.json, with {org} and {codex_repo} substituted>
-  dependencies: {}
+  remotes:
+    <actual org>/<actual codex_repo>:
+      token: ${GITHUB_TOKEN}
 
 Additional Files to Create:
   ✓ .fractary/config.yaml
@@ -1147,7 +1149,9 @@ codex:
     from_codex:
       include:
         - "codex://fractary/codex.fractary.com/docs/**"
-  dependencies: {}
+  remotes:
+    fractary/codex.fractary.com:
+      token: ${GITHUB_TOKEN}
 
 Additional Files to Create:
   ✓ .fractary/config.yaml (unified config)

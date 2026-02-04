@@ -32,7 +32,7 @@ export interface StorageManagerConfig {
   priority?: StorageProviderType[]
   /** Whether to enable caching (handled by cache layer, not storage) */
   enableCaching?: boolean
-  /** Full codex configuration (for auth and dependencies) */
+  /** Full codex configuration (for auth and remotes) */
   codexConfig?: CodexConfig
 }
 
@@ -81,38 +81,37 @@ export class StorageManager {
   }
 
   /**
+   * Resolve a token value, expanding ${VAR} references to environment variables
+   */
+  private resolveTokenValue(token: string): string | undefined {
+    // Check for ${VAR} syntax
+    const envVarMatch = token.match(/^\$\{([^}]+)\}$/)
+    if (envVarMatch && envVarMatch[1]) {
+      const envVarName = envVarMatch[1]
+      return process.env[envVarName]
+    }
+    // Direct token value
+    return token
+  }
+
+  /**
    * Resolve authentication token for a reference
    *
-   * Looks up dependency-specific authentication or falls back to default
+   * Looks up remote-specific authentication or falls back to default
    */
   private resolveToken(reference: ResolvedReference): string | undefined {
     if (!this.codexConfig) {
       return undefined
     }
 
-    // Build dependency key: org/project
-    const dependencyKey = `${reference.org}/${reference.project}`
+    // Build remote key: org/project
+    const remoteKey = `${reference.org}/${reference.project}`
 
-    // Check for dependency-specific auth
-    if (this.codexConfig.dependencies?.[dependencyKey]) {
-      const dependency = this.codexConfig.dependencies[dependencyKey]
-
-      // Look for token in any GitHub source
-      for (const [, sourceConfig] of Object.entries(dependency.sources)) {
-        if (sourceConfig.type === 'github') {
-          // Check token_env first
-          if (sourceConfig.token_env) {
-            const token = process.env[sourceConfig.token_env]
-            if (token) {
-              return token
-            }
-          }
-
-          // Check direct token (not recommended, but supported)
-          if (sourceConfig.token) {
-            return sourceConfig.token
-          }
-        }
+    // Check for remote-specific auth
+    if (this.codexConfig.remotes?.[remoteKey]?.token) {
+      const token = this.resolveTokenValue(this.codexConfig.remotes[remoteKey].token)
+      if (token) {
+        return token
       }
     }
 
@@ -180,7 +179,7 @@ export class StorageManager {
    * Fetch content for a reference
    *
    * Tries providers in priority order until one succeeds.
-   * Automatically resolves authentication based on dependency configuration.
+   * Automatically resolves authentication based on remote configuration.
    */
   async fetch(reference: ResolvedReference, options?: FetchOptions): Promise<FetchResult> {
     // Resolve authentication options
@@ -222,7 +221,7 @@ export class StorageManager {
    * Check if content exists for a reference
    *
    * Returns true if any provider reports the content exists.
-   * Automatically resolves authentication based on dependency configuration.
+   * Automatically resolves authentication based on remote configuration.
    */
   async exists(reference: ResolvedReference, options?: FetchOptions): Promise<boolean> {
     // Resolve authentication options
