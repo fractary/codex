@@ -221,7 +221,6 @@ Use AskUserQuestion to gather essential information:
          - README.md
          - CLAUDE.md
        exclude:
-         - docs/conversations/**
          - "*.tmp"
      from_codex:
        include:
@@ -337,7 +336,6 @@ codex:
         - README.md
         - CLAUDE.md
       exclude:
-        - docs/conversations/**
         - "*.tmp"
     from_codex:
       include:
