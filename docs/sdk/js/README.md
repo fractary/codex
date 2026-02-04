@@ -782,7 +782,7 @@ echo '.env' >> .gitignore
 
 ### Multiple Organizations
 
-Configure per-dependency authentication in `.fractary/config.yaml`:
+Configure per-remote authentication in `.fractary/config.yaml`:
 
 ```yaml
 codex:
@@ -791,12 +791,10 @@ codex:
       default_token_env: GITHUB_TOKEN
       fallback_to_public: true
 
-  dependencies:
+  remotes:
+    # Partner organization with separate token
     partner-org/shared-specs:
-      sources:
-        specs:
-          type: github
-          token_env: PARTNER_GITHUB_TOKEN
+      token: ${PARTNER_GITHUB_TOKEN}
 ```
 
 **Environment setup:**
@@ -810,7 +808,7 @@ PARTNER_GITHUB_TOKEN=ghp_partner_specific_token
 ### Token Resolution Flow
 
 1. **Explicit option** - Token passed directly in fetch options
-2. **Dependency-specific token** - From dependency's `token_env` configuration
+2. **Remote-specific token** - From remote's `token` configuration (supports `${ENV_VAR}` syntax)
 3. **Default token** - From `auth.github.default_token_env` (defaults to `GITHUB_TOKEN`)
 4. **Fallback to public** - If `fallback_to_public: true` is set
 

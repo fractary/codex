@@ -77,7 +77,11 @@ codex:
   schema_version: "2.0"
   organization: fractary
   project: myproject
-  dependencies: {}
+  codex_repo: codex.fractary.com
+  remotes:
+    # The codex repository - uses same token as git operations
+    fractary/codex.fractary.com:
+      token: ${GITHUB_TOKEN}
 ```
 
 ## Unified Configuration Structure
@@ -109,20 +113,19 @@ file:
 
 ### Codex Plugin Section
 
-The `codex:` section configures the knowledge management system and external project dependencies:
+The `codex:` section configures the knowledge management system and external repository access:
 
 ```yaml
 codex:
   schema_version: "2.0"
   organization: string            # Your organization slug
   project: string                 # Current project name
-  dependencies:
-    # External project dependencies
+  codex_repo: string              # Codex repository name (e.g., codex.fractary.com)
+  remotes:
+    # External repository authentication
+    # Keys are org/project identifiers, token can be direct value or ${ENV_VAR} reference
     {org}/{project}:
-      sources:
-        {source-name}:
-          type: s3 | github | http
-          # ... source-specific configuration
+      token: ${GITHUB_TOKEN}      # Token for authentication
 ```
 
 ### Benefits of Unified Configuration

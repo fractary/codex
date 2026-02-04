@@ -369,6 +369,29 @@
         }
       }
     },
+    "remotes": {
+      "type": "object",
+      "description": "Remote repository authentication configuration. Keys are org/project identifiers (e.g., 'partner-org/their-docs'). Used when fetching from codex:// URIs.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Authentication token - can be direct value or ${ENV_VAR} reference (e.g., '${GITHUB_TOKEN}')"
+          }
+        }
+      },
+      "examples": [
+        {
+          "fractary/codex.fractary.com": {
+            "token": "${GITHUB_TOKEN}"
+          },
+          "partner-org/their-docs": {
+            "token": "${PARTNER_TOKEN}"
+          }
+        }
+      ]
+    },
     "sources": {
       "type": "object",
       "description": "Per-source configuration for knowledge retrieval (keyed by org name or source identifier)",

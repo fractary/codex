@@ -441,7 +441,7 @@ export function initCommand(): Command {
         console.log(chalk.bold('\nCodex plugin:'));
         console.log(chalk.dim('  - Cache: .fractary/codex/cache/'));
         console.log(chalk.dim('  - MCP Server: @fractary/codex-mcp (via npx)'));
-        console.log(chalk.dim('  - Dependencies: (none configured)'));
+        console.log(chalk.dim('  - Remotes: codex repo configured'));
 
         console.log(chalk.bold('\nGit Authentication:'));
         console.log(chalk.dim('  Codex sync uses your existing git credentials.'));
@@ -453,7 +453,7 @@ export function initCommand(): Command {
         console.log(chalk.dim('  1. Restart Claude Code to load the MCP server'));
         console.log(chalk.dim('  2. Verify codex repository access: gh repo view ' + org + '/' + codexRepo));
         console.log(chalk.dim('  3. Configure AWS credentials for S3 access (if using file plugin)'));
-        console.log(chalk.dim('  4. Edit .fractary/config.yaml to add external project dependencies'));
+        console.log(chalk.dim('  4. Edit .fractary/config.yaml to add external project remotes'));
         console.log(chalk.dim('  5. Reference docs via codex:// URIs (auto-fetched by MCP)'));
 
       } catch (error: any) {

@@ -100,13 +100,10 @@ This creates friction for:
 **Configuration:**
 ```yaml
 codex:
-  dependencies:
+  remotes:
+    # External project with specific token
     corthos/etl-corthion-ai:
-      sources:
-        specs:
-          type: s3
-          bucket: etl-corthion-ai-files
-          readonly: true
+      token: ${PARTNER_TOKEN}
 ```
 
 ## Solution Design
@@ -212,20 +209,16 @@ codex:
   schema_version: "2.0"
   organization: fractary
   project: core
+  codex_repo: codex.fractary.com
 
-  # External project dependencies (cross-project access)
-  dependencies:
+  # External repository authentication
+  remotes:
+    # The codex repo itself
+    fractary/codex.fractary.com:
+      token: ${GITHUB_TOKEN}
+    # External project with specific token
     corthos/etl-corthion-ai:
-      sources:
-        specs:
-          type: s3
-          bucket: etl-corthion-ai-files
-          prefix: specs/
-          paths: ["specs/**"]
-          readonly: true
-          cache:
-            local: .fractary/codex/cache/corthos/etl-corthion-ai/specs
-            ttl: 86400
+      token: ${PARTNER_TOKEN}
 ```
 
 ### New Components

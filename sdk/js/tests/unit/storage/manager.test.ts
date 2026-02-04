@@ -432,7 +432,7 @@ describe('storage/manager', () => {
       delete process.env.CUSTOM_GITHUB_TOKEN
     })
 
-    it('should use dependency-specific token', async () => {
+    it('should use remote-specific token', async () => {
       const manager = new StorageManager({
         codexConfig: {
           organizationSlug: 'test-org',
@@ -441,14 +441,9 @@ describe('storage/manager', () => {
               default_token_env: 'GITHUB_TOKEN',
             },
           },
-          dependencies: {
+          remotes: {
             'partner-org/partner-project': {
-              sources: {
-                docs: {
-                  type: 'github',
-                  token_env: 'PARTNER_TOKEN',
-                },
-              },
+              token: '${PARTNER_TOKEN}',
             },
           },
         },
@@ -477,7 +472,7 @@ describe('storage/manager', () => {
       delete process.env.PARTNER_TOKEN
     })
 
-    it('should fall back to default when dependency token not set', async () => {
+    it('should fall back to default when remote token not set', async () => {
       const manager = new StorageManager({
         codexConfig: {
           organizationSlug: 'test-org',
@@ -486,14 +481,9 @@ describe('storage/manager', () => {
               default_token_env: 'GITHUB_TOKEN',
             },
           },
-          dependencies: {
+          remotes: {
             'partner-org/partner-project': {
-              sources: {
-                docs: {
-                  type: 'github',
-                  token_env: 'MISSING_TOKEN',
-                },
-              },
+              token: '${MISSING_TOKEN}',
             },
           },
         },
@@ -520,18 +510,13 @@ describe('storage/manager', () => {
       delete process.env.GITHUB_TOKEN
     })
 
-    it('should use direct token from source config', async () => {
+    it('should use direct token from remote config', async () => {
       const manager = new StorageManager({
         codexConfig: {
           organizationSlug: 'test-org',
-          dependencies: {
+          remotes: {
             'test-org/test-project': {
-              sources: {
-                docs: {
-                  type: 'github',
-                  token: 'direct_token_value',
-                },
-              },
+              token: 'direct_token_value',
             },
           },
         },

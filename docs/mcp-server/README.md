@@ -397,7 +397,7 @@ echo 'GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx' > .env
 
 ### Multiple Organizations
 
-Configure per-dependency authentication in your config:
+Configure per-remote authentication in your config:
 
 ```yaml
 codex:
@@ -406,12 +406,10 @@ codex:
       default_token_env: GITHUB_TOKEN
       fallback_to_public: true
 
-  dependencies:
+  remotes:
+    # Partner organization with separate token
     partner-org/shared-specs:
-      sources:
-        specs:
-          type: github
-          token_env: PARTNER_GITHUB_TOKEN
+      token: ${PARTNER_GITHUB_TOKEN}
 ```
 
 ### Token Scopes

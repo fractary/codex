@@ -150,36 +150,22 @@ export const AuthConfigSchema = z.object({
 export type AuthConfig = z.infer<typeof AuthConfigSchema>
 
 /**
- * Schema for source configuration within a dependency
+ * Schema for remote repository configuration
+ *
+ * Configures authentication for external repositories referenced in from_codex patterns.
+ * Token can be a direct value or an environment variable reference using ${VAR} syntax.
+ *
+ * Example:
+ *   remotes:
+ *     partner-org/their-docs:
+ *       token: ${PARTNER_TOKEN}
  */
-export const SourceConfigSchema = z.object({
-  /** Source type */
-  type: z.enum(['github', 's3', 'http', 'local']),
-  /** Environment variable containing the authentication token */
-  token_env: z.string().optional(),
-  /** Direct token value (not recommended, use token_env instead) */
+export const RemoteConfigSchema = z.object({
+  /** Authentication token - can be direct value or ${ENV_VAR} reference */
   token: z.string().optional(),
-  /** Branch to fetch from (for GitHub sources) */
-  branch: z.string().optional(),
-  /** Base URL (for HTTP sources) */
-  base_url: z.string().optional(),
-  /** Bucket name (for S3 sources) */
-  bucket: z.string().optional(),
-  /** Prefix/path within bucket (for S3 sources) */
-  prefix: z.string().optional(),
 })
 
-export type SourceConfig = z.infer<typeof SourceConfigSchema>
-
-/**
- * Schema for dependency configuration
- */
-export const DependencyConfigSchema = z.object({
-  /** Sources within this dependency */
-  sources: z.record(SourceConfigSchema),
-})
-
-export type DependencyConfig = z.infer<typeof DependencyConfigSchema>
+export type RemoteConfig = z.infer<typeof RemoteConfigSchema>
 
 /**
  * Schema for Codex configuration
@@ -212,8 +198,9 @@ export const CodexConfigSchema = z
     // Authentication configuration
     auth: AuthConfigSchema.optional(),
 
-    // Dependencies configuration (external projects)
-    dependencies: z.record(DependencyConfigSchema).optional(),
+    // Remote repositories configuration (external projects)
+    // Keys are org/project identifiers, values configure authentication
+    remotes: z.record(RemoteConfigSchema).optional(),
   })
   .strict()
 

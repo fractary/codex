@@ -1,31 +1,109 @@
 {
   "$schema": "https://fractary.com/schemas/plugin-manifest-v1.json",
   "name": "@fractary/codex-plugin",
-  "version": "5.8.2",
+  "version": "5.8.3",
   "description": "Memory and knowledge management - Organizational knowledge base with cache and sync",
   "author": "Fractary Team",
   "homepage": "https://github.com/fractary/plugins",
   "repository": "https://github.com/fractary/plugins",
   "license": "MIT",
-  "tags": ["codex", "knowledge", "memory", "cache", "sync", "official", "primitive"],
-  "agents": [{
-    "name": "codex-manager",
-    "version": "2.0.0",
-    "description": "Universal codex knowledge management agent",
-    "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/agents/codex-manager/agent.yaml",
-    "checksum": "sha256:5d58809d1a64d3e7141ea0f6313bd352371180d89ad603f813b238376ae0d254",
-    "size": 1484
-  }],
-  "tools": [
-    {"name": "cache-clear", "version": "2.0.0", "description": "Clear codex cache", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-clear/tool.yaml", "checksum": "sha256:1a05f924e3404d85d3f278a4152c277674d3fd04acc746d6b294deb8a8a27d3f", "size": 440},
-    {"name": "cache-health", "version": "2.0.0", "description": "Check cache health", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-health/tool.yaml", "checksum": "sha256:1cf84d757f2d3824bf3d1b2a98ffb81b33e48a8b853ff9a66c711a6fa06d8d5c", "size": 442},
-    {"name": "cache-list", "version": "2.0.0", "description": "List cache entries", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-list/tool.yaml", "checksum": "sha256:ece8b3731ba13f7eab15a70b354bf7d180a9babbc8049436c02bce722ea1e6f1", "size": 438},
-    {"name": "cache-stats", "version": "3.0.0", "description": "Get cache statistics", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-stats/tool.yaml", "checksum": "sha256:dc5455cf72dd7c60df79e1cf51ea1602260dccb97d71bb70ae90c3329c52ab83", "size": 277},
-    {"name": "cli-helper", "version": "2.0.0", "description": "CLI utilities", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cli-helper/tool.yaml", "checksum": "sha256:817f766e666e559e7e424c848e5526f4179858594f417750902a369d0be38d1e", "size": 529},
-    {"name": "config-init", "version": "3.0.0", "description": "Initialize config", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/config-init/tool.yaml", "checksum": "sha256:2a002f3b21dd677d200fb2f48fb01db852ee5f59dd42599cd704537919b524a9", "size": 285},
-    {"name": "config-migrate", "version": "3.0.0", "description": "Migrate config", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/config-migrate/tool.yaml", "checksum": "sha256:397ce5ae0f9a58beb0083f7ddb3478ae9927c5eef628035c05c1e698e3254ab3", "size": 287},
-    {"name": "document-fetch", "version": "3.0.0", "description": "Fetch documents", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/document-fetch/tool.yaml", "checksum": "sha256:ff5f965f13e0262fd22ef52cacc586995e0fd9482dd2c1cf2cdbcef673ccc9a7", "size": 295},
-    {"name": "repo-discoverer", "version": "2.0.0", "description": "Repo discovery", "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/repo-discoverer/tool.yaml", "checksum": "sha256:c597133d95ce253b9b2fcf6bd5d69fe89d17e58001362d9df1ffb401cdace26b", "size": 507}
+  "tags": [
+    "codex",
+    "knowledge",
+    "memory",
+    "cache",
+    "sync",
+    "official",
+    "primitive"
   ],
-  "config": {"default_llm": {"provider": "anthropic", "model": "claude-opus-4-5"}}
+  "agents": [
+    {
+      "name": "codex-manager",
+      "version": "2.0.0",
+      "description": "Universal codex knowledge management agent",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/agents/codex-manager/agent.yaml",
+      "checksum": "sha256:5d58809d1a64d3e7141ea0f6313bd352371180d89ad603f813b238376ae0d254",
+      "size": 1484
+    }
+  ],
+  "tools": [
+    {
+      "name": "cache-clear",
+      "version": "2.0.0",
+      "description": "Clear codex cache",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-clear/tool.yaml",
+      "checksum": "sha256:1a05f924e3404d85d3f278a4152c277674d3fd04acc746d6b294deb8a8a27d3f",
+      "size": 440
+    },
+    {
+      "name": "cache-health",
+      "version": "2.0.0",
+      "description": "Check cache health",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-health/tool.yaml",
+      "checksum": "sha256:1cf84d757f2d3824bf3d1b2a98ffb81b33e48a8b853ff9a66c711a6fa06d8d5c",
+      "size": 442
+    },
+    {
+      "name": "cache-list",
+      "version": "2.0.0",
+      "description": "List cache entries",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-list/tool.yaml",
+      "checksum": "sha256:ece8b3731ba13f7eab15a70b354bf7d180a9babbc8049436c02bce722ea1e6f1",
+      "size": 438
+    },
+    {
+      "name": "cache-stats",
+      "version": "3.0.0",
+      "description": "Get cache statistics",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cache-stats/tool.yaml",
+      "checksum": "sha256:dc5455cf72dd7c60df79e1cf51ea1602260dccb97d71bb70ae90c3329c52ab83",
+      "size": 277
+    },
+    {
+      "name": "cli-helper",
+      "version": "2.0.0",
+      "description": "CLI utilities",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/cli-helper/tool.yaml",
+      "checksum": "sha256:817f766e666e559e7e424c848e5526f4179858594f417750902a369d0be38d1e",
+      "size": 529
+    },
+    {
+      "name": "config-init",
+      "version": "3.0.0",
+      "description": "Initialize config",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/config-init/tool.yaml",
+      "checksum": "sha256:2a002f3b21dd677d200fb2f48fb01db852ee5f59dd42599cd704537919b524a9",
+      "size": 285
+    },
+    {
+      "name": "config-migrate",
+      "version": "3.0.0",
+      "description": "Migrate config",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/config-migrate/tool.yaml",
+      "checksum": "sha256:397ce5ae0f9a58beb0083f7ddb3478ae9927c5eef628035c05c1e698e3254ab3",
+      "size": 287
+    },
+    {
+      "name": "document-fetch",
+      "version": "3.0.0",
+      "description": "Fetch documents",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/document-fetch/tool.yaml",
+      "checksum": "sha256:ff5f965f13e0262fd22ef52cacc586995e0fd9482dd2c1cf2cdbcef673ccc9a7",
+      "size": 295
+    },
+    {
+      "name": "repo-discoverer",
+      "version": "2.0.0",
+      "description": "Repo discovery",
+      "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/tools/repo-discoverer/tool.yaml",
+      "checksum": "sha256:c597133d95ce253b9b2fcf6bd5d69fe89d17e58001362d9df1ffb401cdace26b",
+      "size": 507
+    }
+  ],
+  "config": {
+    "default_llm": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-5"
+    }
+  }
 }

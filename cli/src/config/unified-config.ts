@@ -49,6 +49,13 @@ export interface FileSource {
 }
 
 /**
+ * Remote repository configuration
+ */
+export interface RemoteConfig {
+  token?: string
+}
+
+/**
  * Codex plugin configuration
  */
 export interface CodexPluginConfig {
@@ -56,7 +63,7 @@ export interface CodexPluginConfig {
   organization: string
   project: string
   codex_repo: string
-  dependencies?: Record<string, any>
+  remotes?: Record<string, RemoteConfig>
 }
 
 /**
@@ -133,7 +140,12 @@ export function getDefaultUnifiedConfig(organization: string, project: string, c
       organization,
       project,
       codex_repo: codexRepo,
-      dependencies: {},
+      remotes: {
+        // The codex repository - uses same token as git operations
+        [`${organization}/${codexRepo}`]: {
+          token: '${GITHUB_TOKEN}',
+        },
+      },
     },
   }
 }
@@ -211,9 +223,9 @@ export function mergeUnifiedConfigs(existing: UnifiedConfig, updates: UnifiedCon
       organization: updates.codex?.organization || existing.codex?.organization || 'default',
       project: updates.codex?.project || existing.codex?.project || 'default',
       codex_repo: updates.codex?.codex_repo || existing.codex?.codex_repo || '',
-      dependencies: {
-        ...(existing.codex?.dependencies || {}),
-        ...(updates.codex?.dependencies || {}),
+      remotes: {
+        ...(existing.codex?.remotes || {}),
+        ...(updates.codex?.remotes || {}),
       },
     }
   }
