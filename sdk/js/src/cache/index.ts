@@ -55,6 +55,7 @@ export {
   createCacheManager,
   getDefaultCacheManager,
   setDefaultCacheManager,
+  STALE_WINDOW_MS,
   type CacheManagerConfig,
   type CacheLookupResult,
   type CacheEntryInfo,

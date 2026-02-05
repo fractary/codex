@@ -144,7 +144,25 @@ export function cacheListCommand(): Command {
           )
         )
       } catch (error: any) {
-        console.error(chalk.red('Error:'), error.message)
+        // Provide specific error messages based on error type
+        const errorMessage = error.message || 'Unknown error'
+
+        if (errorMessage.includes('ENOENT') || errorMessage.includes('not found')) {
+          console.error(chalk.red('Error:'), 'Cache directory not accessible')
+          console.error(chalk.dim('Run "fractary-codex configure" to initialize the cache.'))
+        } else if (errorMessage.includes('EACCES') || errorMessage.includes('permission')) {
+          console.error(chalk.red('Error:'), 'Permission denied accessing cache directory')
+          console.error(chalk.dim('Check file permissions for .fractary/codex/cache/'))
+        } else if (errorMessage.includes('ENOSPC')) {
+          console.error(chalk.red('Error:'), 'No space left on device')
+          console.error(chalk.dim('Free up disk space and try again.'))
+        } else if (errorMessage.includes('parse') || errorMessage.includes('JSON')) {
+          console.error(chalk.red('Error:'), 'Failed to parse cache metadata')
+          console.error(chalk.dim('The cache may be corrupted. Try "fractary-codex cache-clear".'))
+        } else {
+          console.error(chalk.red('Error:'), errorMessage)
+        }
+
         process.exit(1)
       }
     })

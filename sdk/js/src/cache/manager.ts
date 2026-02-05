@@ -3,7 +3,20 @@
  *
  * Multi-tier cache manager that coordinates in-memory caching,
  * disk persistence, and storage providers for optimal performance.
+ *
+ * Memory Limitations:
+ * - listEntries() loads all URIs into memory before processing
+ * - Recommended for caches under 10,000 entries for optimal performance
+ * - For very large caches, consider using listUris() with pagination logic
  */
+
+// ===== Constants =====
+
+/** Time window (ms) after expiry during which entries are considered stale vs expired */
+export const STALE_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
+
+/** Default batch size for parallel lookups */
+const PARALLEL_LOOKUP_BATCH_SIZE = 50
 
 import type { ResolvedReference } from '../references/index.js'
 import type { StorageManager } from '../storage/manager.js'
@@ -444,7 +457,6 @@ export class CacheManager {
 
     const entries: CacheEntryInfo[] = []
     const now = Date.now()
-    const staleWindow = 5 * 60 * 1000 // 5 minutes
 
     // Get all URIs from persistence
     const uris = this.persistence ? await this.persistence.list() : []
@@ -455,39 +467,45 @@ export class CacheManager {
     )
     const allUris = [...uris, ...memoryOnlyUris]
 
-    // Process each entry
-    for (const uri of allUris) {
-      const lookupResult = await this.lookup(uri)
-      if (!lookupResult.entry) continue
+    // Process entries in parallel batches for better performance
+    // This is much faster than sequential processing for large caches
+    for (let i = 0; i < allUris.length; i += PARALLEL_LOOKUP_BATCH_SIZE) {
+      const batch = allUris.slice(i, i + PARALLEL_LOOKUP_BATCH_SIZE)
+      const lookupPromises = batch.map((uri) => this.lookup(uri).then((result) => ({ uri, result })))
+      const lookupResults = await Promise.all(lookupPromises)
 
-      const entry = lookupResult.entry
-      const expiresAt = entry.metadata.expiresAt
-      const remainingTtl = Math.floor((expiresAt - now) / 1000)
+      for (const { uri, result: lookupResult } of lookupResults) {
+        if (!lookupResult.entry) continue
 
-      let entryStatus: 'fresh' | 'stale' | 'expired'
-      if (now < expiresAt) {
-        entryStatus = 'fresh'
-      } else if (now < expiresAt + staleWindow) {
-        entryStatus = 'stale'
-      } else {
-        entryStatus = 'expired'
+        const entry = lookupResult.entry
+        const expiresAt = entry.metadata.expiresAt
+        const remainingTtl = Math.floor((expiresAt - now) / 1000)
+
+        let entryStatus: 'fresh' | 'stale' | 'expired'
+        if (now < expiresAt) {
+          entryStatus = 'fresh'
+        } else if (now < expiresAt + STALE_WINDOW_MS) {
+          entryStatus = 'stale'
+        } else {
+          entryStatus = 'expired'
+        }
+
+        // Filter by status
+        if (status !== 'all' && entryStatus !== status) {
+          continue
+        }
+
+        entries.push({
+          uri,
+          contentType: entry.metadata.contentType,
+          size: entry.metadata.size,
+          status: entryStatus,
+          createdAt: entry.metadata.cachedAt,
+          expiresAt,
+          remainingTtl,
+          inMemory: this.memoryCache.has(uri),
+        })
       }
-
-      // Filter by status
-      if (status !== 'all' && entryStatus !== status) {
-        continue
-      }
-
-      entries.push({
-        uri,
-        contentType: entry.metadata.contentType,
-        size: entry.metadata.size,
-        status: entryStatus,
-        createdAt: entry.metadata.createdAt,
-        expiresAt,
-        remainingTtl,
-        inMemory: this.memoryCache.has(uri),
-      })
     }
 
     // Sort entries
