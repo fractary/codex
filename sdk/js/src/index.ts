@@ -126,11 +126,43 @@ export {
   getSyncPresetNames,
   substitutePatternPlaceholders,
   generateSyncConfigFromPreset,
+  // ConfigManager - centralized configuration management
+  ConfigManager,
+  createConfigManager,
+  validateNameFormat,
+  validateOrganizationName,
+  validateRepositoryName,
+  detectOrganizationFromGit,
+  detectProjectName,
+  discoverCodexRepo,
+  STANDARD_DIRECTORIES,
+  ensureDirectoryStructure,
+  DEFAULT_FRACTARY_GITIGNORE,
+  normalizeCachePath,
+  ensureCachePathIgnored,
+  installMcpServer,
+  sanitizeForS3BucketName,
+  generateUnifiedConfig,
+  readUnifiedConfig,
+  writeUnifiedConfig,
+  mergeUnifiedConfigs,
   type LoadConfigOptions,
   type ResolveOrgOptions,
   type SyncPreset,
   type SyncPresetConfig,
   type GenerateSyncConfigOptions,
+  type NameValidationResult,
+  type DiscoverCodexRepoResult,
+  type McpInstallResult,
+  type DirectoryStructureResult,
+  type GitignoreResult,
+  type RemoteConfig as ConfigRemoteConfig,
+  type CodexConfig,
+  type FileSourceConfig,
+  type FilePluginConfig,
+  type UnifiedConfig,
+  type ConfigInitOptions,
+  type ConfigInitResult,
 } from './core/config/index.js'
 
 // Routing
@@ -214,6 +246,10 @@ export {
   setDefaultCacheManager,
   type CacheManagerConfig,
   type CacheLookupResult,
+  // Cache entry listing
+  type CacheEntryInfo,
+  type ListEntriesOptions,
+  type ListEntriesResult,
 } from './cache/index.js'
 
 // Sync - File synchronization
@@ -374,3 +410,16 @@ export {
   isValidDuration,
   isValidSize,
 } from './core/utils/index.js'
+
+// Health checking
+export {
+  HealthChecker,
+  createHealthChecker,
+  type HealthStatus,
+  type HealthCheck,
+  type HealthSummary,
+  type HealthResult,
+  type StorageProviderInfo,
+  type HealthConfig,
+  type HealthCheckerOptions,
+} from './health/index.js'

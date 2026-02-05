@@ -55,6 +55,10 @@ export {
   createCacheManager,
   getDefaultCacheManager,
   setDefaultCacheManager,
+  STALE_WINDOW_MS,
   type CacheManagerConfig,
   type CacheLookupResult,
+  type CacheEntryInfo,
+  type ListEntriesOptions,
+  type ListEntriesResult,
 } from './manager.js'

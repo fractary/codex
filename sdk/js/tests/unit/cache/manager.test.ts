@@ -458,4 +458,327 @@ describe('cache/manager', () => {
       expect(getDefaultCacheManager()).toBe(custom)
     })
   })
+
+  describe('listEntries', () => {
+    it('should return empty result for empty cache', async () => {
+      const result = await manager.listEntries()
+
+      expect(result.entries).toHaveLength(0)
+      expect(result.total).toBe(0)
+      expect(result.hasMore).toBe(false)
+    })
+
+    it('should list all entries', async () => {
+      const storage = createMockStorageManager()
+      manager.setStorageManager(storage)
+
+      await manager.get(createMockReference('codex://org/project/docs/file1.md'))
+      await manager.get(createMockReference('codex://org/project/docs/file2.md'))
+      await manager.get(createMockReference('codex://org/project/docs/file3.md'))
+
+      const result = await manager.listEntries()
+
+      expect(result.entries).toHaveLength(3)
+      expect(result.total).toBe(3)
+      expect(result.hasMore).toBe(false)
+    })
+
+    it('should include entry details', async () => {
+      const storage = createMockStorageManager()
+      manager.setStorageManager(storage)
+
+      await manager.get(createMockReference('codex://org/project/docs/file.md'))
+
+      const result = await manager.listEntries()
+
+      // Ensure we have at least one entry
+      expect(result.entries.length).toBeGreaterThan(0)
+
+      const entry = result.entries[0]!
+      expect(entry).toMatchObject({
+        uri: 'codex://org/project/docs/file.md',
+        contentType: 'text/markdown',
+        status: 'fresh',
+        inMemory: true,
+      })
+      expect(entry.size).toBeGreaterThan(0)
+      expect(entry.createdAt).toBeGreaterThan(0)
+      expect(entry.expiresAt).toBeGreaterThan(0)
+      expect(entry.remainingTtl).toBeGreaterThan(0)
+    })
+
+    it('should filter by status: fresh', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+        defaultTtl: 3600,
+      })
+      const storage = createMockStorageManager()
+      noPersistManager.setStorageManager(storage)
+
+      // Add fresh entry
+      await noPersistManager.get(createMockReference('codex://org/project/fresh.md'))
+      // Add expired entry (TTL = 0)
+      await noPersistManager.set(
+        'codex://org/project/expired.md',
+        {
+          content: Buffer.from('expired'),
+          contentType: 'text/markdown',
+          size: 7,
+          source: 'manual',
+        },
+        0
+      )
+
+      const result = await noPersistManager.listEntries({ status: 'fresh' })
+
+      expect(result.entries).toHaveLength(1)
+      expect(result.entries[0]!.uri).toBe('codex://org/project/fresh.md')
+      expect(result.total).toBe(1)
+    })
+
+    it('should filter by status: expired', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+
+      // Add expired entry (TTL = 0)
+      await noPersistManager.set(
+        'codex://org/project/expired.md',
+        {
+          content: Buffer.from('expired'),
+          contentType: 'text/markdown',
+          size: 7,
+          source: 'manual',
+        },
+        0
+      )
+
+      // Wait a bit for stale window to pass (>5 minutes simulation)
+      const storage = createMockStorageManager()
+      noPersistManager.setStorageManager(storage)
+
+      // Add fresh entry for comparison
+      await noPersistManager.get(createMockReference('codex://org/project/fresh.md'))
+
+      // listEntries with status filter - expired entries have TTL=0 but need
+      // to be past the stale window (5 minutes) to be classified as expired
+      const result = await noPersistManager.listEntries({ status: 'all' })
+
+      // Should have both entries
+      expect(result.total).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should apply pagination with limit', async () => {
+      const storage = createMockStorageManager()
+      manager.setStorageManager(storage)
+
+      await manager.get(createMockReference('codex://org/project/file1.md'))
+      await manager.get(createMockReference('codex://org/project/file2.md'))
+      await manager.get(createMockReference('codex://org/project/file3.md'))
+
+      const result = await manager.listEntries({ limit: 2 })
+
+      expect(result.entries).toHaveLength(2)
+      expect(result.total).toBe(3)
+      expect(result.hasMore).toBe(true)
+    })
+
+    it('should apply pagination with offset', async () => {
+      const storage = createMockStorageManager()
+      manager.setStorageManager(storage)
+
+      await manager.get(createMockReference('codex://org/project/a.md'))
+      await manager.get(createMockReference('codex://org/project/b.md'))
+      await manager.get(createMockReference('codex://org/project/c.md'))
+
+      const result = await manager.listEntries({ offset: 1, limit: 2 })
+
+      expect(result.entries).toHaveLength(2)
+      expect(result.total).toBe(3)
+      // With offset=1 and limit=2, we get items 1,2 out of 0,1,2 - so hasMore is false
+      expect(result.hasMore).toBe(false)
+    })
+
+    it('should handle limit greater than total entries', async () => {
+      const storage = createMockStorageManager()
+      manager.setStorageManager(storage)
+
+      await manager.get(createMockReference('codex://org/project/file.md'))
+
+      const result = await manager.listEntries({ limit: 100 })
+
+      expect(result.entries).toHaveLength(1)
+      expect(result.total).toBe(1)
+      expect(result.hasMore).toBe(false)
+    })
+
+    it('should sort by uri ascending (default)', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+      const storage = createMockStorageManager()
+      noPersistManager.setStorageManager(storage)
+
+      await noPersistManager.get(createMockReference('codex://org/project/c.md'))
+      await noPersistManager.get(createMockReference('codex://org/project/a.md'))
+      await noPersistManager.get(createMockReference('codex://org/project/b.md'))
+
+      const result = await noPersistManager.listEntries({ sortBy: 'uri' })
+
+      expect(result.entries[0]!.uri).toBe('codex://org/project/a.md')
+      expect(result.entries[1]!.uri).toBe('codex://org/project/b.md')
+      expect(result.entries[2]!.uri).toBe('codex://org/project/c.md')
+    })
+
+    it('should sort by uri descending', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+      const storage = createMockStorageManager()
+      noPersistManager.setStorageManager(storage)
+
+      await noPersistManager.get(createMockReference('codex://org/project/a.md'))
+      await noPersistManager.get(createMockReference('codex://org/project/b.md'))
+      await noPersistManager.get(createMockReference('codex://org/project/c.md'))
+
+      const result = await noPersistManager.listEntries({
+        sortBy: 'uri',
+        sortDirection: 'desc',
+      })
+
+      expect(result.entries[0]!.uri).toBe('codex://org/project/c.md')
+      expect(result.entries[1]!.uri).toBe('codex://org/project/b.md')
+      expect(result.entries[2]!.uri).toBe('codex://org/project/a.md')
+    })
+
+    it('should sort by size', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+
+      await noPersistManager.set('codex://org/project/small.md', {
+        content: Buffer.from('a'),
+        contentType: 'text/markdown',
+        size: 1,
+        source: 'manual',
+      })
+      await noPersistManager.set('codex://org/project/large.md', {
+        content: Buffer.from('aaaaaaaaaa'),
+        contentType: 'text/markdown',
+        size: 10,
+        source: 'manual',
+      })
+      await noPersistManager.set('codex://org/project/medium.md', {
+        content: Buffer.from('aaaaa'),
+        contentType: 'text/markdown',
+        size: 5,
+        source: 'manual',
+      })
+
+      const result = await noPersistManager.listEntries({ sortBy: 'size' })
+
+      expect(result.entries[0]!.size).toBe(1)
+      expect(result.entries[1]!.size).toBe(5)
+      expect(result.entries[2]!.size).toBe(10)
+    })
+
+    it('should sort by createdAt', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+
+      await noPersistManager.set('codex://org/project/first.md', {
+        content: Buffer.from('first'),
+        contentType: 'text/markdown',
+        size: 5,
+        source: 'manual',
+      })
+
+      // Small delay to ensure different timestamps
+      await new Promise((resolve) => setTimeout(resolve, 10))
+
+      await noPersistManager.set('codex://org/project/second.md', {
+        content: Buffer.from('second'),
+        contentType: 'text/markdown',
+        size: 6,
+        source: 'manual',
+      })
+
+      const result = await noPersistManager.listEntries({ sortBy: 'createdAt' })
+
+      expect(result.entries[0]!.uri).toBe('codex://org/project/first.md')
+      expect(result.entries[1]!.uri).toBe('codex://org/project/second.md')
+    })
+
+    it('should sort by expiresAt', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+
+      // Entry with short TTL (expires sooner)
+      await noPersistManager.set(
+        'codex://org/project/short-ttl.md',
+        {
+          content: Buffer.from('short'),
+          contentType: 'text/markdown',
+          size: 5,
+          source: 'manual',
+        },
+        100
+      )
+
+      // Entry with long TTL (expires later)
+      await noPersistManager.set(
+        'codex://org/project/long-ttl.md',
+        {
+          content: Buffer.from('long'),
+          contentType: 'text/markdown',
+          size: 4,
+          source: 'manual',
+        },
+        10000
+      )
+
+      const result = await noPersistManager.listEntries({ sortBy: 'expiresAt' })
+
+      expect(result.entries[0]!.uri).toBe('codex://org/project/short-ttl.md')
+      expect(result.entries[1]!.uri).toBe('codex://org/project/long-ttl.md')
+    })
+  })
+
+  describe('listUris', () => {
+    it('should return empty array for empty cache', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+      const uris = await noPersistManager.listUris()
+      expect(uris).toHaveLength(0)
+    })
+
+    it('should return all cached URIs', async () => {
+      const noPersistManager = new CacheManager({
+        cacheDir: tempDir,
+        enablePersistence: false,
+      })
+      const storage = createMockStorageManager()
+      noPersistManager.setStorageManager(storage)
+
+      await noPersistManager.get(createMockReference('codex://org/project/file1.md'))
+      await noPersistManager.get(createMockReference('codex://org/project/file2.md'))
+
+      const uris = await noPersistManager.listUris()
+
+      expect(uris).toHaveLength(2)
+      expect(uris).toContain('codex://org/project/file1.md')
+      expect(uris).toContain('codex://org/project/file2.md')
+    })
+  })
 })

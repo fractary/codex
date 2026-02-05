@@ -18,6 +18,8 @@ import type {
   ParsedReference,
   ResolvedReference,
   FetchOptions as SDKFetchOptions,
+  ListEntriesOptions,
+  ListEntriesResult,
 } from '@fractary/codex';
 // Dynamic imports for config utilities to avoid loading js-yaml at module time
 // import { readYamlConfig } from '../config/migrate-config';
@@ -51,6 +53,52 @@ export interface FetchResult {
     expiresAt?: string;
     contentLength?: number;
   };
+}
+
+/**
+ * GitHub storage provider configuration
+ */
+interface GitHubProviderConfig {
+  token?: string;
+  apiBaseUrl?: string;
+  branch?: string;
+}
+
+/**
+ * HTTP storage provider configuration
+ */
+interface HttpProviderConfig {
+  baseUrl?: string;
+  headers?: Record<string, string>;
+  timeout?: number;
+}
+
+/**
+ * Local storage provider configuration
+ */
+interface LocalProviderConfig {
+  basePath?: string;
+  followSymlinks?: boolean;
+}
+
+/**
+ * Storage configuration for createStorageManager
+ */
+interface StorageConfig {
+  github?: GitHubProviderConfig;
+  http?: HttpProviderConfig;
+  local?: LocalProviderConfig;
+}
+
+/**
+ * Custom type definition from YAML config
+ */
+interface CustomTypeConfig {
+  description?: string;
+  patterns?: string[];
+  defaultTtl?: number;
+  archiveAfterDays?: number | null;
+  archiveStorage?: string | null;
 }
 
 /**
@@ -126,7 +174,7 @@ export class CodexClient {
       const cacheDir = options?.cacheDir || config.cacheDir || '.codex-cache';
 
       // Build storage manager config from YAML storage providers
-      const storageConfig: any = {};
+      const storageConfig: StorageConfig = {};
 
       if (config.storage && Array.isArray(config.storage)) {
         for (const provider of config.storage) {
@@ -172,7 +220,7 @@ export class CodexClient {
       // Load and register custom types from config
       if (config.types?.custom) {
         for (const [name, customType] of Object.entries(config.types.custom)) {
-          const ct = customType as any; // Type from YAML config
+          const ct = customType as CustomTypeConfig;
           types.register({
             name,
             description: ct.description || `Custom type: ${name}`,
@@ -344,6 +392,28 @@ export class CodexClient {
    */
   getOrganization(): string {
     return this.organization;
+  }
+
+  /**
+   * List cache entries with detailed information
+   *
+   * @param options - Listing options (status filter, pagination, sorting)
+   * @returns Promise resolving to list of cache entries
+   *
+   * @example
+   * ```typescript
+   * // List all entries
+   * const result = await client.listCacheEntries();
+   *
+   * // List only fresh entries
+   * const fresh = await client.listCacheEntries({ status: 'fresh' });
+   *
+   * // Paginated listing
+   * const page1 = await client.listCacheEntries({ limit: 10, offset: 0 });
+   * ```
+   */
+  async listCacheEntries(options?: ListEntriesOptions): Promise<ListEntriesResult> {
+    return this.cache.listEntries(options);
   }
 }
 
