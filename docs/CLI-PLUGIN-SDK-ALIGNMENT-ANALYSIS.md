@@ -445,8 +445,33 @@ The following improvements have been implemented to align CLI/Plugin/SDK:
 | cache-stats | 95% | 95% | - |
 | sync | 60% | 60% | Future work |
 
+### Plugin Alignment (February 2026)
+
+The following plugin improvements have been implemented:
+
+#### Configurator Agent ✅
+
+1. **Simplified `configurator.md`** to be a thin CLI wrapper
+   - Reduced from ~1250 lines to ~365 lines
+   - Now delegates entirely to `fractary configure` CLI command
+   - Removed duplicate bash scripts for:
+     - YAML validation
+     - Name validation
+     - Gitignore management
+     - Backup/rollback logic
+   - CLI handles all configuration via SDK's `ConfigManager`
+
+2. **Removed duplicate `sync-presets.json`**
+   - SDK's `SYNC_PATTERN_PRESETS` in `sync-presets.ts` is the single source of truth
+   - CLI uses SDK's `generateSyncConfigFromPreset()` directly
+   - Removed tests that validated JSON against TypeScript
+
+#### Sync Manager Agent ✅
+
+- Already properly delegates to `fractary-codex sync` CLI command
+- Has critical rules prohibiting manual file operations
+- No changes needed
+
 ### Remaining Work
 
-1. **Sync command git operations** - Move `ensureCodexCloned()` and commit/push to SDK
-2. **Plugin configurator** - Update to delegate entirely to CLI
-3. **Remove duplicate sync presets** - Delete `plugins/codex/config/sync-presets.json`
+1. **Sync command git operations** - Move `ensureCodexCloned()` and commit/push to SDK (future work)

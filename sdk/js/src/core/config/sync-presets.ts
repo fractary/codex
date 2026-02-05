@@ -4,10 +4,10 @@
  * Centralized source of truth for sync pattern presets used across:
  * - SDK (programmatic configuration)
  * - CLI (config init command)
- * - MCP Plugin (configurator agent)
+ * - MCP Plugin (configurator agent via CLI)
  *
- * IMPORTANT: When updating presets here, also update the corresponding
- * JSON file at plugins/codex/config/sync-presets.json to keep them in sync.
+ * This is the SINGLE SOURCE OF TRUTH for sync presets.
+ * The plugin's configurator agent delegates to the CLI, which uses these presets.
  */
 
 import { ValidationError } from '../../errors/index.js'
