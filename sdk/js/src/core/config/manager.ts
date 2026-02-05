@@ -219,11 +219,18 @@ export function validateRepositoryName(name: string): void {
  */
 export async function detectOrganizationFromGit(projectRoot: string): Promise<string | null> {
   try {
-    const { execSync } = await import('child_process')
-    const remote = execSync('git remote get-url origin 2>/dev/null', {
+    const { spawnSync } = await import('child_process')
+    const result = spawnSync('git', ['remote', 'get-url', 'origin'], {
       encoding: 'utf-8',
       cwd: projectRoot,
-    }).trim()
+      stdio: 'pipe',
+    })
+
+    if (result.error || result.status !== 0) {
+      return null
+    }
+
+    const remote = (result.stdout || '').trim()
 
     // Parse GitHub URL: git@github.com:org/repo.git or https://github.com/org/repo.git
     const sshMatch = remote.match(/git@github\.com:([^/]+)\//)
@@ -273,12 +280,11 @@ export async function discoverCodexRepo(org: string): Promise<DiscoverCodexRepoR
   }
 
   try {
-    const { execSync } = await import('child_process')
+    const { spawnSync } = await import('child_process')
 
     // First check if gh CLI is available
-    try {
-      execSync('gh --version', { encoding: 'utf-8', stdio: 'pipe' })
-    } catch {
+    const ghVersion = spawnSync('gh', ['--version'], { encoding: 'utf-8', stdio: 'pipe' })
+    if (ghVersion.error || ghVersion.status !== 0) {
       return {
         repo: null,
         error: 'gh_not_installed',
@@ -287,9 +293,8 @@ export async function discoverCodexRepo(org: string): Promise<DiscoverCodexRepoR
     }
 
     // Check if authenticated
-    try {
-      execSync('gh auth status', { encoding: 'utf-8', stdio: 'pipe' })
-    } catch {
+    const authStatus = spawnSync('gh', ['auth', 'status'], { encoding: 'utf-8', stdio: 'pipe' })
+    if (authStatus.error || authStatus.status !== 0) {
       return {
         repo: null,
         error: 'auth_failed',
@@ -298,14 +303,26 @@ export async function discoverCodexRepo(org: string): Promise<DiscoverCodexRepoR
     }
 
     // Use gh CLI to list repos matching codex.* pattern
-    // Note: org is validated above to contain only safe characters
-    const result = execSync(
-      `gh repo list ${org} --json name --jq '.[].name | select(startswith("codex."))' 2>&1`,
-      { encoding: 'utf-8' }
-    ).trim()
+    // Using spawnSync with array arguments to prevent command injection
+    const listResult = spawnSync(
+      'gh',
+      ['repo', 'list', org, '--json', 'name', '--jq', '.[].name | select(startswith("codex."))'],
+      { encoding: 'utf-8', stdio: 'pipe' }
+    )
+
+    if (listResult.error) {
+      return {
+        repo: null,
+        error: 'unknown',
+        message: listResult.error.message,
+      }
+    }
+
+    const output = (listResult.stdout || '').trim()
+    const stderr = (listResult.stderr || '').trim()
 
     // Check for org not found error
-    if (result.includes('Could not resolve to an Organization') || result.includes('Not Found')) {
+    if (stderr.includes('Could not resolve to an Organization') || stderr.includes('Not Found')) {
       return {
         repo: null,
         error: 'org_not_found',
@@ -313,7 +330,7 @@ export async function discoverCodexRepo(org: string): Promise<DiscoverCodexRepoR
       }
     }
 
-    const repos = result.split('\n').filter(Boolean)
+    const repos = output.split('\n').filter(Boolean)
     if (repos.length === 0) {
       return {
         repo: null,
@@ -425,6 +442,13 @@ export async function ensureCachePathIgnored(
   if (path.isAbsolute(cachePath)) {
     relativeCachePath = path.relative(path.join(projectRoot, '.fractary'), cachePath)
   }
+
+  // Security: Validate that the path doesn't escape the .fractary directory
+  const normalizedForValidation = path.normalize(relativeCachePath)
+  if (normalizedForValidation.startsWith('..') || path.isAbsolute(normalizedForValidation)) {
+    throw new ValidationError('Cache path must be within .fractary directory')
+  }
+
   relativeCachePath = normalizeCachePath(relativeCachePath)
 
   // Check if gitignore exists

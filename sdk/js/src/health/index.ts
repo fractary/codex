@@ -11,6 +11,7 @@
 export {
   HealthChecker,
   createHealthChecker,
+  CACHE_HEALTH_THRESHOLD_PERCENT,
   type HealthStatus,
   type HealthCheck,
   type HealthSummary,

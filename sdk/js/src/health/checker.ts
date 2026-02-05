@@ -16,6 +16,14 @@ import { CacheManager, type CacheStats } from '../cache/index.js'
 import { TypeRegistry } from '../types/index.js'
 import { formatBytes } from '../core/utils/index.js'
 
+// ===== Constants =====
+
+/**
+ * Minimum percentage of fresh cache entries for healthy status.
+ * Below this threshold, cache health is considered degraded.
+ */
+export const CACHE_HEALTH_THRESHOLD_PERCENT = 50
+
 // ===== Types =====
 
 /**
@@ -267,7 +275,7 @@ export class HealthChecker {
 
       const healthPercent = stats.entryCount > 0 ? (stats.freshCount / stats.entryCount) * 100 : 100
 
-      if (healthPercent < 50) {
+      if (healthPercent < CACHE_HEALTH_THRESHOLD_PERCENT) {
         return {
           name: 'Cache',
           status: 'warn',
@@ -307,7 +315,7 @@ export class HealthChecker {
 
     const healthPercent = stats.entryCount > 0 ? (stats.freshCount / stats.entryCount) * 100 : 100
 
-    if (healthPercent < 50) {
+    if (healthPercent < CACHE_HEALTH_THRESHOLD_PERCENT) {
       return {
         name: 'Cache',
         status: 'warn',
