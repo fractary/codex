@@ -64,6 +64,7 @@ export function syncCommand(): Command {
     .option('--exclude <pattern>', 'Exclude files matching pattern (can be used multiple times)', (val, prev: string[]) => prev.concat([val]), [])
     .option('--force', 'Force sync without checking timestamps')
     .option('--json', 'Output as JSON')
+    .option('--work-id <id>', 'GitHub issue number or URL to scope sync to')
     .action(async (name: string | undefined, options) => {
       try {
         // Load YAML config (unified config path)
@@ -314,8 +315,11 @@ export function syncCommand(): Command {
             console.log(JSON.stringify({
               project: projectName,
               organization: config.organization,
+              workId: options.workId || null,
               files: [],
-              synced: 0
+              synced: 0,
+              status: 'success',
+              message: 'No files to sync'
             }, null, 2));
           } else {
             console.log(chalk.yellow('No files to sync.'));
@@ -331,6 +335,7 @@ export function syncCommand(): Command {
             branch: targetBranch,
             direction,
             dryRun: options.dryRun || false,
+            workId: options.workId || null,
             plan: {
               totalFiles: plan.totalFiles,
               totalBytes: plan.totalBytes,
@@ -346,14 +351,29 @@ export function syncCommand(): Command {
           };
 
           if (options.dryRun) {
-            console.log(JSON.stringify(output, null, 2));
+            console.log(JSON.stringify({
+              ...output,
+              status: 'success'
+            }, null, 2));
             return;
           }
 
           // Execute and add results
           const result = await syncManager.executePlan(plan, syncOptions);
+
+          // Determine status: success, warning, or failure
+          let status: 'success' | 'warning' | 'failure';
+          if (!result.success && result.synced === 0) {
+            status = 'failure';
+          } else if (!result.success || result.failed > 0 || plan.conflicts.length > 0) {
+            status = 'warning';
+          } else {
+            status = 'success';
+          }
+
           console.log(JSON.stringify({
             ...output,
+            status,
             result: {
               success: result.success,
               synced: result.synced,
