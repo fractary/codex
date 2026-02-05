@@ -118,7 +118,7 @@ export class CodexClient {
         config = resolveEnvVarsInConfig(config);
       } catch (error) {
         throw new ConfigurationError(
-          `Failed to load configuration from ${configPath}. Run "fractary codex init" to create a configuration.`
+          `Failed to load configuration from ${configPath}. Run "fractary-codex configure" to create a configuration.`
         );
       }
 

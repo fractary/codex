@@ -1,5 +1,5 @@
 /**
- * Fetch document command (v3.0)
+ * Document fetch command (v3.0)
  *
  * Retrieves documents by codex:// URI reference using SDK's CodexClient:
  * - Cache-first retrieval for fast access
@@ -21,8 +21,8 @@ function hashContent(content: Buffer): string {
   return crypto.createHash('sha256').update(content).digest('hex').slice(0, 16);
 }
 
-export function fetchCommand(): Command {
-  const cmd = new Command('fetch');
+export function documentFetchCommand(): Command {
+  const cmd = new Command('document-fetch');
 
   cmd
     .description('Fetch a document by codex:// URI reference')
@@ -97,7 +97,7 @@ export function fetchCommand(): Command {
 
         // Provide helpful error messages
         if (error.message.includes('Failed to load configuration')) {
-          console.log(chalk.dim('\nRun "fractary codex init" to create a configuration.'));
+          console.log(chalk.dim('\nRun "fractary-codex configure" to create a configuration.'));
         } else if (error.message.includes('GITHUB_TOKEN')) {
           console.log(chalk.dim('\nSet your GitHub token: export GITHUB_TOKEN="your_token"'));
         } else if (error.message.includes('not found') || error.message.includes('404')) {

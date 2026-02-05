@@ -37,17 +37,17 @@ A command-line interface is available for codex operations:
 **Quick example:**
 ```bash
 # Initialize codex in your project
-fractary-codex init
+fractary-codex configure
 
 # Fetch a document
-fractary-codex fetch codex://myorg/docs/api-guide.md
+fractary-codex document-fetch codex://myorg/docs/api-guide.md
 
 # Manage cache
-fractary-codex cache list
-fractary-codex cache clear --all
+fractary-codex cache-list
+fractary-codex cache-clear --all
 
 # Run diagnostics
-fractary-codex health
+fractary-codex cache-health
 ```
 
 See the [CLI documentation](./cli/README.md) for full command reference.

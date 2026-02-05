@@ -75,7 +75,7 @@ export function syncCommand(): Command {
           config = await readYamlConfig(configPath);
         } catch (error) {
           console.error(chalk.red('Error:'), 'Codex not initialized.');
-          console.log(chalk.dim('Run "fractary codex init" first.'));
+          console.log(chalk.dim('Run "fractary-codex configure" first.'));
           process.exit(1);
         }
 

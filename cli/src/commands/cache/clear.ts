@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import { getClient } from '../../client/get-client';
 
 export function cacheClearCommand(): Command {
-  const cmd = new Command('clear');
+  const cmd = new Command('cache-clear');
 
   cmd
     .description('Clear cache entries')
@@ -42,8 +42,8 @@ export function cacheClearCommand(): Command {
           console.log(chalk.dim('  --pattern    Clear entries matching pattern (e.g., "codex://fractary/*")'));
           console.log('');
           console.log(chalk.dim('Examples:'));
-          console.log(chalk.dim('  fractary codex cache clear --all'));
-          console.log(chalk.dim('  fractary codex cache clear --pattern "codex://fractary/cli/*"'));
+          console.log(chalk.dim('  fractary-codex cache-clear --all'));
+          console.log(chalk.dim('  fractary-codex cache-clear --pattern "codex://fractary/cli/*"'));
           return;
         }
 

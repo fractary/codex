@@ -1,21 +1,8 @@
 /**
- * Document command group (v3.0)
+ * Document fetch command
  *
- * Manages document operations with subcommands:
- * - fetch: Retrieve documents by URI
+ * Top-level command for fetching documents by codex:// URI
  */
 
-import { Command } from 'commander';
-import { fetchCommand } from './fetch.js';
-
-export function documentCommand(): Command {
-  const cmd = new Command('document');
-
-  cmd
-    .description('Manage document operations');
-
-  // Register subcommands
-  cmd.addCommand(fetchCommand());
-
-  return cmd;
-}
+// Re-export the document-fetch command
+export { documentFetchCommand } from './fetch.js';

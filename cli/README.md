@@ -12,33 +12,29 @@ npm install -g @fractary/codex-cli
 
 ```bash
 # Initialize configuration
-fractary-codex init
+fractary-codex configure
 
 # Fetch a document
-fractary-codex fetch codex://myorg/myproject/README.md
+fractary-codex document-fetch codex://myorg/myproject/README.md
 
 # Check cache status
-fractary-codex cache stats
+fractary-codex cache-stats
 
 # Run health check
-fractary-codex health
+fractary-codex cache-health
 ```
 
 ## Commands Overview
 
 | Command | Description |
 |---------|-------------|
-| `init` | Initialize configuration |
-| `fetch <uri>` | Fetch documents by codex:// URI |
-| `cache list` | List cached documents |
-| `cache clear` | Clear cache entries |
-| `cache stats` | Show cache statistics |
-| `sync project` | Sync single project |
-| `sync org` | Sync entire organization |
-| `types list` | List artifact types |
-| `types add` | Add custom type |
-| `health` | Run diagnostics |
-| `migrate` | Migrate v2.x config to v3.0 |
+| `configure` | Initialize configuration |
+| `document-fetch <uri>` | Fetch documents by codex:// URI |
+| `cache-list` | List cached documents |
+| `cache-clear` | Clear cache entries |
+| `cache-stats` | Show cache statistics |
+| `cache-health` | Run diagnostics |
+| `sync` | Sync project with codex repository |
 
 ## Documentation
 

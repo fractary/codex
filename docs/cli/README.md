@@ -7,13 +7,13 @@ Comprehensive documentation for the `@fractary/codex-cli` command-line interface
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Commands Reference](#commands-reference)
-  - [init](#init---initialize-configuration)
-  - [fetch](#fetch---fetch-documents)
-  - [cache](#cache---cache-management)
+  - [configure](#configure---initialize-configuration)
+  - [document-fetch](#document-fetch---fetch-documents)
+  - [cache-list](#cache-list---list-cache)
+  - [cache-clear](#cache-clear---clear-cache)
+  - [cache-stats](#cache-stats---cache-statistics)
+  - [cache-health](#cache-health---diagnostics)
   - [sync](#sync---bidirectional-synchronization)
-  - [types](#types---type-registry-management)
-  - [health](#health---diagnostics)
-  - [migrate](#migrate---configuration-migration)
 - [Configuration](#configuration)
 - [Integration Patterns](#integration-patterns)
 - [Troubleshooting](#troubleshooting)
@@ -48,50 +48,54 @@ fractary-codex --help
 ### 1. Initialize Project
 
 ```bash
-fractary-codex init
+fractary-codex configure
 # Creates .fractary/config.yaml and .fractary/codex/cache/
 ```
 
 ### 2. Fetch Documents
 
 ```bash
-fractary-codex fetch codex://myorg/myproject/README.md
+fractary-codex document-fetch codex://myorg/myproject/README.md
 ```
 
 ### 3. Check Cache Status
 
 ```bash
-fractary-codex cache stats
+fractary-codex cache-stats
 ```
 
 ## Commands Reference
 
-### `init` - Initialize Configuration
+### `configure` - Initialize Configuration
 
 Initialize Codex v3.0 with YAML configuration in your project.
 
 ```bash
-fractary-codex init [options]
+fractary-codex configure [options]
 
 Options:
-  --force    Overwrite existing configuration
+  --org <slug>         Organization slug (e.g., "fractary")
+  --project <name>     Project name (default: derived from directory)
+  --codex-repo <name>  Codex repository name (e.g., "codex.fractary.com")
+  --force              Overwrite existing configuration
+  --no-mcp             Skip MCP server installation
 ```
 
 **Example:**
 
 ```bash
-fractary-codex init
+fractary-codex configure
 # Creates:
 #   .fractary/config.yaml
 #   .fractary/codex/cache/
 ```
 
-### `fetch` - Fetch Documents
+### `document-fetch` - Fetch Documents
 
 Fetch documents by `codex://` URI reference with intelligent caching.
 
 ```bash
-fractary-codex fetch <uri> [options]
+fractary-codex document-fetch <uri> [options]
 
 Arguments:
   uri                  Codex URI (e.g., codex://org/project/path/file.md)
@@ -107,35 +111,35 @@ Options:
 
 ```bash
 # Fetch with caching
-fractary-codex fetch codex://myorg/myproject/README.md
+fractary-codex document-fetch codex://myorg/myproject/README.md
 
 # Bypass cache
-fractary-codex fetch codex://myorg/myproject/README.md --bypass-cache
+fractary-codex document-fetch codex://myorg/myproject/README.md --bypass-cache
 
 # JSON output with metadata
-fractary-codex fetch codex://myorg/myproject/README.md --json
+fractary-codex document-fetch codex://myorg/myproject/README.md --json
 
 # Save to file
-fractary-codex fetch codex://myorg/myproject/README.md --output local-README.md
+fractary-codex document-fetch codex://myorg/myproject/README.md --output local-README.md
 ```
 
-### `cache` - Cache Management
+### `cache-list` - List Cache
 
-Manage the document cache with subcommands for listing, clearing, and viewing statistics.
-
-#### `cache list` - List Cache Information
+List cache information and entry statistics.
 
 ```bash
-fractary-codex cache list [options]
+fractary-codex cache-list [options]
 
 Options:
   --json    Output as JSON
 ```
 
-#### `cache clear` - Clear Cache Entries
+### `cache-clear` - Clear Cache
+
+Clear cache entries.
 
 ```bash
-fractary-codex cache clear [options]
+fractary-codex cache-clear [options]
 
 Options:
   --all                Clear entire cache
@@ -147,19 +151,21 @@ Options:
 
 ```bash
 # Clear all cache entries
-fractary-codex cache clear --all
+fractary-codex cache-clear --all
 
 # Clear specific pattern
-fractary-codex cache clear --pattern "myorg/myproject/**"
+fractary-codex cache-clear --pattern "myorg/myproject/**"
 
 # Preview clearing
-fractary-codex cache clear --all --dry-run
+fractary-codex cache-clear --all --dry-run
 ```
 
-#### `cache stats` - Cache Statistics
+### `cache-stats` - Cache Statistics
+
+Display cache statistics.
 
 ```bash
-fractary-codex cache stats [options]
+fractary-codex cache-stats [options]
 
 Options:
   --json    Output as JSON
@@ -176,54 +182,80 @@ Memory entries: 15
 Disk entries: 27
 ```
 
+### `cache-health` - Diagnostics
+
+Run comprehensive diagnostics on codex setup.
+
+```bash
+fractary-codex cache-health [options]
+
+Options:
+  --json    Output as JSON for CI/CD integration
+```
+
+**Checks:**
+
+- Configuration validity
+- SDK client initialization
+- Cache health and statistics
+- Storage provider availability
+- Type registry status
+
+**Output:**
+
+```
+Codex Health Check
+
+CONFIGURATION                   PASS
+ Config file exists
+ Config is valid YAML
+ Required fields present
+
+CACHE                           PASS
+ Cache directory exists
+ Cache index valid
+ All cached files accessible
+
+OVERALL STATUS: Healthy
+Checks passed: 22/24 (92%)
+```
+
 ### `sync` - Bidirectional Synchronization
 
 Synchronize files with codex repository.
 
-#### `sync project` - Sync Single Project
-
 ```bash
-fractary-codex sync project [project-name] [options]
+fractary-codex sync [project-name] [options]
 
 Options:
   --to-codex           Sync from project to codex (one-way)
   --from-codex         Sync from codex to project (one-way)
-  --bidirectional      Two-way sync (default)
+  --direction <dir>    Sync direction (to-codex/from-codex/bidirectional)
   --dry-run            Preview changes without syncing
   --env <environment>  Environment branch mapping
+  --include <pattern>  Include files matching pattern
+  --exclude <pattern>  Exclude files matching pattern
+  --work-id <id>       GitHub issue number or URL to scope sync
+  --json               Output as JSON
 ```
 
 **Examples:**
 
 ```bash
 # Bidirectional sync
-fractary-codex sync project
+fractary-codex sync
 
 # One-way to codex
-fractary-codex sync project --to-codex
+fractary-codex sync --to-codex
 
 # One-way from codex
-fractary-codex sync project --from-codex
+fractary-codex sync --from-codex
 
 # Preview changes
-fractary-codex sync project --dry-run
+fractary-codex sync --dry-run
 
 # Specific environment
-fractary-codex sync project --env test
-```
-
-#### `sync org` - Sync Organization
-
-```bash
-fractary-codex sync org [options]
-
-Options:
-  --to-codex           Sync from projects to codex
-  --from-codex         Sync from codex to projects
-  --bidirectional      Two-way sync (default)
-  --dry-run            Preview changes
-  --exclude <pattern>  Exclude repositories matching pattern
-  --parallel <n>       Number of parallel sync operations (default: 3)
+fractary-codex sync --env test
 ```
 
 **Routing-Aware Sync:**
@@ -247,107 +279,6 @@ codex_sync_exclude: ['*-test']             # Except *-test projects
 ---
 ```
 
-### `types` - Type Registry Management
-
-Manage custom artifact types for classification and caching.
-
-#### `types list` - List All Types
-
-```bash
-fractary-codex types list [options]
-
-Options:
-  --custom-only    Show only custom types
-  --builtin-only   Show only built-in types
-  --json           Output as JSON
-```
-
-#### `types show` - Show Type Details
-
-```bash
-fractary-codex types show <type-name> [options]
-
-Options:
-  --json    Output as JSON
-```
-
-#### `types add` - Add Custom Type
-
-```bash
-fractary-codex types add <type-name> [options]
-
-Options:
-  --pattern <glob>        File pattern (required)
-  --ttl <duration>        Cache TTL (default: 24h)
-  --description <text>    Type description
-```
-
-**Example:**
-
-```bash
-fractary-codex types add api-schema --pattern "**/*.openapi.{yaml,json}" --ttl 48h --description "OpenAPI schemas"
-```
-
-#### `types remove` - Remove Custom Type
-
-```bash
-fractary-codex types remove <type-name> [options]
-
-Options:
-  --json    Output as JSON
-```
-
-### `health` - Diagnostics
-
-Run comprehensive diagnostics on codex setup.
-
-```bash
-fractary-codex health [options]
-
-Options:
-  --json    Output as JSON for CI/CD integration
-```
-
-**Checks:**
-
-- Configuration validity
-- SDK client initialization
-- Cache health and statistics
-- Storage provider availability
-- Type registry status
-
-**Output:**
-
-```
-Codex Health Check
-═══════════════════════════════════════
-
-CONFIGURATION                   ✅ PASS
-✓ Config file exists
-✓ Config is valid YAML
-✓ Required fields present
-
-CACHE                           ✅ PASS
-✓ Cache directory exists
-✓ Cache index valid
-✓ All cached files accessible
-
-OVERALL STATUS: ✅ Healthy
-Checks passed: 22/24 (92%)
-```
-
-### `migrate` - Configuration Migration
-
-Migrate legacy v2.x JSON configuration to v3.0 YAML format.
-
-```bash
-fractary-codex migrate [options]
-
-Options:
-  --dry-run    Preview migration without writing
-  --json       Output as JSON
-```
-
 ## Configuration
 
 Codex uses `.fractary/config.yaml` for configuration:
@@ -367,15 +298,6 @@ storage:
   - type: local
     path: ./codex-local
     priority: 10
-
-types:
-  custom:
-    api-schema:
-      description: OpenAPI API schemas
-      patterns:
-        - "**/*.openapi.yaml"
-        - "**/*.openapi.json"
-      defaultTtl: 172800  # 48 hours
 
 permissions:
   default: read
@@ -481,45 +403,7 @@ export class CodexClient {
 }
 ```
 
-### Pattern 2: Command Implementation
-
-```typescript
-// src/commands/fetch.ts
-import { Command } from 'commander'
-import { createCodexClient } from '../codex-client'
-import chalk from 'chalk'
-
-export function createFetchCommand(): Command {
-  return new Command('fetch')
-    .description('Fetch a document from codex')
-    .argument('<uri>', 'Codex URI (e.g., codex://org/project/path.md)')
-    .option('-o, --output <path>', 'Output file path')
-    .option('--no-cache', 'Bypass cache and fetch fresh')
-    .option('--metadata', 'Show metadata only')
-    .action(async (uri, options) => {
-      try {
-        const client = await createCodexClient()
-        console.log(chalk.blue(`Fetching: ${uri}`))
-        const result = await client.fetch(uri)
-
-        if (options.metadata) {
-          console.log(JSON.stringify(result.metadata, null, 2))
-        } else if (options.output) {
-          const fs = await import('fs/promises')
-          await fs.writeFile(options.output, result.content)
-          console.log(chalk.green(`✓ Saved to ${options.output}`))
-        } else {
-          console.log(result.content.toString())
-        }
-      } catch (error) {
-        console.error(chalk.red(`Error: ${error.message}`))
-        process.exit(1)
-      }
-    })
-}
-```
-
-### Pattern 3: Error Handling
+### Pattern 2: Error Handling
 
 ```typescript
 import {
@@ -543,12 +427,12 @@ async function handleCodexOperation() {
       console.error('Check network connection and credentials')
     } else if (error instanceof CacheError) {
       console.error('Cache operation failed')
-      console.error('Try clearing cache: fractary-codex cache clear --all')
+      console.error('Try clearing cache: fractary-codex cache-clear --all')
     } else if (error instanceof PermissionError) {
       console.error('Permission denied')
     } else if (error instanceof ConfigError) {
       console.error('Configuration error')
-      console.error('Run: fractary-codex init')
+      console.error('Run: fractary-codex configure')
     } else {
       console.error(`Unexpected error: ${error.message}`)
     }
@@ -633,7 +517,7 @@ npx @fractary/codex-cli --help
 **Diagnostic:**
 
 ```bash
-fractary-codex health
+fractary-codex cache-health
 # Check "CONFIGURATION" section
 ```
 
@@ -641,7 +525,7 @@ fractary-codex health
 
 1. Ensure `.fractary/config.yaml` exists
 2. Validate YAML syntax: `yamllint .fractary/config.yaml`
-3. Run `fractary-codex init` to recreate
+3. Run `fractary-codex configure` to recreate
 
 ### Fetch Fails
 
@@ -651,10 +535,10 @@ fractary-codex health
 
 ```bash
 # Enable verbose output
-DEBUG=codex:* fractary-codex fetch codex://org/project/file.md
+DEBUG=codex:* fractary-codex document-fetch codex://org/project/file.md
 
 # Check health
-fractary-codex health
+fractary-codex cache-health
 ```
 
 **Solutions:**
@@ -671,7 +555,7 @@ fractary-codex health
 **Diagnostic:**
 
 ```bash
-fractary-codex cache stats
+fractary-codex cache-stats
 # Check hit rate and entry count
 ```
 
@@ -681,8 +565,8 @@ fractary-codex cache stats
 2. Verify TTL is not too short
 3. Clear and rebuild cache:
    ```bash
-   fractary-codex cache clear --all
-   fractary-codex fetch codex://org/project/file.md
+   fractary-codex cache-clear --all
+   fractary-codex document-fetch codex://org/project/file.md
    ```
 
 ### Sync Conflicts

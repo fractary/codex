@@ -1,30 +1,15 @@
 /**
- * Cache command group (v3.0)
+ * Cache commands
  *
- * Manages the codex document cache with subcommands:
- * - list: View cached entries
- * - clear: Remove cache entries
- * - stats: Display cache statistics
- * - health: Diagnostics and auto-repair
+ * Top-level commands for managing the codex document cache:
+ * - cache-list: View cached entries
+ * - cache-clear: Remove cache entries
+ * - cache-stats: Display cache statistics
+ * - cache-health: Diagnostics and auto-repair
  */
 
-import { Command } from 'commander';
-import { cacheListCommand } from './list';
-import { cacheClearCommand } from './clear';
-import { cacheStatsCommand } from './stats';
-import { healthCommand } from './health';
-
-export function cacheCommand(): Command {
-  const cmd = new Command('cache');
-
-  cmd
-    .description('Manage the codex document cache');
-
-  // Register subcommands
-  cmd.addCommand(cacheListCommand());
-  cmd.addCommand(cacheClearCommand());
-  cmd.addCommand(cacheStatsCommand());
-  cmd.addCommand(healthCommand());
-
-  return cmd;
-}
+// Re-export cache commands
+export { cacheListCommand } from './list.js';
+export { cacheClearCommand } from './clear.js';
+export { cacheStatsCommand } from './stats.js';
+export { cacheHealthCommand } from './health.js';
