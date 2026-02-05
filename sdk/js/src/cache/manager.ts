@@ -54,6 +54,56 @@ export interface CacheLookupResult {
 }
 
 /**
+ * Cache entry listing information
+ */
+export interface CacheEntryInfo {
+  /** URI of the cached content */
+  uri: string
+  /** Content type (MIME type) */
+  contentType: string
+  /** Size in bytes */
+  size: number
+  /** Status: fresh, stale, or expired */
+  status: 'fresh' | 'stale' | 'expired'
+  /** When the entry was created */
+  createdAt: number
+  /** When the entry expires */
+  expiresAt: number
+  /** Remaining TTL in seconds (negative if expired) */
+  remainingTtl: number
+  /** Whether entry is in memory cache */
+  inMemory: boolean
+}
+
+/**
+ * Options for listing cache entries
+ */
+export interface ListEntriesOptions {
+  /** Filter by status */
+  status?: 'fresh' | 'stale' | 'expired' | 'all'
+  /** Maximum number of entries to return */
+  limit?: number
+  /** Number of entries to skip (for pagination) */
+  offset?: number
+  /** Sort order */
+  sortBy?: 'uri' | 'size' | 'createdAt' | 'expiresAt'
+  /** Sort direction */
+  sortDirection?: 'asc' | 'desc'
+}
+
+/**
+ * Result of listing cache entries
+ */
+export interface ListEntriesResult {
+  /** List of cache entries */
+  entries: CacheEntryInfo[]
+  /** Total number of entries (before pagination) */
+  total: number
+  /** Whether there are more entries */
+  hasMore: boolean
+}
+
+/**
  * Cache manager
  *
  * Provides a multi-tier caching system with:
@@ -375,6 +425,119 @@ export class CacheManager {
       return getRemainingTtl(result.entry)
     }
     return null
+  }
+
+  /**
+   * List all cache entries with detailed information
+   *
+   * Provides comprehensive information about each cached entry
+   * with support for filtering, pagination, and sorting.
+   */
+  async listEntries(options: ListEntriesOptions = {}): Promise<ListEntriesResult> {
+    const {
+      status = 'all',
+      limit,
+      offset = 0,
+      sortBy = 'uri',
+      sortDirection = 'asc',
+    } = options
+
+    const entries: CacheEntryInfo[] = []
+    const now = Date.now()
+    const staleWindow = 5 * 60 * 1000 // 5 minutes
+
+    // Get all URIs from persistence
+    const uris = this.persistence ? await this.persistence.list() : []
+
+    // Also include memory-only entries
+    const memoryOnlyUris = Array.from(this.memoryCache.keys()).filter(
+      (uri) => !uris.includes(uri)
+    )
+    const allUris = [...uris, ...memoryOnlyUris]
+
+    // Process each entry
+    for (const uri of allUris) {
+      const lookupResult = await this.lookup(uri)
+      if (!lookupResult.entry) continue
+
+      const entry = lookupResult.entry
+      const expiresAt = entry.metadata.expiresAt
+      const remainingTtl = Math.floor((expiresAt - now) / 1000)
+
+      let entryStatus: 'fresh' | 'stale' | 'expired'
+      if (now < expiresAt) {
+        entryStatus = 'fresh'
+      } else if (now < expiresAt + staleWindow) {
+        entryStatus = 'stale'
+      } else {
+        entryStatus = 'expired'
+      }
+
+      // Filter by status
+      if (status !== 'all' && entryStatus !== status) {
+        continue
+      }
+
+      entries.push({
+        uri,
+        contentType: entry.metadata.contentType,
+        size: entry.metadata.size,
+        status: entryStatus,
+        createdAt: entry.metadata.createdAt,
+        expiresAt,
+        remainingTtl,
+        inMemory: this.memoryCache.has(uri),
+      })
+    }
+
+    // Sort entries
+    entries.sort((a, b) => {
+      let comparison = 0
+      switch (sortBy) {
+        case 'uri':
+          comparison = a.uri.localeCompare(b.uri)
+          break
+        case 'size':
+          comparison = a.size - b.size
+          break
+        case 'createdAt':
+          comparison = a.createdAt - b.createdAt
+          break
+        case 'expiresAt':
+          comparison = a.expiresAt - b.expiresAt
+          break
+      }
+      return sortDirection === 'asc' ? comparison : -comparison
+    })
+
+    const total = entries.length
+
+    // Apply pagination
+    const paginatedEntries = limit
+      ? entries.slice(offset, offset + limit)
+      : entries.slice(offset)
+
+    return {
+      entries: paginatedEntries,
+      total,
+      hasMore: limit ? offset + limit < total : false,
+    }
+  }
+
+  /**
+   * List all cached URIs
+   *
+   * Simple method to get just the URIs without detailed information.
+   */
+  async listUris(): Promise<string[]> {
+    const uris = this.persistence ? await this.persistence.list() : []
+
+    // Also include memory-only entries
+    const memoryOnlyUris = Array.from(this.memoryCache.keys()).filter(
+      (uri) => !uris.includes(uri)
+    )
+
+    return [...uris, ...memoryOnlyUris]
   }
 
   /**

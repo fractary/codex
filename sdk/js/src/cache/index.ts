@@ -57,4 +57,7 @@ export {
   setDefaultCacheManager,
   type CacheManagerConfig,
   type CacheLookupResult,
+  type CacheEntryInfo,
+  type ListEntriesOptions,
+  type ListEntriesResult,
 } from './manager.js'

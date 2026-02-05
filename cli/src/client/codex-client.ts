@@ -18,6 +18,8 @@ import type {
   ParsedReference,
   ResolvedReference,
   FetchOptions as SDKFetchOptions,
+  ListEntriesOptions,
+  ListEntriesResult,
 } from '@fractary/codex';
 // Dynamic imports for config utilities to avoid loading js-yaml at module time
 // import { readYamlConfig } from '../config/migrate-config';
@@ -344,6 +346,28 @@ export class CodexClient {
    */
   getOrganization(): string {
     return this.organization;
+  }
+
+  /**
+   * List cache entries with detailed information
+   *
+   * @param options - Listing options (status filter, pagination, sorting)
+   * @returns Promise resolving to list of cache entries
+   *
+   * @example
+   * ```typescript
+   * // List all entries
+   * const result = await client.listCacheEntries();
+   *
+   * // List only fresh entries
+   * const fresh = await client.listCacheEntries({ status: 'fresh' });
+   *
+   * // Paginated listing
+   * const page1 = await client.listCacheEntries({ limit: 10, offset: 0 });
+   * ```
+   */
+  async listCacheEntries(options?: ListEntriesOptions): Promise<ListEntriesResult> {
+    return this.cache.listEntries(options);
   }
 }
 

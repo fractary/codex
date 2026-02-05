@@ -379,3 +379,74 @@ The codebase has a solid foundation with proper layering (Plugin → CLI → SDK
 3. **cache-health** - Health checking framework should be in SDK
 
 Addressing these will ensure consistent behavior whether commands are executed via the Claude plugin or the CLI, and reduce the opportunity for divergent implementations.
+
+---
+
+## Implementation Status
+
+### Completed (February 2026)
+
+The following improvements have been implemented to align CLI/Plugin/SDK:
+
+#### Phase 1: Configuration Consolidation ✅
+
+1. **Created `ConfigManager` class in SDK** (`sdk/js/src/core/config/manager.ts`)
+   - Organization detection from git remote
+   - Codex repository discovery via GitHub CLI
+   - Name validation (organization, repository)
+   - Directory structure creation
+   - Gitignore management
+   - MCP server installation
+   - Unified config generation and writing
+
+2. **Updated CLI `configure` command**
+   - Now a thin wrapper around SDK's `ConfigManager`
+   - Reduced from ~467 lines to ~150 lines
+   - All core logic delegated to SDK
+
+3. **Consolidated sync presets**
+   - SDK's `SYNC_PATTERN_PRESETS` is the single source of truth
+   - CLI uses `generateSyncConfigFromPreset()` from SDK
+
+#### Phase 2: Health and Diagnostics ✅
+
+1. **Created `HealthChecker` class in SDK** (`sdk/js/src/health/checker.ts`)
+   - Configuration validation
+   - Cache health checks
+   - Storage provider checks
+   - Type registry validation
+   - Summary generation
+
+2. **Updated CLI `cache-health` command**
+   - Now uses SDK's `HealthChecker`
+   - Reduced from ~348 lines to ~140 lines
+
+#### Phase 3: Cache Entry Listing ✅
+
+1. **Added `listEntries()` to `CacheManager`**
+   - Returns detailed info: URI, status, size, TTL, content type
+   - Supports filtering by status (fresh/stale/expired)
+   - Supports pagination (limit, offset)
+   - Supports sorting (uri, size, createdAt, expiresAt)
+
+2. **Updated CLI `cache-list` command**
+   - Now shows individual cache entries with details
+   - Added `--status`, `--limit`, `--sort`, `--verbose` options
+
+### Updated SDK Usage by Command
+
+| Command | Before | After | Improvement |
+|---------|--------|-------|-------------|
+| configure | 30% | **90%** | +60% |
+| cache-health | 65% | **95%** | +30% |
+| cache-list | 85% | **95%** | +10% |
+| document-fetch | 90% | 90% | - |
+| cache-clear | 90% | 90% | - |
+| cache-stats | 95% | 95% | - |
+| sync | 60% | 60% | Future work |
+
+### Remaining Work
+
+1. **Sync command git operations** - Move `ensureCodexCloned()` and commit/push to SDK
+2. **Plugin configurator** - Update to delegate entirely to CLI
+3. **Remove duplicate sync presets** - Delete `plugins/codex/config/sync-presets.json`
