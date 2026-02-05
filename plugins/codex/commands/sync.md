@@ -3,7 +3,7 @@ name: fractary-codex:sync
 description: Sync project with codex repository - delegates to fractary-codex:sync-manager agent
 allowed-tools: Task(fractary-codex:sync-manager)
 model: claude-haiku-4-5
-argument-hint: '[--to-codex|--from-codex] [--dry-run] [--env <env>]'
+argument-hint: '[--work-id <id>] [--to-codex|--from-codex] [--dry-run] [--env <env>]'
 ---
 
 Use **Task** tool with `fractary-codex:sync-manager` agent to sync project with codex repository.
@@ -11,6 +11,10 @@ Use **Task** tool with `fractary-codex:sync-manager` agent to sync project with 
 The sync-manager agent will invoke the `fractary-codex sync` CLI directly.
 
 **Arguments:**
+- `--work-id <id>`: GitHub issue number or URL to scope sync to. When provided, the sync-manager will:
+  1. Fetch the issue description and comments to understand context
+  2. Narrow the sync to documents relevant to that issue
+  3. Create a comment on the issue after sync completion
 - `--to-codex`: Push local files to codex repository
 - `--from-codex`: Pull files from codex to local cache
 - `--dry-run`: Preview what would be synced (no changes made)
@@ -26,6 +30,11 @@ If no direction is specified, performs bidirectional sync (both to-codex and fro
 - The user must manually fix their own configuration
 
 After the sync-manager agent returns, DO NOT take any follow-up actions to "help" fix problems. Simply report the results.
+
+The sync-manager will return a status indicating the outcome:
+- `success`: Sync completed successfully with no issues
+- `warning`: Sync completed but with conflicts or partial failures
+- `failure`: Sync failed entirely
 
 ```
 Task(
