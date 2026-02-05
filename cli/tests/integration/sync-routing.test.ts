@@ -74,7 +74,6 @@ describe('Routing-aware sync integration', () => {
         deleteOrphans: false,
         conflictStrategy: 'newest',
         routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
-        routing: { use_frontmatter: true }, // Enable frontmatter routing for this test
       },
     })
 
