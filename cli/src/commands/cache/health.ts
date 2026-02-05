@@ -52,7 +52,7 @@ async function checkConfiguration(): Promise<HealthCheck> {
           name: 'Configuration',
           status: 'warn',
           message: 'Legacy JSON configuration detected',
-          details: 'Run "fractary codex migrate" to upgrade to YAML format'
+          details: 'Migration from legacy JSON format may be required'
         };
       }
 
@@ -60,7 +60,7 @@ async function checkConfiguration(): Promise<HealthCheck> {
         name: 'Configuration',
         status: 'fail',
         message: 'No configuration found',
-        details: 'Run "fractary codex init" to create configuration'
+        details: 'Run "fractary-codex configure" to create configuration'
       };
     }
 
@@ -260,8 +260,8 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function healthCommand(): Command {
-  const cmd = new Command('health');
+export function cacheHealthCommand(): Command {
+  const cmd = new Command('cache-health');
 
   cmd
     .description('Run diagnostics on codex setup')
@@ -329,8 +329,7 @@ export function healthCommand(): Command {
         if (failed > 0 || warned > 0) {
           console.log('');
           console.log(chalk.dim('Run checks individually for more details:'));
-          console.log(chalk.dim('  fractary codex cache stats'));
-          console.log(chalk.dim('  fractary codex types list'));
+          console.log(chalk.dim('  fractary-codex cache-stats'));
         }
 
         // Exit with error if any checks failed

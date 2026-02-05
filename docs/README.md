@@ -97,12 +97,12 @@ Knowledge infrastructure for AI agents - enabling universal document references,
 
 2. **Initialize your project**:
    ```bash
-   fractary-codex init
+   fractary-codex configure
    ```
 
 3. **Fetch documents**:
    ```bash
-   fractary-codex fetch codex://myorg/project/docs/api.md
+   fractary-codex document-fetch codex://myorg/project/docs/api.md
    ```
 
 ## URI Format

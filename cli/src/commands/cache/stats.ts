@@ -18,7 +18,7 @@ function formatSize(bytes: number): string {
 }
 
 export function cacheStatsCommand(): Command {
-  const cmd = new Command('stats');
+  const cmd = new Command('cache-stats');
 
   cmd
     .description('Display cache statistics')
@@ -53,7 +53,7 @@ export function cacheStatsCommand(): Command {
         console.log(`Cache health: ${healthColor(`${healthPercent.toFixed(0)}% fresh`)}`);
 
         if (stats.expiredCount > 0) {
-          console.log(chalk.dim('\nRun "fractary codex cache clear --pattern <pattern>" to clean up entries.'));
+          console.log(chalk.dim('\nRun "fractary-codex cache-clear --pattern <pattern>" to clean up entries.'));
         }
 
         if (stats.entryCount === 0) {

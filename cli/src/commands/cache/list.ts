@@ -4,7 +4,7 @@
  * Lists cache information using SDK's CacheManager
  *
  * Note: The SDK's CacheManager doesn't expose individual cache entries.
- * Use 'cache stats' for detailed cache statistics.
+ * Use 'cache-stats' for detailed cache statistics.
  */
 
 import { Command } from 'commander';
@@ -21,7 +21,7 @@ function formatSize(bytes: number): string {
 }
 
 export function cacheListCommand(): Command {
-  const cmd = new Command('list');
+  const cmd = new Command('cache-list');
 
   cmd
     .description('List cache information')
@@ -76,8 +76,8 @@ export function cacheListCommand(): Command {
         console.log('');
 
         console.log(chalk.dim('Note: Individual cache entries are managed by the SDK.'));
-        console.log(chalk.dim('Use "fractary codex cache stats" for detailed statistics.'));
-        console.log(chalk.dim('Use "fractary codex cache clear" to clear cache entries.'));
+        console.log(chalk.dim('Use "fractary-codex cache-stats" for detailed statistics.'));
+        console.log(chalk.dim('Use "fractary-codex cache-clear" to clear cache entries.'));
 
       } catch (error: any) {
         console.error(chalk.red('Error:'), error.message);

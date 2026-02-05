@@ -7,11 +7,10 @@
  */
 
 import { Command } from 'commander';
-import { documentCommand } from './commands/document/index.js';
-import { configCommand } from './commands/config/index.js';
-import { cacheCommand } from './commands/cache/index.js';
+import { configureCommand } from './commands/config/index.js';
+import { documentFetchCommand } from './commands/document/index.js';
+import { cacheListCommand, cacheClearCommand, cacheStatsCommand, cacheHealthCommand } from './commands/cache/index.js';
 import { syncCommand } from './commands/sync.js';
-import { typesCommand } from './commands/types/index.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -32,12 +31,14 @@ function createCLI(): Command {
     .description('Centralized knowledge management and distribution for AI agents')
     .version(VERSION);
 
-  // Core commands (v3.0 - noun-verb pattern)
-  program.addCommand(documentCommand());  // Document operations (fetch)
-  program.addCommand(configCommand());    // Configuration operations (init, migrate)
-  program.addCommand(cacheCommand());     // Cache management (list, clear, stats, health)
-  program.addCommand(syncCommand());      // Bidirectional sync
-  program.addCommand(typesCommand());     // Type registry (list, show, add, remove)
+  // Top-level commands (hyphenated naming to match plugin conventions)
+  program.addCommand(configureCommand());      // Initialize configuration
+  program.addCommand(documentFetchCommand());  // Fetch documents by URI
+  program.addCommand(cacheListCommand());      // List cache entries
+  program.addCommand(cacheClearCommand());     // Clear cache entries
+  program.addCommand(cacheStatsCommand());     // Display cache statistics
+  program.addCommand(cacheHealthCommand());    // Run diagnostics
+  program.addCommand(syncCommand());           // Bidirectional sync
 
   return program;
 }

@@ -1,5 +1,5 @@
 /**
- * Initialize Codex project command
+ * Configure Codex project command
  *
  * Creates .fractary/config.yaml (unified config) with:
  * - Organization detection from git remote
@@ -257,8 +257,8 @@ export async function installMcpServer(
   };
 }
 
-export function initCommand(): Command {
-  const cmd = new Command('init');
+export function configureCommand(): Command {
+  const cmd = new Command('configure');
 
   cmd
     .description('Initialize unified Fractary configuration (.fractary/config.yaml)')
