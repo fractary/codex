@@ -63,12 +63,12 @@ Radical simplification of the codex plugin:
 1. **config-manager** (or alternatives: `config-config-manager`, `setup-manager`)
    - File: `plugins/codex/agents/config-manager.md`
    - Purpose: Initialize codex config
-   - Model: opus-4-5
+   - Model: opus-4-6
 
 2. **sync-manager** (or alternatives: `syncer`, `sync-manager`, `bidirectional-syncer`)
    - File: `plugins/codex/agents/sync-manager.md`
    - Purpose: Sync project with codex
-   - Model: opus-4-5
+   - Model: opus-4-6
 
 ### Agents to REMOVE (1)
 1. `codex-manager` - Deprecated monolithic agent
@@ -100,7 +100,7 @@ Radical simplification of the codex plugin:
 ```yaml
 ---
 name: config-manager
-model: claude-opus-4-5
+model: claude-opus-4-6
 description: Initialize codex plugin configuration
 tools: Bash, Skill
 color: blue
@@ -138,7 +138,7 @@ color: blue
 ```yaml
 ---
 name: sync-manager
-model: claude-opus-4-5
+model: claude-opus-4-6
 description: Sync project bidirectionally with codex repository
 tools: Bash, Skill
 color: green
