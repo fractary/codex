@@ -13,9 +13,11 @@ export {
   CODEX_TOOLS,
   handleToolCall,
   handleFetch,
-  handleSearch,
   handleList,
   handleCacheClear,
+  handleCacheStats,
+  handleCacheHealth,
+  handleFileSourcesList,
   type ToolHandlerContext,
 } from './tools.js'
 
@@ -27,10 +29,10 @@ export type {
   McpCapabilities,
   McpServerInfo,
   FetchToolArgs,
-  SearchToolArgs,
   ListToolArgs,
   CacheClearToolArgs,
+  CacheStatsToolArgs,
+  CacheHealthToolArgs,
   ToolResult,
   ResourceContent,
-  SearchResult,
 } from './types.js'

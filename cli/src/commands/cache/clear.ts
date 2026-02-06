@@ -6,6 +6,7 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { formatBytes } from '@fractary/codex';
 import { getClient } from '../../client/get-client';
 
 export function cacheClearCommand(): Command {
@@ -55,7 +56,7 @@ export function cacheClearCommand(): Command {
           } else {
             console.log(chalk.dim(`  All cache entries (${statsBefore.entryCount} entries)`));
           }
-          console.log(chalk.dim(`\nTotal size: ${formatSize(statsBefore.totalSize)}`));
+          console.log(chalk.dim(`\nTotal size: ${formatBytes(statsBefore.totalSize)}`));
           return;
         }
 
@@ -74,10 +75,10 @@ export function cacheClearCommand(): Command {
         const sizeFreed = statsBefore.totalSize - statsAfter.totalSize;
 
         // Summary
-        console.log(chalk.green(`✓ Cleared ${entriesCleared} entries (${formatSize(sizeFreed)} freed)`));
+        console.log(chalk.green(`✓ Cleared ${entriesCleared} entries (${formatBytes(sizeFreed)} freed)`));
 
         if (statsAfter.entryCount > 0) {
-          console.log(chalk.dim(`  Remaining: ${statsAfter.entryCount} entries (${formatSize(statsAfter.totalSize)})`));
+          console.log(chalk.dim(`  Remaining: ${statsAfter.entryCount} entries (${formatBytes(statsAfter.totalSize)})`));
         }
 
       } catch (error: any) {
@@ -87,13 +88,4 @@ export function cacheClearCommand(): Command {
     });
 
   return cmd;
-}
-
-/**
- * Format file size
- */
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

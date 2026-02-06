@@ -6,7 +6,7 @@
  */
 
 // Export client types for programmatic use
-export type { CodexClient, CodexClientOptions, FetchOptions, FetchResult } from './client/codex-client.js';
+export type { CodexClient, CodexClientOptions, ClientFetchOptions, ClientFetchResult } from './client/codex-client.js';
 export { getClient, resetClient, isClientInitialized } from './client/get-client.js';
 
 // Export configuration types

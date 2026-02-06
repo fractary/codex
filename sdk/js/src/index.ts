@@ -374,3 +374,13 @@ export {
   isValidDuration,
   isValidSize,
 } from './core/utils/index.js'
+
+// Client - High-level facade
+export {
+  CodexClient,
+  createCodexClient,
+  type CodexClientOptions,
+  type ClientFetchOptions,
+  type ClientFetchResult,
+  type HealthCheck,
+} from './client/codex-client.js'

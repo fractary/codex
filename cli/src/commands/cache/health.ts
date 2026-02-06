@@ -14,6 +14,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { formatBytes } from '@fractary/codex';
 import { getClient } from '../../client/get-client';
 import { readYamlConfig } from '../../config/migrate-config';
 
@@ -161,7 +162,7 @@ async function checkCache(): Promise<HealthCheck> {
       name: 'Cache',
       status: 'pass',
       message: `${stats.entryCount} entries (${healthPercent.toFixed(0)}% fresh)`,
-      details: `${formatSize(stats.totalSize)} total`
+      details: `${formatBytes(stats.totalSize)} total`
     };
 
   } catch (error: any) {
@@ -251,14 +252,6 @@ async function checkTypes(): Promise<HealthCheck> {
   }
 }
 
-/**
- * Format file size
- */
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 export function cacheHealthCommand(): Command {
   const cmd = new Command('cache-health');

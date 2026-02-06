@@ -6,16 +6,8 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { formatBytes } from '@fractary/codex';
 import { getClient } from '../../client/get-client';
-
-/**
- * Format file size
- */
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 export function cacheStatsCommand(): Command {
   const cmd = new Command('cache-stats');
@@ -41,7 +33,7 @@ export function cacheStatsCommand(): Command {
 
         console.log(chalk.bold('Overview'));
         console.log(`  Total entries:     ${chalk.cyan(stats.entryCount.toString())}`);
-        console.log(`  Total size:        ${chalk.cyan(formatSize(stats.totalSize))}`);
+        console.log(`  Total size:        ${chalk.cyan(formatBytes(stats.totalSize))}`);
         console.log(`  Fresh entries:     ${chalk.green(stats.freshCount.toString())}`);
         console.log(`  Stale entries:     ${stats.staleCount > 0 ? chalk.yellow(stats.staleCount.toString()) : chalk.dim('0')}`);
         console.log(`  Expired entries:   ${stats.expiredCount > 0 ? chalk.red(stats.expiredCount.toString()) : chalk.dim('0')}`);

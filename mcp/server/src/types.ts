@@ -51,22 +51,6 @@ export interface FetchToolArgs {
 }
 
 /**
- * Tool call arguments for search tool
- */
-export interface SearchToolArgs {
-  /** Search query */
-  query: string
-  /** Organization to search within */
-  org?: string
-  /** Project to search within */
-  project?: string
-  /** Maximum number of results */
-  limit?: number
-  /** File type filter */
-  type?: string
-}
-
-/**
  * Tool call arguments for list tool
  */
 export interface ListToolArgs {
@@ -84,6 +68,22 @@ export interface ListToolArgs {
 export interface CacheClearToolArgs {
   /** URI pattern to clear from cache (regex) */
   pattern: string
+}
+
+/**
+ * Tool call arguments for cache stats tool
+ */
+export interface CacheStatsToolArgs {
+  /** Return raw JSON stats object */
+  json?: boolean
+}
+
+/**
+ * Tool call arguments for cache health tool
+ */
+export interface CacheHealthToolArgs {
+  /** Return raw JSON health check results */
+  json?: boolean
 }
 
 /**
@@ -136,15 +136,4 @@ export interface McpServerInfo {
   name: string
   version: string
   capabilities: McpCapabilities
-}
-
-/**
- * Search result entry
- */
-export interface SearchResult {
-  uri: string
-  title?: string
-  snippet?: string
-  score?: number
-  metadata?: Record<string, unknown>
 }

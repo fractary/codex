@@ -5,9 +5,7 @@
  * This server can be used standalone or embedded in other applications.
  */
 
-import type { CacheManager } from '@fractary/codex'
-import type { StorageManager } from '@fractary/codex'
-import { resolveReference } from '@fractary/codex'
+import type { CodexClient } from '@fractary/codex'
 import type {
   McpServerInfo,
   McpCapabilities,
@@ -27,10 +25,8 @@ export interface McpServerConfig {
   name?: string
   /** Server version */
   version?: string
-  /** Cache manager instance */
-  cache: CacheManager
-  /** Storage manager instance */
-  storage: StorageManager
+  /** CodexClient instance */
+  client: CodexClient
 }
 
 /**
@@ -40,20 +36,18 @@ export interface McpServerConfig {
  * Codex functionality as MCP tools and resources.
  */
 export class McpServer {
-  private config: Required<Omit<McpServerConfig, 'cache' | 'storage'>> & Pick<McpServerConfig, 'cache' | 'storage'>
+  private config: Required<Omit<McpServerConfig, 'client'>> & Pick<McpServerConfig, 'client'>
   private toolContext: ToolHandlerContext
 
   constructor(config: McpServerConfig) {
     this.config = {
       name: config.name ?? 'codex',
       version: config.version ?? '1.0.0',
-      cache: config.cache,
-      storage: config.storage,
+      client: config.client,
     }
 
     this.toolContext = {
-      cache: config.cache,
-      storage: config.storage,
+      client: config.client,
     }
   }
 
@@ -101,13 +95,10 @@ export class McpServer {
    * List available resources
    */
   async listResources(): Promise<McpResource[]> {
-    // List cached documents as resources
     const resources: McpResource[] = []
 
-    // Get cache stats for info
-    const stats = await this.config.cache.getStats()
+    const stats = await this.config.client.getCacheStats()
 
-    // Add a summary resource
     resources.push({
       uri: 'codex://cache/summary',
       name: 'Cache Summary',
@@ -136,9 +127,8 @@ export class McpServer {
    * Read a resource
    */
   async readResource(uri: string): Promise<ResourceContent[]> {
-    // Handle special URIs
     if (uri === 'codex://cache/summary') {
-      const stats = await this.config.cache.getStats()
+      const stats = await this.config.client.getCacheStats()
       return [
         {
           uri,
@@ -153,17 +143,12 @@ export class McpServer {
       ]
     }
 
-    // Resolve and fetch the reference
-    const ref = resolveReference(uri)
-    if (!ref) {
-      throw new Error(`Invalid codex URI: ${uri}`)
-    }
-
-    const result = await this.config.cache.get(ref)
+    // Fetch via client
+    const result = await this.config.client.fetch(uri)
     return [
       {
         uri,
-        mimeType: result.contentType,
+        mimeType: result.contentType || 'text/markdown',
         text: result.content.toString('utf-8'),
       },
     ]
@@ -171,8 +156,6 @@ export class McpServer {
 
   /**
    * Handle JSON-RPC request
-   *
-   * This method handles the low-level MCP protocol messages.
    */
   async handleRequest(method: string, params?: Record<string, unknown>): Promise<unknown> {
     switch (method) {
