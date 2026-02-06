@@ -1,6 +1,6 @@
 # MCP Integration Guide
 
-This guide explains how to use the Fractary Codex MCP server with v3.0 architecture including on-demand fetch, offline mode, and multi-source support.
+This guide explains how to use the Fractary Codex MCP server with on-demand fetch, offline mode, and multi-source support.
 
 ## Table of Contents
 
@@ -55,13 +55,13 @@ This will:
 ./plugins/codex/scripts/install-mcp.sh
 ```
 
-This installs the `@fractary/codex-mcp` npm package via npx - no local build needed.
+This installs the `@fractary/codex-mcp-server` npm package via npx - no local build needed.
 
 **3. Restart Claude** to load the MCP server.
 
 **4. Verify setup:**
 ```bash
-/fractary-codex:validate-setup
+fractary-codex cache-health
 ```
 
 ## Using codex:// Resources
@@ -151,20 +151,12 @@ For GitHub sources, authentication tries in order:
 3. Git credential manager
 4. Public access (fallback)
 
-Configure in `.fractary/plugins/codex/config.json`:
-```json
-{
-  "auth": {
-    "default": "inherit",
-    "fallback_to_public": true
-  },
-  "sources": {
-    "partner-org": {
-      "type": "github-org",
-      "token_env": "PARTNER_TOKEN"
-    }
-  }
-}
+Configure in `.fractary/config.yaml`:
+```yaml
+codex:
+  remotes:
+    partner-org/shared-specs:
+      token: ${PARTNER_TOKEN}
 ```
 
 ## Offline Mode
@@ -208,48 +200,22 @@ When offline or fetch fails:
 
 ### Configuration File
 
-**Location:** `.fractary/plugins/codex/config.json`
+**Location:** `.fractary/config.yaml`
 
-**v3.0 Schema:**
-```json
-{
-  "version": "3.0",
-  "organization": "fractary",
-  "project_name": "my-project",
-  "codex_repo": "codex.fractary.com",
-
-  "cache": {
-    "default_ttl": 604800,
-    "check_expiration": true,
-    "fallback_to_stale": true,
-    "offline_mode": false,
-    "max_size_mb": 0,
-    "auto_cleanup": true,
-    "cleanup_interval_days": 7
-  },
-
-  "auth": {
-    "default": "inherit",
-    "fallback_to_public": true
-  },
-
-  "sources": {
-    "fractary": {
-      "type": "github-org",
-      "ttl": 1209600
-    },
-    "partner-org": {
-      "type": "github-org",
-      "token_env": "PARTNER_TOKEN"
-    },
-    "api-docs": {
-      "type": "http",
-      "base_url": "https://docs.example.com",
-      "ttl": 86400
-    }
-  }
-}
+```yaml
+codex:
+  schema_version: "2.0"
+  organization: fractary
+  project: my-project
+  codex_repo: codex.fractary.com
+  remotes:
+    fractary/codex.fractary.com:
+      token: ${GITHUB_TOKEN}
+    partner-org/shared-specs:
+      token: ${PARTNER_TOKEN}
 ```
+
+See the [Configuration Guide](../../../docs/configuration.md) for the full schema reference.
 
 ### Cache Settings
 
@@ -262,42 +228,6 @@ When offline or fetch fails:
 | `max_size_mb` | 0 | Maximum cache size (0 = unlimited) |
 | `auto_cleanup` | true | Automatically remove expired entries |
 
-### Source Configuration
-
-Sources define where documents can be fetched from:
-
-**GitHub Organization:**
-```json
-{
-  "fractary": {
-    "type": "github-org",
-    "ttl": 1209600,
-    "branch": "main"
-  }
-}
-```
-
-**HTTP Endpoint:**
-```json
-{
-  "api-docs": {
-    "type": "http",
-    "base_url": "https://docs.example.com",
-    "ttl": 86400
-  }
-}
-```
-
-**With Custom Authentication:**
-```json
-{
-  "private-org": {
-    "type": "github-org",
-    "token_env": "PRIVATE_ORG_TOKEN"
-  }
-}
-```
-
 ### MCP Server Registration
 
 The MCP server is registered in `.mcp.json`:
@@ -309,7 +239,7 @@ The MCP server is registered in `.mcp.json`:
       "command": "npx",
       "args": [
         "-y",
-        "@fractary/codex-mcp",
+        "@fractary/codex-mcp-server",
         "--config",
         ".fractary/config.yaml"
       ]
@@ -320,23 +250,8 @@ The MCP server is registered in `.mcp.json`:
 
 The server reads the config file specified via `--config` to find:
 - Cache location (`.fractary/codex/cache/`)
-- Source configuration
-- TTL and offline settings
-
-Alternatively, you can set the config path via environment variable:
-```json
-{
-  "mcpServers": {
-    "fractary-codex": {
-      "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp"],
-      "env": {
-        "FRACTARY_CONFIG": ".fractary/config.yaml"
-      }
-    }
-  }
-}
-```
+- Remote and storage provider configuration
+- Authentication tokens
 
 ## Context7 Integration
 
@@ -367,7 +282,7 @@ In `.mcp.json`:
     },
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
     }
   }
 }
@@ -390,9 +305,9 @@ Claude uses:
 
 ### Validate Setup
 
-First, run the setup validator:
+First, run the health check:
 ```bash
-/fractary-codex:validate-setup
+fractary-codex cache-health
 ```
 
 This checks:
@@ -404,7 +319,7 @@ This checks:
 ### MCP Server Not Appearing
 
 1. **Check Node.js version:** `node --version` (must be >= 18)
-2. **Verify npx works:** `npx -y @fractary/codex-mcp --help`
+2. **Verify npx works:** `npx -y @fractary/codex-mcp-server --help`
 3. **Check Claude logs** for MCP errors
 4. **Restart Claude** completely
 
@@ -487,6 +402,5 @@ This checks:
 ## Related Documentation
 
 - [README](../README.md) - Plugin overview
-- [MIGRATION-v3](./MIGRATION-v3.md) - Migration from v2.0
+- [MCP Server Documentation](../../../docs/mcp-server/) - Full MCP server reference
 - [Model Context Protocol](https://modelcontextprotocol.io)
-- [Context7 Documentation](https://context7.com/docs)

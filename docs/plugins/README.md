@@ -109,72 +109,72 @@ The MCP server automatically:
 
 ## Commands
 
-### `/fractary-codex:fetch`
+### `/fractary-codex:configure`
+
+Initialize or update codex configuration for your project.
+
+```bash
+/fractary-codex:configure
+
+# Specify explicitly
+/fractary-codex:configure --org fractary --codex codex.fractary.com
+
+# Update existing config with context
+/fractary-codex:configure --context "enable auto-sync"
+```
+
+### `/fractary-codex:sync`
+
+Sync project documentation with the codex repository.
+
+```bash
+/fractary-codex:sync                         # Bidirectional sync
+/fractary-codex:sync --to-codex              # One-way to codex
+/fractary-codex:sync --from-codex            # One-way from codex
+/fractary-codex:sync --dry-run               # Preview changes
+/fractary-codex:sync --env test              # Explicit environment
+/fractary-codex:sync --work-id 123           # Scope to GitHub issue
+```
+
+The following CLI commands are also available via the plugin tools or directly via the CLI (`fractary-codex <command>`):
+
+### `document-fetch`
 
 Fetch a document from codex by URI.
 
 ```bash
-/fractary-codex:fetch codex://org/project/path
+fractary-codex document-fetch codex://org/project/path
 
 # Force refresh (bypass cache)
-/fractary-codex:fetch codex://org/project/path --force-refresh
-
-# Custom TTL in seconds
-/fractary-codex:fetch codex://org/project/path --ttl 1209600
+fractary-codex document-fetch codex://org/project/path --bypass-cache
 ```
 
-### `/fractary-codex:cache-list`
+### `cache-list`
 
-List cached documents with freshness status.
+List cached documents with status.
 
 ```bash
-/fractary-codex:cache-list                    # All entries
-/fractary-codex:cache-list --fresh            # Only fresh
-/fractary-codex:cache-list --expired          # Only expired
-/fractary-codex:cache-list --project auth-service
+fractary-codex cache-list
+fractary-codex cache-list --json
 ```
 
-### `/fractary-codex:cache-clear`
+### `cache-clear`
 
-Clear cache entries by filter.
+Clear cache entries.
 
 ```bash
-/fractary-codex:cache-clear --expired         # Clear expired (safe)
-/fractary-codex:cache-clear --project auth-service
-/fractary-codex:cache-clear --pattern "**/*.md"
-/fractary-codex:cache-clear --all             # Clear everything
-/fractary-codex:cache-clear --dry-run         # Preview first
+fractary-codex cache-clear --all             # Clear everything
+fractary-codex cache-clear --pattern "**/*.md"
+fractary-codex cache-clear --dry-run         # Preview first
 ```
 
-### `/fractary-codex:sync-project`
-
-Sync single project with codex.
-
-```bash
-/fractary-codex:sync-project                  # Auto-detect environment
-/fractary-codex:sync-project --env test       # Explicit environment
-/fractary-codex:sync-project --to-codex       # One-way to codex
-/fractary-codex:sync-project --from-codex     # One-way from codex
-/fractary-codex:sync-project --dry-run        # Preview changes
-```
-
-### `/fractary-codex:sync-org`
-
-Sync entire organization with codex.
-
-```bash
-/fractary-codex:sync-org --env test
-/fractary-codex:sync-org --exclude "temp-*"
-```
-
-### `/fractary-codex:health`
+### `cache-health`
 
 Run comprehensive health checks.
 
 ```bash
-/fractary-codex:health                    # Run all checks
-/fractary-codex:health --check cache      # Specific category
-/fractary-codex:health --fix              # Auto-repair issues
+fractary-codex cache-health
+fractary-codex cache-health --json
 ```
 
 ## Sync Configuration
@@ -307,7 +307,7 @@ from_codex:
 
 ## MCP Integration
 
-The codex plugin uses the standalone MCP server from `@fractary/codex-mcp` npm package.
+The codex plugin uses the standalone MCP server from `@fractary/codex-mcp-server` npm package.
 
 ### Setup
 
@@ -326,7 +326,7 @@ This automatically:
 **Verify:**
 
 ```bash
-/fractary-codex:validate-setup
+fractary-codex cache-health
 ```
 
 ### Usage
@@ -382,11 +382,11 @@ codex_sync_exclude:
 ├─────────────────────────────────────────────────┤
 │                                                  │
 │  Access Layer (Dual-Mode)                       │
-│  ├─ Plugin Commands  (/fractary-codex:fetch)    │
+│  ├─ Plugin Commands  (/fractary-codex:sync)     │
 │  └─ MCP Resources    (codex://{project}/{path}) │
 │                                                  │
 │  Routing Layer                                  │
-│  ├─ Reference Parser  (@codex/ → components)    │
+│  ├─ Reference Parser  (codex:// → components)   │
 │  └─ Source Router     (determine handler)       │
 │                                                  │
 │  Source Handlers                                │
@@ -408,17 +408,18 @@ codex_sync_exclude:
 ### Cache Structure
 
 ```
-.fractary/plugins/codex/
-├── config.json                 # Plugin configuration
-└── cache/                      # Ephemeral cache (gitignored)
-    ├── index.json             # Cache metadata index
-    └── fractary/              # Organization
-        ├── auth-service/
-        │   └── docs/
-        │       └── oauth.md   # Cached document
-        └── shared/
-            └── standards/
-                └── api-design.md
+.fractary/
+├── config.yaml                # Unified configuration (YAML)
+└── codex/
+    └── cache/                 # Ephemeral cache (gitignored)
+        ├── index.json         # Cache metadata index
+        └── fractary/          # Organization
+            ├── auth-service/
+            │   └── docs/
+            │       └── oauth.md   # Cached document
+            └── shared/
+                └── standards/
+                    └── api-design.md
 ```
 
 ## Troubleshooting
@@ -430,8 +431,8 @@ codex_sync_exclude:
 **Check:**
 
 ```bash
-/fractary-codex:validate-setup
-/fractary-codex:cache-list
+fractary-codex cache-health
+fractary-codex cache-list
 ls -la .fractary/codex/cache/index.json
 ```
 
@@ -458,8 +459,8 @@ codex_sync_include: ["your-project"]
 **Check:**
 
 ```bash
-/fractary-codex:validate-setup
-npx -y @fractary/codex-mcp --help
+fractary-codex cache-health
+npx -y @fractary/codex-mcp-server --help
 ```
 
 **Fix:**
@@ -531,35 +532,17 @@ ls your-project/.fractary/config.yaml
 
 **Location:** `.fractary/config.yaml`
 
-**Schema (v4.0):**
+**Schema:**
 
 ```yaml
-version: "4.0"
-organization: fractary
-project_name: my-project
-codex_repo: codex.fractary.com
-
-cache:
-  default_ttl: 604800
-  check_expiration: true
-  fallback_to_stale: true
-  offline_mode: false
-  max_size_mb: 0
-  auto_cleanup: true
-  cleanup_interval_days: 7
-
-auth:
-  default: inherit
-  fallback_to_public: true
-
-sources:
-  fractary:
-    type: github-org
-    ttl: 604800
-    branch: main
-  partner-org:
-    type: github-org
-    token_env: PARTNER_TOKEN
+codex:
+  schema_version: "2.0"
+  organization: fractary
+  project: my-project
+  codex_repo: codex.fractary.com
+  remotes:
+    fractary/codex.fractary.com:
+      token: ${GITHUB_TOKEN}
 
 sync:
   to_codex:
@@ -569,6 +552,8 @@ sync:
     - "codex://{org}/{codex_repo}/docs/**"
     - "codex://{org}/{project}/**"
 ```
+
+See [Configuration Guide](../configuration.md) for the complete configuration reference.
 
 ## See Also
 

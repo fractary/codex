@@ -441,7 +441,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CODEX_GITHUB_TOKEN }}
         run: |
           npm install -g @fractary/codex-cli
-          fractary-codex fetch codex://org/project/file.md
+          fractary-codex document-fetch codex://org/project/file.md
 ```
 
 ## Migration from SDK-Embedded MCP
@@ -506,7 +506,7 @@ cat .fractary/config.yaml | yq
 
 1. Check Claude Code settings for MCP server configuration
 2. Verify server is running: check for process
-3. Test fetch directly: `fractary-codex fetch codex://org/project/file.md`
+3. Test fetch directly: `fractary-codex document-fetch codex://org/project/file.md`
 
 **Solutions:**
 
@@ -514,8 +514,8 @@ cat .fractary/config.yaml | yq
 2. Verify the config path in settings.json is correct
 3. Ensure documents exist and are cached:
    ```bash
-   fractary-codex fetch codex://org/project/file.md
-   fractary-codex cache list
+   fractary-codex document-fetch codex://org/project/file.md
+   fractary-codex cache-list
    ```
 
 ### Fetch Returns 404
@@ -529,7 +529,7 @@ cat .fractary/config.yaml | yq
 gh api repos/org/project/contents/path/to/file.md
 
 # Check cache
-fractary-codex cache list --json | jq '.[] | select(.uri == "codex://org/project/path/to/file.md")'
+fractary-codex cache-list --json | jq '.[] | select(.uri == "codex://org/project/path/to/file.md")'
 ```
 
 **Solutions:**
@@ -567,13 +567,13 @@ curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
 
 ```bash
 # Force fresh fetch
-fractary-codex fetch codex://org/project/file.md --bypass-cache
+fractary-codex document-fetch codex://org/project/file.md --bypass-cache
 
 # Clear specific entry
-fractary-codex cache clear --pattern "org/project/file.md"
+fractary-codex cache-clear --pattern "org/project/file.md"
 
 # Clear all cache
-fractary-codex cache clear --all
+fractary-codex cache-clear --all
 ```
 
 ### Rate Limiting

@@ -39,6 +39,9 @@ A command-line interface is available for codex operations:
 # Initialize codex in your project
 fractary-codex configure
 
+# Sync project documentation with codex repository
+fractary-codex sync --dry-run
+
 # Fetch a document
 fractary-codex document-fetch codex://myorg/docs/api-guide.md
 
@@ -133,6 +136,11 @@ codex/
 │   └── server/             # MCP server (standalone)
 │       ├── src/            # Server source
 │       └── package.json    # npm configuration
+├── plugins/
+│   └── codex/              # Claude Code plugin
+│       ├── agents/         # Plugin agents
+│       ├── commands/        # Plugin commands
+│       └── skills/         # Plugin skills
 ├── docs/                   # Shared documentation
 ├── specs/                  # Feature specifications
 └── README.md               # This file
@@ -145,12 +153,12 @@ codex/
 - [JavaScript SDK](./sdk/js/README.md) - Installation and quick start for JS/TS
 - [Python SDK](./sdk/py/README.md) - Installation and quick start for Python
 
-### Guides
+### Reference
 
-- [CLI Integration Guide](./docs/guides/cli-integration.md) - How to integrate Codex into CLI applications
-- [API Reference](./docs/guides/api-reference.md) - Comprehensive API documentation
-- [Configuration Guide](./docs/guides/configuration.md) - Complete configuration reference
-- [Troubleshooting Guide](./docs/guides/troubleshooting.md) - Common issues and solutions
+- [Configuration Guide](./docs/configuration.md) - Complete configuration reference
+- [CLI Documentation](./docs/cli/) - Command-line interface reference
+- [MCP Server Documentation](./docs/mcp-server/) - AI agent integration
+- [Plugin Documentation](./docs/plugins/) - Claude Code plugin reference
 
 ### Examples
 
