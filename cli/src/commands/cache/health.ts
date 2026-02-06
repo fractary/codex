@@ -1,340 +1,139 @@
 /**
  * Health command (v3.0)
  *
- * Comprehensive diagnostics for codex SDK setup:
- * - YAML configuration validation
- * - CodexClient initialization
- * - Cache health via CacheManager
- * - Storage provider connectivity
- * - Type registry validation
- * - Legacy configuration detection
+ * Comprehensive diagnostics for codex SDK setup using SDK's HealthChecker.
+ * This is a thin wrapper around the centralized health checking logic in the SDK.
  */
 
-import { Command } from 'commander';
-import chalk from 'chalk';
-import * as path from 'path';
-import * as fs from 'fs/promises';
-import { formatBytes } from '@fractary/codex';
-import { getClient } from '../../client/get-client';
-import { readYamlConfig } from '../../config/migrate-config';
-
-interface HealthCheck {
-  name: string;
-  status: 'pass' | 'warn' | 'fail';
-  message: string;
-  details?: string;
-}
-
-/**
- * Check if file exists
- */
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Check YAML configuration
- */
-async function checkConfiguration(): Promise<HealthCheck> {
-  const configPath = path.join(process.cwd(), '.fractary', 'config.yaml');
-  const legacyConfigPath = path.join(process.cwd(), '.fractary', 'plugins', 'codex', 'config.json');
-
-  try {
-    // Check for YAML config
-    if (!await fileExists(configPath)) {
-      // Check for legacy config
-      if (await fileExists(legacyConfigPath)) {
-        return {
-          name: 'Configuration',
-          status: 'warn',
-          message: 'Legacy JSON configuration detected',
-          details: 'Migration from legacy JSON format may be required'
-        };
-      }
-
-      return {
-        name: 'Configuration',
-        status: 'fail',
-        message: 'No configuration found',
-        details: 'Run "fractary-codex configure" to create configuration'
-      };
-    }
-
-    // Validate YAML config
-    const config = await readYamlConfig(configPath);
-
-    if (!config.organization) {
-      return {
-        name: 'Configuration',
-        status: 'warn',
-        message: 'No organization configured',
-        details: 'Organization slug is required'
-      };
-    }
-
-    // Check storage providers
-    const providerCount = config.storage?.length || 0;
-    if (providerCount === 0) {
-      return {
-        name: 'Configuration',
-        status: 'warn',
-        message: 'No storage providers configured',
-        details: 'At least one storage provider is recommended'
-      };
-    }
-
-    return {
-      name: 'Configuration',
-      status: 'pass',
-      message: 'Valid YAML configuration',
-      details: `Organization: ${config.organization}, ${providerCount} storage provider(s)`
-    };
-
-  } catch (error: any) {
-    return {
-      name: 'Configuration',
-      status: 'fail',
-      message: 'Invalid configuration',
-      details: error.message
-    };
-  }
-}
-
-/**
- * Check SDK client initialization
- */
-async function checkSDKClient(): Promise<HealthCheck> {
-  try {
-    const client = await getClient();
-    const organization = client.getOrganization();
-
-    return {
-      name: 'SDK Client',
-      status: 'pass',
-      message: 'CodexClient initialized successfully',
-      details: `Organization: ${organization}`
-    };
-
-  } catch (error: any) {
-    return {
-      name: 'SDK Client',
-      status: 'fail',
-      message: 'Failed to initialize CodexClient',
-      details: error.message
-    };
-  }
-}
-
-/**
- * Check cache health
- */
-async function checkCache(): Promise<HealthCheck> {
-  try {
-    const client = await getClient();
-    const stats = await client.getCacheStats();
-
-    if (stats.entryCount === 0) {
-      return {
-        name: 'Cache',
-        status: 'warn',
-        message: 'Cache is empty',
-        details: 'Fetch some documents to populate cache'
-      };
-    }
-
-    const healthPercent = stats.entryCount > 0 ? (stats.freshCount / stats.entryCount) * 100 : 100;
-
-    if (healthPercent < 50) {
-      return {
-        name: 'Cache',
-        status: 'warn',
-        message: `${stats.entryCount} entries (${healthPercent.toFixed(0)}% fresh)`,
-        details: `${stats.expiredCount} expired, ${stats.staleCount} stale`
-      };
-    }
-
-    return {
-      name: 'Cache',
-      status: 'pass',
-      message: `${stats.entryCount} entries (${healthPercent.toFixed(0)}% fresh)`,
-      details: `${formatBytes(stats.totalSize)} total`
-    };
-
-  } catch (error: any) {
-    return {
-      name: 'Cache',
-      status: 'fail',
-      message: 'Cache check failed',
-      details: error.message
-    };
-  }
-}
-
-/**
- * Check storage providers
- */
-async function checkStorage(): Promise<HealthCheck> {
-  const configPath = path.join(process.cwd(), '.fractary', 'config.yaml');
-
-  try {
-    const config = await readYamlConfig(configPath);
-    const providers = config.storage || [];
-
-    if (providers.length === 0) {
-      return {
-        name: 'Storage',
-        status: 'warn',
-        message: 'No storage providers configured',
-        details: 'Configure at least one provider in .fractary/config.yaml'
-      };
-    }
-
-    const providerTypes = providers.map(p => p.type).join(', ');
-    const hasGitHub = providers.some(p => p.type === 'github');
-
-    if (hasGitHub && !process.env.GITHUB_TOKEN) {
-      return {
-        name: 'Storage',
-        status: 'warn',
-        message: `${providers.length} provider(s): ${providerTypes}`,
-        details: 'GITHUB_TOKEN not set (required for GitHub provider)'
-      };
-    }
-
-    return {
-      name: 'Storage',
-      status: 'pass',
-      message: `${providers.length} provider(s): ${providerTypes}`,
-      details: 'All configured providers available'
-    };
-
-  } catch (error: any) {
-    return {
-      name: 'Storage',
-      status: 'fail',
-      message: 'Storage check failed',
-      details: error.message
-    };
-  }
-}
-
-/**
- * Check type registry
- */
-async function checkTypes(): Promise<HealthCheck> {
-  try {
-    const client = await getClient();
-    const registry = client.getTypeRegistry();
-    const allTypes = registry.list();
-
-    const builtinCount = allTypes.filter(t => registry.isBuiltIn(t.name)).length;
-    const customCount = allTypes.length - builtinCount;
-
-    return {
-      name: 'Type Registry',
-      status: 'pass',
-      message: `${allTypes.length} types registered`,
-      details: `${builtinCount} built-in, ${customCount} custom`
-    };
-
-  } catch (error: any) {
-    return {
-      name: 'Type Registry',
-      status: 'fail',
-      message: 'Type registry check failed',
-      details: error.message
-    };
-  }
-}
-
+import { Command } from 'commander'
+import chalk from 'chalk'
+import { createHealthChecker, type HealthCheck, type HealthResult } from '@fractary/codex'
+import { getClient } from '../../client/get-client'
 
 export function cacheHealthCommand(): Command {
-  const cmd = new Command('cache-health');
+  const cmd = new Command('cache-health')
 
   cmd
     .description('Run diagnostics on codex setup')
     .option('--json', 'Output as JSON')
     .action(async (options) => {
       try {
-        // Run all health checks
-        const checks: HealthCheck[] = [];
+        // Create health checker
+        const healthChecker = createHealthChecker({
+          projectRoot: process.cwd(),
+        })
 
-        checks.push(await checkConfiguration());
-        checks.push(await checkSDKClient());
-        checks.push(await checkCache());
-        checks.push(await checkStorage());
-        checks.push(await checkTypes());
+        // Run configuration and storage checks (don't require client)
+        const checks: HealthCheck[] = []
 
-        // Count results
-        const passed = checks.filter(c => c.status === 'pass').length;
-        const warned = checks.filter(c => c.status === 'warn').length;
-        const failed = checks.filter(c => c.status === 'fail').length;
+        checks.push(await healthChecker.checkConfiguration())
+        checks.push(await healthChecker.checkStorage())
+
+        // Try to get client for cache and type registry checks
+        try {
+          const client = await getClient()
+
+          // Check SDK client initialization
+          const organization = client.getOrganization()
+          checks.push({
+            name: 'SDK Client',
+            status: 'pass',
+            message: 'CodexClient initialized successfully',
+            details: `Organization: ${organization}`,
+          })
+
+          // Check cache using client's stats
+          const cacheStats = await client.getCacheStats()
+          checks.push(healthChecker.checkCacheFromStats(cacheStats))
+
+          // Check type registry using client's registry
+          const registry = client.getTypeRegistry()
+          checks.push(healthChecker.checkTypesFromRegistry(registry))
+        } catch (error: any) {
+          // Client initialization failed
+          checks.push({
+            name: 'SDK Client',
+            status: 'fail',
+            message: 'Failed to initialize CodexClient',
+            details: error.message,
+          })
+
+          // Add placeholder checks for cache and types
+          checks.push({
+            name: 'Cache',
+            status: 'warn',
+            message: 'Cache check skipped',
+            details: 'SDK client not available',
+          })
+
+          checks.push({
+            name: 'Type Registry',
+            status: 'warn',
+            message: 'Type registry check skipped',
+            details: 'SDK client not available',
+          })
+        }
+
+        // Summarize results
+        const result: HealthResult = healthChecker.summarize(checks)
 
         if (options.json) {
-          console.log(JSON.stringify({
-            summary: {
-              total: checks.length,
-              passed,
-              warned,
-              failed,
-              healthy: failed === 0
-            },
-            checks
-          }, null, 2));
-          return;
+          console.log(JSON.stringify(result, null, 2))
+          return
         }
 
         // Display results
-        console.log(chalk.bold('Codex Health Check\n'));
+        console.log(chalk.bold('Codex Health Check\n'))
 
-        for (const check of checks) {
-          const icon = check.status === 'pass' ? chalk.green('✓') :
-                       check.status === 'warn' ? chalk.yellow('⚠') :
-                       chalk.red('✗');
+        for (const check of result.checks) {
+          const icon =
+            check.status === 'pass'
+              ? chalk.green('✓')
+              : check.status === 'warn'
+                ? chalk.yellow('⚠')
+                : chalk.red('✗')
 
-          const statusColor = check.status === 'pass' ? chalk.green :
-                              check.status === 'warn' ? chalk.yellow :
-                              chalk.red;
+          const statusColor =
+            check.status === 'pass' ? chalk.green : check.status === 'warn' ? chalk.yellow : chalk.red
 
-          console.log(`${icon} ${chalk.bold(check.name)}`);
-          console.log(`  ${statusColor(check.message)}`);
+          console.log(`${icon} ${chalk.bold(check.name)}`)
+          console.log(`  ${statusColor(check.message)}`)
           if (check.details) {
-            console.log(`  ${chalk.dim(check.details)}`);
+            console.log(`  ${chalk.dim(check.details)}`)
           }
-          console.log('');
+          console.log('')
         }
 
         // Summary
-        console.log(chalk.dim('─'.repeat(60)));
+        console.log(chalk.dim('─'.repeat(60)))
 
-        const overallStatus = failed > 0 ? chalk.red('UNHEALTHY') :
-                              warned > 0 ? chalk.yellow('DEGRADED') :
-                              chalk.green('HEALTHY');
+        const overallStatus =
+          result.summary.status === 'unhealthy'
+            ? chalk.red('UNHEALTHY')
+            : result.summary.status === 'degraded'
+              ? chalk.yellow('DEGRADED')
+              : chalk.green('HEALTHY')
 
-        console.log(`Status: ${overallStatus}`);
-        console.log(chalk.dim(`${passed} passed, ${warned} warnings, ${failed} failed`));
+        console.log(`Status: ${overallStatus}`)
+        console.log(
+          chalk.dim(`${result.summary.passed} passed, ${result.summary.warned} warnings, ${result.summary.failed} failed`)
+        )
 
-        if (failed > 0 || warned > 0) {
-          console.log('');
-          console.log(chalk.dim('Run checks individually for more details:'));
-          console.log(chalk.dim('  fractary-codex cache-stats'));
+        if (result.summary.failed > 0 || result.summary.warned > 0) {
+          console.log('')
+          console.log(chalk.dim('Run checks individually for more details:'))
+          console.log(chalk.dim('  fractary-codex cache-stats'))
         }
 
         // Exit with error if any checks failed
-        if (failed > 0) {
-          process.exit(1);
+        if (result.summary.failed > 0) {
+          process.exit(1)
         }
-
       } catch (error: any) {
-        console.error(chalk.red('Error:'), error.message);
-        process.exit(1);
+        console.error(chalk.red('Error:'), error.message)
+        process.exit(1)
       }
-    });
+    })
 
-  return cmd;
+  return cmd
 }

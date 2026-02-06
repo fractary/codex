@@ -89,7 +89,7 @@ export {
   type Metadata,
   type AutoSyncPattern,
   type SyncRules,
-  type CodexConfig,
+  type CodexConfig as SchemaCodexConfig,
 } from './schemas/index.js'
 
 // Metadata parsing
@@ -126,11 +126,43 @@ export {
   getSyncPresetNames,
   substitutePatternPlaceholders,
   generateSyncConfigFromPreset,
+  // ConfigManager - centralized configuration management
+  ConfigManager,
+  createConfigManager,
+  validateNameFormat,
+  validateOrganizationName,
+  validateRepositoryName,
+  detectOrganizationFromGit,
+  detectProjectName,
+  discoverCodexRepo,
+  STANDARD_DIRECTORIES,
+  ensureDirectoryStructure,
+  DEFAULT_FRACTARY_GITIGNORE,
+  normalizeCachePath,
+  ensureCachePathIgnored,
+  installMcpServer,
+  sanitizeForS3BucketName,
+  generateUnifiedConfig,
+  readUnifiedConfig,
+  writeUnifiedConfig,
+  mergeUnifiedConfigs,
   type LoadConfigOptions,
   type ResolveOrgOptions,
   type SyncPreset,
   type SyncPresetConfig,
   type GenerateSyncConfigOptions,
+  type NameValidationResult,
+  type DiscoverCodexRepoResult,
+  type McpInstallResult,
+  type DirectoryStructureResult,
+  type GitignoreResult,
+  type RemoteConfig,
+  type CodexConfig,
+  type FileSourceConfig,
+  type FilePluginConfig,
+  type UnifiedConfig,
+  type ConfigInitOptions,
+  type ConfigInitResult,
 } from './core/config/index.js'
 
 // Routing
@@ -214,6 +246,10 @@ export {
   setDefaultCacheManager,
   type CacheManagerConfig,
   type CacheLookupResult,
+  // Cache entry listing
+  type CacheEntryInfo,
+  type ListEntriesOptions,
+  type ListEntriesResult,
 } from './cache/index.js'
 
 // Sync - File synchronization
@@ -339,10 +375,10 @@ export {
 // YAML configuration utilities
 export {
   readCodexConfig,
-  readUnifiedConfig,
+  readUnifiedConfig as readYamlUnifiedConfig,
   isUnifiedConfig,
   type CodexYamlConfig,
-  type UnifiedConfig,
+  type UnifiedConfig as YamlUnifiedConfig,
   type ReadConfigOptions,
   type StorageProviderType as YamlStorageProviderType,
   type LocalStorageConfig as YamlLocalStorageConfig,
@@ -375,6 +411,19 @@ export {
   isValidSize,
 } from './core/utils/index.js'
 
+// Health checking
+export {
+  HealthChecker,
+  createHealthChecker,
+  type HealthStatus,
+  type HealthCheck,
+  type HealthSummary,
+  type HealthResult,
+  type StorageProviderInfo,
+  type HealthConfig,
+  type HealthCheckerOptions,
+} from './health/index.js'
+
 // Client - High-level facade
 export {
   CodexClient,
@@ -382,5 +431,4 @@ export {
   type CodexClientOptions,
   type ClientFetchOptions,
   type ClientFetchResult,
-  type HealthCheck,
 } from './client/codex-client.js'

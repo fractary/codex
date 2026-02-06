@@ -12,7 +12,6 @@ export {
   type CodexClientOptions,
   type ClientFetchOptions,
   type ClientFetchResult,
-  type HealthCheck,
 } from '@fractary/codex';
 
 // Re-export SDK error classes for convenience

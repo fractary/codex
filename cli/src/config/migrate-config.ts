@@ -11,7 +11,6 @@ import * as yaml from 'js-yaml'
 import {
   type CodexYamlConfig,
   type LegacyCodexConfig,
-  type StorageProviderConfig,
 } from './config-types'
 // Re-export readCodexConfig from SDK for backward compatibility
 export { readCodexConfig as readYamlConfig } from '@fractary/codex'
@@ -141,13 +140,14 @@ export async function migrateConfig(
       };
 
       for (const customType of legacy.types.custom) {
-        if (customType.name) {
-          yamlConfig.types.custom[customType.name] = {
-            description: customType.description,
-            patterns: customType.patterns || [],
-            defaultTtl: customType.defaultTtl,
-            archiveAfterDays: customType.archiveAfterDays,
-            archiveStorage: customType.archiveStorage
+        const ct = customType as any;
+        if (ct.name) {
+          yamlConfig.types!.custom![ct.name] = {
+            description: ct.description,
+            patterns: ct.patterns || [],
+            defaultTtl: ct.defaultTtl,
+            archiveAfterDays: ct.archiveAfterDays,
+            archiveStorage: ct.archiveStorage
           };
         }
       }

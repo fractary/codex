@@ -5,10 +5,11 @@
  * and type registry access. Used by both CLI and MCP server.
  */
 
-import type { CacheManager, CacheStats } from '../cache/index.js'
+import type { CacheManager, CacheStats, ListEntriesOptions, ListEntriesResult } from '../cache/index.js'
 import type { StorageManager } from '../storage/index.js'
 import type { TypeRegistry } from '../types/index.js'
 import type { UnifiedConfig, CodexYamlConfig } from '../core/yaml/index.js'
+import type { HealthCheck } from '../health/index.js'
 
 /**
  * Options for creating CodexClient
@@ -46,16 +47,6 @@ export interface ClientFetchResult {
     expiresAt?: string
     contentLength?: number
   }
-}
-
-/**
- * Health check result
- */
-export interface HealthCheck {
-  name: string
-  status: 'pass' | 'warn' | 'fail'
-  message: string
-  details?: string
 }
 
 /**
@@ -296,6 +287,13 @@ export class CodexClient {
    */
   async getCacheStats(): Promise<CacheStats & { memoryEntries: number; memorySize: number }> {
     return this.cache.getStats()
+  }
+
+  /**
+   * List cache entries with filtering, sorting, and pagination
+   */
+  async listCacheEntries(options?: ListEntriesOptions): Promise<ListEntriesResult> {
+    return this.cache.listEntries(options)
   }
 
   /**
