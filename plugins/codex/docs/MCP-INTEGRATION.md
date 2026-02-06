@@ -239,7 +239,7 @@ The MCP server is registered in `.mcp.json`:
       "command": "npx",
       "args": [
         "-y",
-        "@fractary/codex-mcp-server-server",
+        "@fractary/codex-mcp-server",
         "--config",
         ".fractary/config.yaml"
       ]
@@ -319,7 +319,7 @@ This checks:
 ### MCP Server Not Appearing
 
 1. **Check Node.js version:** `node --version` (must be >= 18)
-2. **Verify npx works:** `npx -y @fractary/codex-mcp-server-server --help`
+2. **Verify npx works:** `npx -y @fractary/codex-mcp-server --help`
 3. **Check Claude logs** for MCP errors
 4. **Restart Claude** completely
 
