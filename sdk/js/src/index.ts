@@ -89,7 +89,7 @@ export {
   type Metadata,
   type AutoSyncPattern,
   type SyncRules,
-  type CodexConfig,
+  type CodexConfig as SchemaCodexConfig,
 } from './schemas/index.js'
 
 // Metadata parsing
@@ -156,7 +156,7 @@ export {
   type McpInstallResult,
   type DirectoryStructureResult,
   type GitignoreResult,
-  type RemoteConfig as ConfigRemoteConfig,
+  type RemoteConfig,
   type CodexConfig,
   type FileSourceConfig,
   type FilePluginConfig,
@@ -375,10 +375,10 @@ export {
 // YAML configuration utilities
 export {
   readCodexConfig,
-  readUnifiedConfig,
+  readUnifiedConfig as readYamlUnifiedConfig,
   isUnifiedConfig,
   type CodexYamlConfig,
-  type UnifiedConfig,
+  type UnifiedConfig as YamlUnifiedConfig,
   type ReadConfigOptions,
   type StorageProviderType as YamlStorageProviderType,
   type LocalStorageConfig as YamlLocalStorageConfig,
@@ -423,3 +423,12 @@ export {
   type HealthConfig,
   type HealthCheckerOptions,
 } from './health/index.js'
+
+// Client - High-level facade
+export {
+  CodexClient,
+  createCodexClient,
+  type CodexClientOptions,
+  type ClientFetchOptions,
+  type ClientFetchResult,
+} from './client/codex-client.js'

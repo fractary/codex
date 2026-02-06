@@ -3,26 +3,23 @@ import {
   CODEX_TOOLS,
   handleToolCall,
   handleFetch,
-  handleSearch,
   handleList,
+  handleCacheClear,
+  handleCacheStats,
+  handleCacheHealth,
+  handleFileSourcesList,
   type ToolHandlerContext,
 } from '../src/tools.js'
-import type { CacheManager, StorageManager } from '@fractary/codex'
+import type { CodexClient } from '@fractary/codex'
 
 describe('MCP Tools', () => {
   let mockContext: ToolHandlerContext
-  let mockCache: CacheManager
-  let mockStorage: StorageManager
+  let mockClient: CodexClient
 
   beforeEach(() => {
-    // Create mock cache manager
-    mockCache = {
-      get: vi.fn(),
-      set: vi.fn(),
-      invalidate: vi.fn(),
-      invalidatePattern: vi.fn(),
-      clear: vi.fn(),
-      getStats: vi.fn().mockResolvedValue({
+    mockClient = {
+      fetch: vi.fn(),
+      getCacheStats: vi.fn().mockResolvedValue({
         entryCount: 0,
         memoryEntries: 0,
         memorySize: 0,
@@ -31,28 +28,36 @@ describe('MCP Tools', () => {
         staleCount: 0,
         expiredCount: 0,
       }),
-    } as unknown as CacheManager
-
-    // Create mock storage manager
-    mockStorage = {
-      fetch: vi.fn(),
-    } as unknown as StorageManager
+      invalidateCache: vi.fn(),
+      invalidateCachePattern: vi.fn().mockResolvedValue(0),
+      getHealthChecks: vi.fn().mockResolvedValue([]),
+      getTypeRegistry: vi.fn(),
+      getCacheManager: vi.fn(),
+      getStorageManager: vi.fn(),
+      getOrganization: vi.fn().mockReturnValue('test-org'),
+      getUnifiedConfig: vi.fn().mockReturnValue(null),
+    } as unknown as CodexClient
 
     mockContext = {
-      cache: mockCache,
-      storage: mockStorage,
+      client: mockClient,
     }
   })
 
   describe('CODEX_TOOLS', () => {
     it('should export all required tools', () => {
-      expect(CODEX_TOOLS).toHaveLength(5)
+      expect(CODEX_TOOLS).toHaveLength(6)
       const toolNames = CODEX_TOOLS.map((t) => t.name)
       expect(toolNames).toContain('codex_document_fetch')
-      expect(toolNames).toContain('codex_search')
       expect(toolNames).toContain('codex_cache_list')
       expect(toolNames).toContain('codex_cache_clear')
+      expect(toolNames).toContain('codex_cache_stats')
+      expect(toolNames).toContain('codex_cache_health')
       expect(toolNames).toContain('codex_file_sources_list')
+    })
+
+    it('should not contain search tool', () => {
+      const toolNames = CODEX_TOOLS.map((t) => t.name)
+      expect(toolNames).not.toContain('codex_search')
     })
 
     it('should have valid tool schemas', () => {
@@ -68,11 +73,11 @@ describe('MCP Tools', () => {
 
   describe('handleFetch', () => {
     it('should fetch document with valid URI', async () => {
-      const mockContent = Buffer.from('Test content')
-      vi.mocked(mockCache.get).mockResolvedValue({
-        content: mockContent,
+      vi.mocked(mockClient.fetch).mockResolvedValue({
+        content: Buffer.from('Test content'),
+        fromCache: true,
         contentType: 'text/markdown',
-      } as never)
+      })
 
       const result = await handleFetch(
         { uri: 'codex://org/project/doc.md' },
@@ -80,17 +85,28 @@ describe('MCP Tools', () => {
       )
 
       expect(result.content[0]).toHaveProperty('type', 'resource')
-      expect(mockCache.get).toHaveBeenCalled()
+      expect(mockClient.fetch).toHaveBeenCalledWith('codex://org/project/doc.md', {
+        bypassCache: undefined,
+        branch: undefined,
+      })
     })
 
-    it('should return error for invalid URI', async () => {
-      const result = await handleFetch(
-        { uri: 'invalid-uri' },
+    it('should pass noCache and branch to client.fetch', async () => {
+      vi.mocked(mockClient.fetch).mockResolvedValue({
+        content: Buffer.from('Test content'),
+        fromCache: false,
+        contentType: 'text/markdown',
+      })
+
+      await handleFetch(
+        { uri: 'codex://org/project/doc.md', noCache: true, branch: 'dev' },
         mockContext
       )
 
-      expect(result.isError).toBe(true)
-      expect(result.content[0]).toHaveProperty('type', 'text')
+      expect(mockClient.fetch).toHaveBeenCalledWith('codex://org/project/doc.md', {
+        bypassCache: true,
+        branch: 'dev',
+      })
     })
 
     it('should return error for missing URI', async () => {
@@ -100,70 +116,174 @@ describe('MCP Tools', () => {
       const text = (result.content[0] as { type: string; text: string }).text
       expect(text).toContain('URI')
     })
-  })
 
-  describe('handleSearch', () => {
-    it('should validate query parameter', async () => {
-      const result = await handleSearch({} as never, mockContext)
+    it('should return error when fetch fails', async () => {
+      vi.mocked(mockClient.fetch).mockRejectedValue(new Error('Not found'))
+
+      const result = await handleFetch(
+        { uri: 'codex://org/project/doc.md' },
+        mockContext
+      )
 
       expect(result.isError).toBe(true)
       const text = (result.content[0] as { type: string; text: string }).text
-      expect(text).toContain('Query')
-    })
-
-    it('should sanitize regex patterns to prevent injection', async () => {
-      // Test with potentially malicious query
-      const query = 'test query'
-
-      const result = await handleSearch(
-        { query },
-        mockContext
-      )
-
-      expect(result).toBeDefined()
-      expect(result.content[0]).toHaveProperty('type', 'text')
-    })
-
-    it('should handle empty search results', async () => {
-      const result = await handleSearch(
-        { query: 'nonexistent' },
-        mockContext
-      )
-
-      expect(result).toBeDefined()
-      expect(result.content).toBeDefined()
+      expect(text).toContain('Failed')
     })
   })
 
   describe('handleList', () => {
-    it('should list documents in path', async () => {
-      const result = await handleList(
-        {},
-        mockContext
-      )
+    it('should list cache statistics', async () => {
+      const result = await handleList({}, mockContext)
 
       expect(result).toBeDefined()
       expect(result.content).toBeDefined()
       const text = (result.content[0] as { type: string; text: string }).text
       expect(text).toContain('Cache Statistics')
     })
+  })
 
-    it('should handle root path', async () => {
-      const result = await handleList(
-        {},
-        mockContext
-      )
+  describe('handleCacheClear', () => {
+    it('should clear cache entries matching pattern', async () => {
+      vi.mocked(mockClient.invalidateCachePattern).mockResolvedValue(3)
 
-      expect(result).toBeDefined()
+      const result = await handleCacheClear({ pattern: 'codex://org/.*' }, mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      expect(text).toContain('Cleared 3')
+      expect(mockClient.invalidateCachePattern).toHaveBeenCalled()
+    })
+
+    it('should return error for missing pattern', async () => {
+      const result = await handleCacheClear({} as never, mockContext)
+
+      expect(result.isError).toBe(true)
+    })
+
+    it('should reject dangerous regex patterns', async () => {
+      const result = await handleCacheClear({ pattern: '(a++b)' }, mockContext)
+
+      expect(result.isError).toBe(true)
+      const text = (result.content[0] as { type: string; text: string }).text
+      expect(text).toContain('Invalid pattern')
+    })
+  })
+
+  describe('handleCacheStats', () => {
+    it('should return formatted stats', async () => {
+      vi.mocked(mockClient.getCacheStats).mockResolvedValue({
+        entryCount: 10,
+        memoryEntries: 5,
+        memorySize: 1024,
+        totalSize: 2048,
+        freshCount: 8,
+        staleCount: 1,
+        expiredCount: 1,
+      })
+
+      const result = await handleCacheStats({}, mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      expect(text).toContain('Cache Statistics')
+      expect(text).toContain('10')
+      expect(text).toContain('80% fresh')
+    })
+
+    it('should return JSON when requested', async () => {
+      vi.mocked(mockClient.getCacheStats).mockResolvedValue({
+        entryCount: 5,
+        memoryEntries: 3,
+        memorySize: 512,
+        totalSize: 1024,
+        freshCount: 5,
+        staleCount: 0,
+        expiredCount: 0,
+      })
+
+      const result = await handleCacheStats({ json: true }, mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      const parsed = JSON.parse(text)
+      expect(parsed.entryCount).toBe(5)
+    })
+  })
+
+  describe('handleCacheHealth', () => {
+    it('should return health check results', async () => {
+      vi.mocked(mockClient.getHealthChecks).mockResolvedValue([
+        { name: 'Cache', status: 'pass', message: '10 entries' },
+        { name: 'Storage', status: 'pass', message: '3 providers' },
+      ])
+
+      const result = await handleCacheHealth({}, mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      expect(text).toContain('Health Check')
+      expect(text).toContain('HEALTHY')
+    })
+
+    it('should report degraded status on warnings', async () => {
+      vi.mocked(mockClient.getHealthChecks).mockResolvedValue([
+        { name: 'Cache', status: 'warn', message: 'Cache is empty' },
+      ])
+
+      const result = await handleCacheHealth({}, mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      expect(text).toContain('DEGRADED')
+    })
+
+    it('should return JSON when requested', async () => {
+      vi.mocked(mockClient.getHealthChecks).mockResolvedValue([
+        { name: 'Cache', status: 'pass', message: 'OK' },
+      ])
+
+      const result = await handleCacheHealth({ json: true }, mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      const parsed = JSON.parse(text)
+      expect(parsed.summary.healthy).toBe(true)
+      expect(parsed.checks).toHaveLength(1)
+    })
+  })
+
+  describe('handleFileSourcesList', () => {
+    it('should report no sources when config is null', async () => {
+      vi.mocked(mockClient.getUnifiedConfig).mockReturnValue(null)
+
+      const result = await handleFileSourcesList(mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      expect(text).toContain('No file plugin sources')
+    })
+
+    it('should list configured sources', async () => {
+      vi.mocked(mockClient.getUnifiedConfig).mockReturnValue({
+        file: {
+          sources: [
+            { name: 'specs', path: '.fractary/specs' },
+            { name: 'logs', path: '.fractary/logs', type: 'log' },
+          ],
+        },
+      })
+
+      const result = await handleFileSourcesList(mockContext)
+
+      const text = (result.content[0] as { type: string; text: string }).text
+      expect(text).toContain('File Plugin Sources (2)')
+      expect(text).toContain('specs')
+      expect(text).toContain('.fractary/specs')
+      expect(text).toContain('logs')
+      expect(text).toContain('Type: log')
     })
   })
 
   describe('handleToolCall', () => {
     it('should route to correct handler', async () => {
-      vi.mocked(mockCache.get).mockResolvedValue({
+      vi.mocked(mockClient.fetch).mockResolvedValue({
         content: Buffer.from('Test'),
+        fromCache: true,
         contentType: 'text/plain',
-      } as never)
+      })
 
       const result = await handleToolCall(
         'codex_document_fetch',
@@ -172,7 +292,29 @@ describe('MCP Tools', () => {
       )
 
       expect(result).toBeDefined()
-      expect(mockCache.get).toHaveBeenCalled()
+      expect(mockClient.fetch).toHaveBeenCalled()
+    })
+
+    it('should route cache_stats to handler', async () => {
+      const result = await handleToolCall(
+        'codex_cache_stats',
+        {},
+        mockContext
+      )
+
+      expect(result).toBeDefined()
+      expect(mockClient.getCacheStats).toHaveBeenCalled()
+    })
+
+    it('should route cache_health to handler', async () => {
+      const result = await handleToolCall(
+        'codex_cache_health',
+        {},
+        mockContext
+      )
+
+      expect(result).toBeDefined()
+      expect(mockClient.getHealthChecks).toHaveBeenCalled()
     })
 
     it('should handle unknown tool names', async () => {
@@ -188,7 +330,7 @@ describe('MCP Tools', () => {
     })
 
     it('should handle tool errors gracefully', async () => {
-      vi.mocked(mockCache.get).mockRejectedValue(new Error('Cache error'))
+      vi.mocked(mockClient.fetch).mockRejectedValue(new Error('Network error'))
 
       const result = await handleToolCall(
         'codex_document_fetch',
@@ -208,26 +350,10 @@ describe('MCP Tools', () => {
         '',
         'not-a-uri',
         'http://example.com',
-        'codex://',
-        'codex:///',
       ]
 
       for (const uri of testCases) {
         const result = await handleFetch({ uri }, mockContext)
-        expect(result).toBeDefined()
-      }
-    })
-
-    it('should validate pattern type in search', async () => {
-      const testCases = [
-        { pattern: 123 },
-        { pattern: null },
-        { pattern: undefined },
-        { pattern: {} },
-      ]
-
-      for (const args of testCases) {
-        const result = await handleSearch(args as never, mockContext)
         expect(result).toBeDefined()
       }
     })

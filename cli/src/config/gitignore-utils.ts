@@ -208,8 +208,8 @@ export async function ensureCachePathIgnored(
     };
   }
 
-  // Check if already ignored
-  if (isCachePathIgnored(content, relativeCachePath)) {
+  // Check if already ignored (content is non-null here since gitignoreExists was true)
+  if (isCachePathIgnored(content!, relativeCachePath)) {
     return {
       created: false,
       updated: false,
@@ -218,8 +218,8 @@ export async function ensureCachePathIgnored(
     };
   }
 
-  // Add the cache path
-  content = addCachePathToGitignore(content, relativeCachePath, 'Custom cache directory');
+  // Add the cache path (content is non-null here since gitignoreExists was true)
+  content = addCachePathToGitignore(content!, relativeCachePath, 'Custom cache directory');
   await writeFractaryGitignore(projectRoot, content);
 
   return {
@@ -247,7 +247,6 @@ Please ensure .fractary/.gitignore includes: ${normalized}`;
 // Standard format: # ===== fractary-{plugin} (managed) ===== ... # ===== end fractary-{plugin} =====
 
 const SECTION_START_PATTERN = /^# ===== (fractary-[\w-]+) \(managed\) =====$/;
-const SECTION_END_PATTERN = /^# ===== end (fractary-[\w-]+) =====$/;
 
 /**
  * Check if a section marker exists in the gitignore content

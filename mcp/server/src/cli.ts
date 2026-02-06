@@ -3,17 +3,11 @@
  * CLI entry point for @fractary/codex-mcp-server
  *
  * Provides MCP server with stdio transport.
- * Uses SDK utilities for configuration handling to avoid duplication.
+ * Uses SDK's CodexClient for configuration and manager initialization.
  */
 
 import { Command } from 'commander'
-import {
-  createCacheManager,
-  createStorageManager,
-  readUnifiedConfig,
-  type UnifiedConfig,
-  type CodexYamlConfig,
-} from '@fractary/codex'
+import { CodexClient } from '@fractary/codex'
 import { McpServer } from './server.js'
 
 const program = new Command()
@@ -24,75 +18,30 @@ program
   .version('0.8.0')
   .option('--config <path>', 'Path to config file', '.fractary/config.yaml')
   .action(async (options) => {
-    // Load configuration using SDK utilities
-    let codexConfig: CodexYamlConfig | undefined = undefined
-    let fileConfig: unknown = undefined
+    // Create CodexClient which handles all config loading + manager initialization
+    let client: CodexClient
 
     try {
-      // Use SDK's readUnifiedConfig which handles unified format and env var expansion
-      const unifiedConfig: UnifiedConfig = await readUnifiedConfig(options.config, {
-        expandEnv: true,
+      client = await CodexClient.create({
+        configPath: options.config,
       })
-
-      // Extract codex section (SDK already expanded env vars)
-      codexConfig = unifiedConfig.codex
-
-      // Preserve file section if present (for file plugin integration)
-      fileConfig = unifiedConfig.file
     } catch (error) {
-      // Config file is optional for the default path, but log errors for debugging
       const errorMessage = error instanceof Error ? error.message : String(error)
-      if (options.config !== '.fractary/config.yaml') {
-        // Non-default config was explicitly requested but failed to load
-        console.error(`Warning: Could not load config file: ${options.config}`)
-        console.error(`  Error: ${errorMessage}`)
+      // For default config path, gracefully degrade if not found
+      if (options.config === '.fractary/config.yaml' && errorMessage.includes('ENOENT')) {
+        // Create with defaults (no config)
+        client = await CodexClient.create()
       } else {
-        // Default config - only log at debug level (to stderr) if it exists but is invalid
-        // Missing default config is fine, but parse errors should be visible
-        if (!errorMessage.includes('ENOENT')) {
-          console.error(`Warning: Config file exists but could not be parsed: ${errorMessage}`)
-        }
+        console.error(`Warning: ${errorMessage}`)
+        client = await CodexClient.create()
       }
-    }
-
-    // Initialize storage and cache managers
-    const storageConfig: Record<string, unknown> = {}
-
-    // Add storage configuration if present
-    if (codexConfig?.storage) {
-      Object.assign(storageConfig, { providers: codexConfig.storage })
-    }
-
-    // Add archive config if present
-    if (codexConfig?.archive) {
-      storageConfig.s3Archive = {
-        projects: codexConfig.archive.projects || {},
-        fractaryCli: process.env.FRACTARY_CLI || 'fractary',
-      }
-    }
-
-    // Add file plugin config if present
-    if (fileConfig) {
-      storageConfig.file = fileConfig
-    }
-
-    const storage = createStorageManager(storageConfig)
-    const cache = createCacheManager({
-      cacheDir: codexConfig?.cacheDir || codexConfig?.cache?.cacheDir || '.fractary/codex/cache',
-      ...(codexConfig?.cache || {}),
-    })
-
-    // Set storage manager on cache
-    if (storage) {
-      cache.setStorageManager(storage)
     }
 
     // Create MCP server
     const server = new McpServer({
       name: 'fractary-codex',
       version: '0.8.0',
-      cache,
-      storage,
+      client,
     })
 
     // Stdio mode

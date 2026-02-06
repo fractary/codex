@@ -7,7 +7,7 @@
 
 import { Command } from 'commander'
 import chalk from 'chalk'
-import { formatBytes, type CacheEntryInfo, type ListEntriesOptions } from '@fractary/codex'
+import { formatBytes, type ListEntriesOptions } from '@fractary/codex'
 import { getClient } from '../../client/get-client'
 
 /**

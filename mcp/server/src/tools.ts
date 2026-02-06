@@ -2,18 +2,19 @@
  * MCP Tool definitions and handlers
  *
  * Implements the tools exposed by the Codex MCP server.
+ * Uses SDK's CodexClient for all operations.
  */
 
-import type { CacheManager } from '@fractary/codex'
-import type { StorageManager } from '@fractary/codex'
-import { resolveReference } from '@fractary/codex'
+import type { CodexClient } from '@fractary/codex'
+import { formatBytes } from '@fractary/codex'
 import type {
   McpTool,
   ToolResult,
   FetchToolArgs,
-  SearchToolArgs,
   ListToolArgs,
   CacheClearToolArgs,
+  CacheStatsToolArgs,
+  CacheHealthToolArgs,
 } from './types.js'
 
 /**
@@ -40,36 +41,6 @@ export const CODEX_TOOLS: McpTool[] = [
         },
       },
       required: ['uri'],
-    },
-  },
-  {
-    name: 'codex_search',
-    description: 'Search for documents in the Codex knowledge base.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: 'Search query string',
-        },
-        org: {
-          type: 'string',
-          description: 'Filter by organization',
-        },
-        project: {
-          type: 'string',
-          description: 'Filter by project',
-        },
-        limit: {
-          type: 'number',
-          description: 'Maximum number of results (default: 10)',
-        },
-        type: {
-          type: 'string',
-          description: 'Filter by artifact type (e.g., docs, specs, logs)',
-        },
-      },
-      required: ['query'],
     },
   },
   {
@@ -108,6 +79,32 @@ export const CODEX_TOOLS: McpTool[] = [
     },
   },
   {
+    name: 'codex_cache_stats',
+    description: 'Display cache statistics including entry counts, sizes, and freshness.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        json: {
+          type: 'boolean',
+          description: 'Return raw JSON stats object',
+        },
+      },
+    },
+  },
+  {
+    name: 'codex_cache_health',
+    description: 'Run health diagnostics on the codex setup including cache, storage, and type registry.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        json: {
+          type: 'boolean',
+          description: 'Return raw JSON health check results',
+        },
+      },
+    },
+  },
+  {
     name: 'codex_file_sources_list',
     description: 'List file plugin sources available in the current project.',
     inputSchema: {
@@ -121,8 +118,7 @@ export const CODEX_TOOLS: McpTool[] = [
  * Tool handler context
  */
 export interface ToolHandlerContext {
-  cache: CacheManager
-  storage: StorageManager
+  client: CodexClient
 }
 
 /**
@@ -159,7 +155,6 @@ function resourceResult(uri: string, content: string, mimeType?: string): ToolRe
 export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { uri, branch, noCache } = args
 
-  // Validate input
   if (!uri || typeof uri !== 'string') {
     return textResult('URI is required and must be a string', true)
   }
@@ -168,29 +163,11 @@ export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext):
     return textResult('Branch must be a string', true)
   }
 
-  // Resolve the reference
-  const ref = resolveReference(uri)
-  if (!ref) {
-    return textResult(`Invalid codex URI: ${uri}`, true)
-  }
-
   try {
-    let result
-
-    // Check if this is a current project file plugin source
-    const isFilePlugin = ref.isCurrentProject && ref.sourceType === 'file-plugin'
-
-    if (noCache) {
-      // Bypass cache, fetch directly
-      result = await ctx.storage.fetch(ref, { branch })
-      // Cache the result for next time (unless it's a file plugin source)
-      if (!isFilePlugin) {
-        await ctx.cache.set(uri, result)
-      }
-    } else {
-      // Use cache (will bypass cache automatically for file plugin sources)
-      result = await ctx.cache.get(ref, { branch })
-    }
+    const result = await ctx.client.fetch(uri, {
+      bypassCache: noCache,
+      branch,
+    })
 
     const content = result.content.toString('utf-8')
     return resourceResult(uri, content, result.contentType)
@@ -198,9 +175,7 @@ export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext):
     const message = error instanceof Error ? error.message : String(error)
     const errorName = error instanceof Error ? error.name : 'Error'
 
-    // Special handling for file plugin errors
     if (errorName === 'FilePluginFileNotFoundError') {
-      // Error message already includes helpful guidance
       return textResult(message, true)
     }
 
@@ -209,60 +184,12 @@ export async function handleFetch(args: FetchToolArgs, ctx: ToolHandlerContext):
 }
 
 /**
- * Handle codex_search tool
- *
- * Note: This is a basic implementation that searches cached entries.
- * A more sophisticated implementation might use a search index.
- */
-export async function handleSearch(args: SearchToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
-  const { query, org, project, limit = 10 } = args
-
-  // Validate input
-  if (!query || typeof query !== 'string') {
-    return textResult('Query is required and must be a string', true)
-  }
-
-  if (query.length > 500) {
-    return textResult('Query too long (max 500 characters)', true)
-  }
-
-  if (typeof limit !== 'number' || limit < 1 || limit > 100) {
-    return textResult('Limit must be a number between 1 and 100', true)
-  }
-
-  // Get all cached entries
-  const stats = await ctx.cache.getStats()
-  if (stats.entryCount === 0) {
-    return textResult('No documents in cache. Use codex_document_fetch to load documents first.')
-  }
-
-  // This is a simplified search - in a real implementation,
-  // we would use a proper search index
-  // For now, we search through the cached URIs and content
-
-  // Note: This is a placeholder. The actual search implementation
-  // would depend on having access to the cache persistence layer's
-  // list of URIs and their content.
-
-  const message = `Search functionality requires a search index.
-Query: "${query}"
-Filters: org=${org || 'any'}, project=${project || 'any'}
-Limit: ${limit}
-
-To fetch documents, use codex_document_fetch with a specific URI like:
-codex://org/project/docs/file.md`
-
-  return textResult(message)
-}
-
-/**
  * Handle codex_cache_list tool
  */
 export async function handleList(args: ListToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
   const { org, project, includeExpired } = args
 
-  // Get cache stats and any available info
-  const stats = await ctx.cache.getStats()
+  const stats = await ctx.client.getCacheStats()
 
   let message = `Cache Statistics:
 - Total entries: ${stats.entryCount}
@@ -290,12 +217,10 @@ export async function handleList(args: ListToolArgs, ctx: ToolHandlerContext): P
  * Validate and sanitize regex pattern to prevent ReDoS attacks
  */
 function validateRegexPattern(pattern: string): { valid: boolean; error?: string } {
-  // Check pattern length (prevent extremely long patterns)
   if (pattern.length > 1000) {
     return { valid: false, error: 'Pattern too long (max 1000 characters)' }
   }
 
-  // Check for common ReDoS patterns
   const redosPatterns = [
     /(\.\*){3,}/,           // Multiple consecutive .*
     /(\+\+|\*\*|\?\?)/,     // Nested quantifiers
@@ -309,7 +234,6 @@ function validateRegexPattern(pattern: string): { valid: boolean; error?: string
     }
   }
 
-  // Try to compile the regex to check for syntax errors
   try {
     new RegExp(pattern)
     return { valid: true }
@@ -329,7 +253,6 @@ export async function handleCacheClear(args: CacheClearToolArgs, ctx: ToolHandle
     return textResult('Pattern is required and must be a string', true)
   }
 
-  // Validate pattern to prevent ReDoS
   const validation = validateRegexPattern(pattern)
   if (!validation.valid) {
     return textResult(`Invalid pattern: ${validation.error}`, true)
@@ -337,7 +260,7 @@ export async function handleCacheClear(args: CacheClearToolArgs, ctx: ToolHandle
 
   try {
     const regex = new RegExp(pattern)
-    const count = await ctx.cache.invalidatePattern(regex)
+    const count = await ctx.client.invalidateCachePattern(regex)
 
     return textResult(`Cleared ${count} cache entries matching pattern: ${pattern}`)
   } catch (error) {
@@ -347,35 +270,109 @@ export async function handleCacheClear(args: CacheClearToolArgs, ctx: ToolHandle
 }
 
 /**
+ * Handle codex_cache_stats tool
+ */
+export async function handleCacheStats(args: CacheStatsToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
+  const stats = await ctx.client.getCacheStats()
+
+  if (args.json) {
+    return textResult(JSON.stringify(stats, null, 2))
+  }
+
+  const healthPercent = stats.entryCount > 0 ? (stats.freshCount / stats.entryCount) * 100 : 100
+
+  const message = `Cache Statistics
+
+Overview:
+  Total entries:   ${stats.entryCount}
+  Total size:      ${formatBytes(stats.totalSize)}
+  Memory entries:  ${stats.memoryEntries}
+  Memory size:     ${formatBytes(stats.memorySize)}
+
+Freshness:
+  Fresh:           ${stats.freshCount}
+  Stale:           ${stats.staleCount}
+  Expired:         ${stats.expiredCount}
+
+Cache health: ${healthPercent.toFixed(0)}% fresh`
+
+  return textResult(message)
+}
+
+/**
+ * Handle codex_cache_health tool
+ */
+export async function handleCacheHealth(args: CacheHealthToolArgs, ctx: ToolHandlerContext): Promise<ToolResult> {
+  const checks = await ctx.client.getHealthChecks()
+
+  const passed = checks.filter(c => c.status === 'pass').length
+  const warned = checks.filter(c => c.status === 'warn').length
+  const failed = checks.filter(c => c.status === 'fail').length
+
+  if (args.json) {
+    return textResult(JSON.stringify({
+      summary: {
+        total: checks.length,
+        passed,
+        warned,
+        failed,
+        healthy: failed === 0,
+      },
+      checks,
+    }, null, 2))
+  }
+
+  let message = 'Codex Health Check\n'
+
+  for (const check of checks) {
+    const icon = check.status === 'pass' ? '[OK]' :
+                 check.status === 'warn' ? '[WARN]' :
+                 '[FAIL]'
+
+    message += `\n${icon} ${check.name}\n`
+    message += `  ${check.message}\n`
+    if (check.details) {
+      message += `  ${check.details}\n`
+    }
+  }
+
+  const overallStatus = failed > 0 ? 'UNHEALTHY' :
+                        warned > 0 ? 'DEGRADED' :
+                        'HEALTHY'
+
+  message += `\nStatus: ${overallStatus}`
+  message += `\n${passed} passed, ${warned} warnings, ${failed} failed`
+
+  return textResult(message)
+}
+
+/**
  * Handle codex_file_sources_list tool
  */
 export async function handleFileSourcesList(ctx: ToolHandlerContext): Promise<ToolResult> {
   try {
-    // Check if file plugin provider is registered
-    const filePluginProvider = ctx.storage.getProvider('file-plugin')
+    const unifiedConfig = ctx.client.getUnifiedConfig()
 
-    if (!filePluginProvider) {
+    if (!unifiedConfig?.file?.sources || unifiedConfig.file.sources.length === 0) {
       return textResult(`No file plugin sources configured.
 
-To enable file plugin integration, the storage manager must be initialized with filePlugin configuration.
-
-File plugin sources allow codex to access current project artifacts (specs, logs, etc.) directly from the local filesystem without caching.`)
+To enable file plugin integration, add a 'file.sources' section to .fractary/config.yaml.`)
     }
 
-    // For now, we can't easily extract the sources from the provider without adding more methods
-    // This is a basic implementation that just confirms the provider exists
-    return textResult(`File plugin provider is configured.
+    const sources = unifiedConfig.file.sources
+    let message = `File Plugin Sources (${sources.length}):\n`
 
-File plugin sources are available for current project artifact access.
-Sources are read directly from local filesystem without caching.
+    for (const source of sources) {
+      message += `\n- ${source.name}`
+      message += `\n  Path: ${source.path}`
+      if (source.type) {
+        message += `\n  Type: ${source.type}`
+      }
+    }
 
-To see available sources, check the unified configuration at:
-.fractary/config.yaml
+    message += '\n\nSources are read directly from local filesystem without caching.'
 
-Look for the 'file.sources' section which defines:
-- specs: .fractary/specs
-- logs: .fractary/logs
-- etc.`)
+    return textResult(message)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     return textResult(`Failed to list file sources: ${message}`, true)
@@ -393,26 +390,17 @@ export async function handleToolCall(
   switch (name) {
     case 'codex_document_fetch':
       return handleFetch(args as unknown as FetchToolArgs, ctx)
-    case 'codex_search':
-      return handleSearch(args as unknown as SearchToolArgs, ctx)
     case 'codex_cache_list':
       return handleList(args as unknown as ListToolArgs, ctx)
     case 'codex_cache_clear':
       return handleCacheClear(args as unknown as CacheClearToolArgs, ctx)
+    case 'codex_cache_stats':
+      return handleCacheStats(args as unknown as CacheStatsToolArgs, ctx)
+    case 'codex_cache_health':
+      return handleCacheHealth(args as unknown as CacheHealthToolArgs, ctx)
     case 'codex_file_sources_list':
       return handleFileSourcesList(ctx)
     default:
       return textResult(`Unknown tool: ${name}`, true)
   }
-}
-
-/**
- * Format bytes to human readable string
- */
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
 }

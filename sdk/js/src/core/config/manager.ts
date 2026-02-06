@@ -339,7 +339,7 @@ export async function discoverCodexRepo(org: string): Promise<DiscoverCodexRepoR
       }
     }
 
-    return { repo: repos[0] }
+    return { repo: repos[0] ?? null }
   } catch (error: any) {
     return {
       repo: null,
