@@ -7,7 +7,7 @@
  */
 
 import { Command } from 'commander';
-import { configureCommand } from './commands/config/index.js';
+import { configInitializeCommand, configUpdateCommand, configValidateCommand } from './commands/config/index.js';
 import { documentFetchCommand } from './commands/document/index.js';
 import { cacheListCommand, cacheClearCommand, cacheStatsCommand, cacheHealthCommand } from './commands/cache/index.js';
 import { syncCommand } from './commands/sync.js';
@@ -31,13 +31,21 @@ function createCLI(): Command {
     .description('Centralized knowledge management and distribution for AI agents')
     .version(VERSION);
 
-  // Top-level commands (hyphenated naming to match plugin conventions)
-  program.addCommand(configureCommand());      // Initialize configuration
+  // Config commands (split into distinct operations)
+  program.addCommand(configInitializeCommand());  // Initialize codex section
+  program.addCommand(configUpdateCommand());      // Update codex section
+  program.addCommand(configValidateCommand());    // Validate codex config
+
+  // Document commands
   program.addCommand(documentFetchCommand());  // Fetch documents by URI
+
+  // Cache commands
   program.addCommand(cacheListCommand());      // List cache entries
   program.addCommand(cacheClearCommand());     // Clear cache entries
   program.addCommand(cacheStatsCommand());     // Display cache statistics
   program.addCommand(cacheHealthCommand());    // Run diagnostics
+
+  // Sync commands
   program.addCommand(syncCommand());           // Bidirectional sync
 
   return program;

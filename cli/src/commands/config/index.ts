@@ -1,11 +1,15 @@
 /**
- * Configure command
+ * Config commands
  *
- * Top-level command for initializing Fractary configuration (.fractary/config.yaml)
+ * Three distinct operations for codex configuration management:
+ * - config-initialize: Add codex section to existing base config
+ * - config-update: Update fields in existing codex section
+ * - config-validate: Validate codex configuration (read-only)
  */
 
-// Re-export the configure command
-export { configureCommand } from './init.js';
+export { configInitializeCommand } from './initialize.js';
+export { configUpdateCommand } from './update.js';
+export { configValidateCommand } from './validate.js';
 
 // Re-export SDK utilities used by the plugin
 export {
@@ -15,3 +19,6 @@ export {
   type McpInstallResult,
   type DiscoverCodexRepoResult,
 } from '@fractary/codex';
+
+// Deprecated: old monolithic configure command
+export { configureCommand } from './init.js';

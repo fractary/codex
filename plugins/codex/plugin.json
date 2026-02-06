@@ -24,6 +24,21 @@
       "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/agents/codex-manager/agent.yaml",
       "checksum": "sha256:5d58809d1a64d3e7141ea0f6313bd352371180d89ad603f813b238376ae0d254",
       "size": 1484
+    },
+    {
+      "name": "config-initializer",
+      "version": "1.0.0",
+      "description": "Initialize codex section in project configuration"
+    },
+    {
+      "name": "config-updater",
+      "version": "1.0.0",
+      "description": "Update codex configuration fields"
+    },
+    {
+      "name": "config-validator",
+      "version": "1.0.0",
+      "description": "Validate codex configuration (read-only)"
     }
   ],
   "tools": [

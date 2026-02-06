@@ -136,11 +136,13 @@ export {
   detectProjectName,
   discoverCodexRepo,
   STANDARD_DIRECTORIES,
+  CODEX_DIRECTORIES,
   ensureDirectoryStructure,
   DEFAULT_FRACTARY_GITIGNORE,
   normalizeCachePath,
   ensureCachePathIgnored,
   installMcpServer,
+  generateCodexSection,
   sanitizeForS3BucketName,
   generateUnifiedConfig,
   readUnifiedConfig,
@@ -161,6 +163,14 @@ export {
   type FileSourceConfig,
   type FilePluginConfig,
   type UnifiedConfig,
+  // New: config-initialize / config-update / config-validate types
+  type CodexInitOptions,
+  type CodexInitResult,
+  type CodexUpdateOptions,
+  type CodexUpdateResult,
+  type ValidationIssue,
+  type CodexValidateResult,
+  // Deprecated
   type ConfigInitOptions,
   type ConfigInitResult,
 } from './core/config/index.js'
