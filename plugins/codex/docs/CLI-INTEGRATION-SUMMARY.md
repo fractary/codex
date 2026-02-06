@@ -91,7 +91,7 @@ This document summarizes the migration of the codex plugin from custom bash scri
 
 **Configuration Evolution**:
 - **v3.0** (deprecated): JSON at `.fractary/plugins/codex/config.json` or global
-- **v4.0** (current): YAML at `.fractary/codex/config.yaml` (project-level only)
+- **v4.0+** (current): YAML at `.fractary/config.yaml` (project-level only)
 
 **Migration Features**:
 - Automatic detection (JSON/YAML, project/global)
@@ -227,7 +227,7 @@ Note: In v4.2, project-syncer and handler-sync-github were removed entirely. The
    /fractary-codex:configure
    ```
 
-   This automatically creates YAML config at `.fractary/codex/config.yaml`
+   This automatically creates YAML config at `.fractary/config.yaml`
 
 ## Technical Decisions
 
@@ -279,7 +279,7 @@ No regressions observed in functionality.
 
 1. **Config location changed**:
    - Old: `.fractary/plugins/codex/config.json`
-   - New: `.fractary/codex/config.yaml`
+   - New: `.fractary/config.yaml`
    - Migration: Automatic via config-helper
 
 2. **URI format changed**:
@@ -330,9 +330,8 @@ git checkout v3.0.1 -- plugins/codex/skills/
 
 - **Spec**: `specs/SPEC-00218-codex-cli-integration-plan.md`
 - **Issue**: https://github.com/fractary/claude-plugins/issues/360
-- **Migration Guide**: `plugins/codex/docs/MIGRATION-GUIDE-v4.md`
-- **CLI Repo**: https://github.com/fractary/fractary-cli
-- **SDK Repo**: https://github.com/fractary/fractary-codex
+- **CLI Package**: `cli/` (in this monorepo)
+- **SDK Package**: `sdk/js/` (in this monorepo)
 
 ---
 

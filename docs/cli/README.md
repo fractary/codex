@@ -68,7 +68,7 @@ fractary-codex cache-stats
 
 ### `configure` - Initialize Configuration
 
-Initialize Codex v3.0 with YAML configuration in your project.
+Initialize Codex with YAML configuration in your project.
 
 ```bash
 fractary-codex configure [options]

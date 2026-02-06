@@ -220,40 +220,28 @@ Next: Review commits and verify changes
 
 ### Project Configuration
 
-Edit `.fractary/plugins/codex/config.json`:
+Edit `.fractary/config.yaml`:
 
-```json
-{
-  "version": "1.0",
-  "organization": "fractary",
-  "codex_repo": "codex.fractary.com",
-  "sync_patterns": [
-    "docs/**",
-    "CLAUDE.md",
-    "README.md",
-    ".claude/**",
-    "standards/**",     // Add custom patterns
-    "guides/**"
-  ],
-  "exclude_patterns": [
-    "**/.git/**",
-    "**/node_modules/**",
-    "docs/private/**"   // Add custom excludes
-  ],
-  "sync_direction": "bidirectional",
-  "handlers": {
-    "sync": {
-      "active": "github",
-      "options": {
-        "github": {
-          "parallel_repos": 5,           // Increase for faster org sync
-          "deletion_threshold": 50,      // Adjust safety threshold
-          "deletion_threshold_percent": 20
-        }
-      }
-    }
-  }
-}
+```yaml
+codex:
+  schema_version: "2.0"
+  organization: fractary
+  project: my-project
+  codex_repo: codex.fractary.com
+  remotes:
+    fractary/codex.fractary.com:
+      token: ${GITHUB_TOKEN}
+
+sync:
+  to_codex:
+    - "docs/**/*.md"
+    - "CLAUDE.md"
+    - "README.md"
+    - "standards/**"      # Add custom patterns
+    - "guides/**"
+  from_codex:
+    - "codex://{org}/{codex_repo}/docs/**"
+    - "codex://{org}/{project}/**"
 ```
 
 ### Frontmatter-Based Routing
@@ -377,8 +365,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install CLI
+        run: npm install -g @fractary/codex-cli
       - name: Sync to codex
-        run: /fractary-codex:sync-project --to-codex
+        env:
+          GITHUB_TOKEN: ${{ secrets.CODEX_GITHUB_TOKEN }}
+        run: fractary-codex sync --to-codex
 ```
 
 ---
@@ -416,49 +408,36 @@ jobs:
 /fractary-codex:configure
 
 # Sync project (preview)
-/fractary-codex:sync-project --dry-run
+/fractary-codex:sync --dry-run
 
 # Sync project (real)
-/fractary-codex:sync-project
+/fractary-codex:sync
 
 # Sync specific direction
-/fractary-codex:sync-project --to-codex
-/fractary-codex:sync-project --from-codex
-
-# Sync organization (preview)
-/fractary-codex:sync-org --dry-run
-
-# Sync organization (real)
-/fractary-codex:sync-org
+/fractary-codex:sync --to-codex
+/fractary-codex:sync --from-codex
 ```
 
 ### Configuration Location
 
 ```
-Project: .fractary/plugins/codex/config.json
-Schema:  .claude-plugin/config.schema.json
+Project: .fractary/config.yaml
 ```
 
 ### Common Patterns
 
-```json
-{
-  "sync_patterns": [
-    "docs/**",           // All docs recursively
-    "CLAUDE.md",         // Specific file
-    "README.md",         // Specific file
-    ".claude/**",        // Claude tools
-    "standards/**",      // Standards docs
-    "guides/**"          // Guide docs
-  ],
-  "exclude_patterns": [
-    "**/.git/**",        // Git directories
-    "**/node_modules/**",// Dependencies
-    "**/.env*",          // Environment files
-    "docs/private/**",   // Private docs
-    "docs/drafts/**"     // Work in progress
-  ]
-}
+```yaml
+sync:
+  to_codex:
+    - "docs/**/*.md"         # All docs recursively
+    - "CLAUDE.md"            # Specific file
+    - "README.md"            # Specific file
+    - "standards/**/*.md"    # Standards docs
+    - "guides/**/*.md"       # Guide docs
+  from_codex:
+    - "codex://{org}/{codex_repo}/docs/**"
+    - "codex://{org}/{project}/**"
+```
 ```
 
 ---
