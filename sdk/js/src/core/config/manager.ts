@@ -811,7 +811,7 @@ export class ConfigManager {
     if (!existingConfig) {
       throw new ValidationError(
         'Base configuration not found at .fractary/config.yaml. ' +
-        'Run fractary config-init first to create the base configuration.'
+        'Run fractary config-initialize first to create the base configuration.'
       )
     }
 

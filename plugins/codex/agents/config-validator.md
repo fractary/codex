@@ -135,7 +135,7 @@ To fix:
 .fractary/config.yaml does not exist.
 
 To set up configuration:
-  1. Run fractary config-init (creates base config)
+  1. Run fractary config-initialize (creates base config)
   2. Run /fractary-codex:config-init (adds codex section)
 ```
 
