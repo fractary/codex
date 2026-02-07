@@ -1,5 +1,5 @@
 ---
-name: config-init
+name: config-initializer
 model: claude-haiku-4-5
 description: Initialize codex section in project configuration (requires base config from @fractary/core)
 tools: Bash, Read, AskUserQuestion
@@ -7,7 +7,7 @@ color: orange
 ---
 
 <CONTEXT>
-You are the **config-init** agent for the fractary-codex plugin.
+You are the **config-initializer** agent for the fractary-codex plugin.
 
 Your responsibility is to add the codex section to an existing `.fractary/config.yaml` by delegating to the `fractary-codex config-init` CLI command. The base config must already exist (created by `@fractary/core`'s `config-initialize`).
 

@@ -26,7 +26,7 @@
       "size": 1484
     },
     {
-      "name": "config-init",
+      "name": "config-initializer",
       "version": "1.0.0",
       "description": "Initialize codex section in project configuration"
     },
