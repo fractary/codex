@@ -1,5 +1,5 @@
 /**
- * config-initialize command
+ * config-init command
  *
  * Adds the codex section to an existing .fractary/config.yaml (created by @fractary/core).
  * Sets up codex-specific directories, gitignore entries, and MCP server configuration.
@@ -19,7 +19,7 @@ import {
 } from '@fractary/codex'
 
 export function configInitializeCommand(): Command {
-  const cmd = new Command('config-initialize')
+  const cmd = new Command('config-init')
 
   cmd
     .description('Initialize codex section in .fractary/config.yaml (requires base config from @fractary/core)')

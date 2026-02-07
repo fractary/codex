@@ -4,7 +4,7 @@
  * Updates specific fields in the existing codex section of .fractary/config.yaml.
  * Only modifies the fields that are explicitly provided.
  *
- * Requires: codex section to exist (run `config-initialize` first)
+ * Requires: codex section to exist (run `config-init` first)
  */
 
 import { Command } from 'commander'

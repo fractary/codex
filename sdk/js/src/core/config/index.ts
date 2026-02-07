@@ -71,7 +71,7 @@ export {
   type CodexConfig,
   type DiscoverCodexRepoResult,
   type McpInstallResult,
-  // New: config-initialize types
+  // New: config-init types
   type CodexInitOptions,
   type CodexInitResult,
   // New: config-update types

@@ -163,7 +163,7 @@ export {
   type FileSourceConfig,
   type FilePluginConfig,
   type UnifiedConfig,
-  // New: config-initialize / config-update / config-validate types
+  // New: config-init / config-update / config-validate types
   type CodexInitOptions,
   type CodexInitResult,
   type CodexUpdateOptions,

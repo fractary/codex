@@ -794,7 +794,7 @@ export class ConfigManager {
   /**
    * Initialize the codex section in an existing unified config.
    *
-   * Requires .fractary/config.yaml to already exist (created by @fractary/core's config-initialize).
+   * Requires .fractary/config.yaml to already exist (created by @fractary/core's config-init).
    * Creates codex-specific directories, gitignore entries, and MCP server configuration.
    *
    * @param options - Initialization options
@@ -811,7 +811,7 @@ export class ConfigManager {
     if (!existingConfig) {
       throw new ValidationError(
         'Base configuration not found at .fractary/config.yaml. ' +
-        'Run fractary config-initialize first to create the base configuration.'
+        'Run fractary config-init first to create the base configuration.'
       )
     }
 
@@ -872,14 +872,14 @@ export class ConfigManager {
     if (!existingConfig) {
       throw new ValidationError(
         'Configuration not found at .fractary/config.yaml. ' +
-        'Run config-initialize first.'
+        'Run config-init first.'
       )
     }
 
     if (!existingConfig.codex) {
       throw new ValidationError(
         'Codex section not found in .fractary/config.yaml. ' +
-        'Run config-initialize first to create the codex configuration.'
+        'Run config-init first to create the codex configuration.'
       )
     }
 
