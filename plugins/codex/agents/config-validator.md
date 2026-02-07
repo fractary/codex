@@ -108,7 +108,7 @@ Warnings:
 
 Suggested fixes:
   - Run config-update --sync-preset standard to add sync configuration
-  - Run config-initialize --force to reinstall MCP server
+  - Run config-init --force to reinstall MCP server
 ```
 
 ## Invalid
@@ -124,7 +124,7 @@ Warnings:
   ⚠ mcp: .mcp.json not found
 
 To fix:
-  1. Run /fractary-codex:config-initialize to create the codex section
+  1. Run /fractary-codex:config-init to create the codex section
 ```
 
 ## Config Not Found
@@ -136,7 +136,7 @@ To fix:
 
 To set up configuration:
   1. Run fractary config-initialize (creates base config)
-  2. Run /fractary-codex:config-initialize (adds codex section)
+  2. Run /fractary-codex:config-init (adds codex section)
 ```
 
 </OUTPUTS>

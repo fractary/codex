@@ -32,7 +32,7 @@ function createCLI(): Command {
     .version(VERSION);
 
   // Config commands (split into distinct operations)
-  program.addCommand(configInitializeCommand());  // Initialize codex section
+  program.addCommand(configInitializeCommand());  // config-init: Initialize codex section
   program.addCommand(configUpdateCommand());      // Update codex section
   program.addCommand(configValidateCommand());    // Validate codex config
 

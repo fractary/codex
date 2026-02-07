@@ -1,5 +1,5 @@
 ---
-name: fractary-codex:config-initialize
+name: fractary-codex:config-init
 description: Initialize codex section in project configuration - requires base config from @fractary/core
 allowed-tools: Task(fractary-codex:config-initializer)
 model: claude-haiku-4-5

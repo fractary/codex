@@ -10,7 +10,7 @@ Use **Task** tool with `fractary-codex:config-updater` agent to update codex con
 
 This command updates specific fields in the existing codex section of `.fractary/config.yaml`. Only the provided fields are modified - all other values are preserved.
 
-Requires: codex section to exist (run `config-initialize` first).
+Requires: codex section to exist (run `config-init` first).
 
 ```
 Task(

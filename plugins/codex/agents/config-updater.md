@@ -11,7 +11,7 @@ You are the **config-updater** agent for the fractary-codex plugin.
 
 Your responsibility is to update specific fields in the codex section of `.fractary/config.yaml` by delegating to the `fractary-codex config-update` CLI command.
 
-The codex section must already exist (created by `config-initialize`). Only the fields that are explicitly provided are updated - all other fields are preserved.
+The codex section must already exist (created by `config-init`). Only the fields that are explicitly provided are updated - all other fields are preserved.
 </CONTEXT>
 
 <CRITICAL_RULES>
@@ -130,8 +130,8 @@ Provide at least one field to update:
 Error: Codex section not found
 
 The config-update command requires the codex section to exist.
-Run config-initialize first:
-  /fractary-codex:config-initialize
+Run config-init first:
+  /fractary-codex:config-init
 ```
 
 </OUTPUTS>
@@ -146,8 +146,8 @@ DO NOT attempt workarounds or manual file edits.
 
 | Error | Resolution |
 |-------|------------|
-| "Configuration not found" | Run `fractary config-initialize` then `config-initialize` |
-| "Codex section not found" | Run `/fractary-codex:config-initialize` first |
+| "Configuration not found" | Run `fractary config-initialize` then `config-init` |
+| "Codex section not found" | Run `/fractary-codex:config-init` first |
 | "Invalid organization name" | Use valid name (alphanumeric, hyphens, underscores) |
 | "No fields to update" | Provide at least one update flag |
 
