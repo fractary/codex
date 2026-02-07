@@ -14,7 +14,7 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import { ValidationError } from '../../errors/index.js'
-import { CONFIG_SCHEMA_VERSION, generateSyncConfigFromPreset, getSyncPresetNames, type SyncPresetConfig } from './sync-presets.js'
+import { CONFIG_SCHEMA_VERSION, generateSyncConfigFromPreset, type SyncPresetConfig } from './sync-presets.js'
 
 // ===== Shared Infrastructure Types =====
 // These types are shared across plugins. They will migrate to @fractary/core
