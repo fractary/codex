@@ -19,9 +19,9 @@ The CLI handles all the complex logic (organization detection, name validation, 
 
 1. **DELEGATE to CLI**: Use `fractary-codex config-init` or `npx @fractary/codex-cli config-init` for all initialization
 2. **DO NOT duplicate CLI logic**: The CLI handles organization detection, name validation, codex repo discovery, config generation, MCP installation, directory setup, and gitignore management
-3. **Use AskUserQuestion** only when user input is needed beyond what CLI provides
+3. **ALWAYS use AskUserQuestion to confirm auto-detected settings before running the CLI** - If the user did not explicitly provide a setting as an argument, you MUST present the auto-detected values and get confirmation before proceeding. Never silently run the CLI with values the user hasn't seen.
 4. **DO NOT use skills** - The CLI already has all the functionality
-5. **Pass arguments to CLI** - Organization, project, codex-repo, sync-preset
+5. **Pass confirmed arguments to CLI** - Organization, project, codex-repo, sync-preset
 
 The architecture is: Plugin Agent → CLI → SDK
 This ensures consistent behavior whether executing via the plugin or CLI directly.
@@ -55,16 +55,56 @@ if ! command -v fractary-codex &> /dev/null; then
 fi
 ```
 
-## Step 2: Gather User Input (If Needed)
+## Step 2: Auto-Detect Missing Settings
 
-If no arguments provided, use AskUserQuestion to get sync preset preference:
+For any setting NOT explicitly provided as an argument, auto-detect it:
+
+```bash
+# Detect organization from git remote
+git remote get-url origin 2>/dev/null
+
+# Detect project from directory name
+basename "$(pwd)"
+
+# Discover codex repo (requires gh CLI)
+gh repo list <org> --json name --jq '.[].name | select(startswith("codex."))'
+```
+
+## Step 3: Confirm Settings With User (REQUIRED)
+
+**You MUST use AskUserQuestion to confirm settings before running the CLI.**
+
+If the user provided ALL settings as explicit arguments (--org, --codex-repo, --sync-preset), skip this step. Otherwise, present auto-detected values for confirmation and ask about any unspecified options.
 
 ```
 USE TOOL: AskUserQuestion
 Questions: [
   {
+    question: "I detected the following settings. Please confirm or adjust:",
+    header: "Codex Configuration",
+    options: [
+      {
+        label: "Confirm and proceed",
+        description: "Organization: <detected-org>\nProject: <detected-project>\nCodex Repo: <detected-or-default-repo>\nSync Preset: standard"
+      },
+      {
+        label: "Let me specify different values",
+        description: "I'll ask you for the values to use instead"
+      }
+    ]
+  }
+]
+```
+
+If the user chose to specify different values, ask follow-up questions for each setting they want to change.
+
+For sync preset (if not provided as argument):
+```
+USE TOOL: AskUserQuestion
+Questions: [
+  {
     question: "Which sync preset would you like to use?",
-    header: "Sync Configuration",
+    header: "Sync Preset",
     options: [
       {
         label: "Standard (Recommended)",
@@ -79,43 +119,42 @@ Questions: [
 ]
 ```
 
-**Notes:**
-- Organization and project are auto-detected by the CLI from git remote
-- Codex repository is auto-discovered by the CLI from the organization
-- Only ask about sync preset if user wants non-default configuration
+**IMPORTANT:** Do NOT skip this step. Do NOT just run the CLI without confirming. The user must see and approve the settings that will be written to their config.
 
-## Step 3: Execute CLI Command
+## Step 4: Execute CLI Command
+
+Only after user confirmation, run the CLI with the confirmed values:
 
 ```bash
 # Preferred: global installation
 fractary-codex config-init \
-  --org <org> \
-  --project <project> \
-  --codex-repo <codex-repo> \
-  --sync-preset <standard|minimal> \
+  --org <confirmed-org> \
+  --project <confirmed-project> \
+  --codex-repo <confirmed-codex-repo> \
+  --sync-preset <confirmed-preset> \
   --json
 
 # Fallback: npx
 npx @fractary/codex-cli config-init \
-  --org <org> \
-  --project <project> \
-  --codex-repo <codex-repo> \
-  --sync-preset <standard|minimal> \
+  --org <confirmed-org> \
+  --project <confirmed-project> \
+  --codex-repo <confirmed-codex-repo> \
+  --sync-preset <confirmed-preset> \
   --json
 ```
 
 **CLI Flags:**
 | Flag | Description |
 |------|-------------|
-| `--org <slug>` | Organization slug (auto-detected if omitted) |
-| `--project <name>` | Project name (auto-detected if omitted) |
-| `--codex-repo <name>` | Codex repository name (auto-discovered if omitted) |
+| `--org <slug>` | Organization slug |
+| `--project <name>` | Project name |
+| `--codex-repo <name>` | Codex repository name |
 | `--sync-preset <name>` | Sync preset: `standard` (default) or `minimal` |
 | `--force` | Overwrite existing codex section |
 | `--no-mcp` | Skip MCP server installation |
 | `--json` | Output as JSON |
 
-## Step 4: Parse Results and Report
+## Step 5: Parse Results and Report
 
 Parse the JSON output from CLI to determine status.
 
