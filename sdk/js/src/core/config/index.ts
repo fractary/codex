@@ -42,6 +42,7 @@ export {
   discoverCodexRepo,
   // Directory structure
   STANDARD_DIRECTORIES,
+  CODEX_DIRECTORIES,
   ensureDirectoryStructure,
   // Gitignore management
   DEFAULT_FRACTARY_GITIGNORE,
@@ -49,23 +50,37 @@ export {
   ensureCachePathIgnored,
   // MCP server installation
   installMcpServer,
-  // Configuration generation
+  // Codex section generation
+  generateCodexSection,
+  // Configuration generation (deprecated)
   sanitizeForS3BucketName,
   generateUnifiedConfig,
+  // Config I/O
   readUnifiedConfig,
   writeUnifiedConfig,
   mergeUnifiedConfigs,
-  // Types
+  // Shared infrastructure types
   type NameValidationResult,
-  type DiscoverCodexRepoResult,
-  type McpInstallResult,
   type DirectoryStructureResult,
   type GitignoreResult,
   type RemoteConfig,
-  type CodexConfig,
   type FileSourceConfig,
   type FilePluginConfig,
   type UnifiedConfig,
+  // Codex-specific types
+  type CodexConfig,
+  type DiscoverCodexRepoResult,
+  type McpInstallResult,
+  // New: config-initialize types
+  type CodexInitOptions,
+  type CodexInitResult,
+  // New: config-update types
+  type CodexUpdateOptions,
+  type CodexUpdateResult,
+  // New: config-validate types
+  type ValidationIssue,
+  type CodexValidateResult,
+  // Deprecated types
   type ConfigInitOptions,
   type ConfigInitResult,
 } from './manager.js'

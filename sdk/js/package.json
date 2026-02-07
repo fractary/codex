@@ -53,6 +53,7 @@
     "prepublishOnly": "npm run build && npm run test"
   },
   "dependencies": {
+    "@fractary/core": "^0.3.3",
     "js-yaml": "^4.1.0",
     "micromatch": "^4.0.8",
     "zod": "^3.23.8"
