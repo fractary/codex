@@ -35,6 +35,37 @@ function getEnvironmentBranch(config: any, env: string): string {
   return envMap[env] || env;
 }
 
+/**
+ * Commit and push synced files to the codex repository.
+ * Shared by both JSON and human-readable output paths.
+ */
+async function commitAndPushToCodex(
+  codexRepoPath: string,
+  projectName: string,
+  syncedCount: number,
+): Promise<{ pushed: boolean; message: string }> {
+  try {
+    const { RepoManager } = await import('@fractary/core/repo');
+    const repoManager = new RepoManager({ platform: 'github' }, codexRepoPath);
+
+    repoManager.stageAll();
+
+    if (repoManager.isClean()) {
+      return { pushed: false, message: 'No changes to push - codex is already up to date' };
+    }
+
+    repoManager.commit({
+      message: `Sync ${syncedCount} files from ${projectName}`,
+    });
+
+    repoManager.push({});
+
+    return { pushed: true, message: 'Changes pushed to codex repository' };
+  } catch (error: any) {
+    return { pushed: false, message: error.message };
+  }
+}
+
 export function syncCommand(): Command {
   const cmd = new Command('sync');
 
@@ -278,12 +309,36 @@ export function syncCommand(): Command {
             process.exit(1);
           }
 
-          // For to-codex: sourceFiles = local files to upload, targetFiles = empty (assume all files are new)
+          // For to-codex: scan existing files in codex target for proper change detection
+          const codexProjectDir = path.join(codexRepoPath, 'projects', projectName);
+          let existingCodexFiles: Array<{ path: string; size: number; mtime: number }> = [];
+          try {
+            const codexGlobMatches = await globSync('**/*', {
+              cwd: codexProjectDir,
+              dot: true,
+              nodir: true,
+            });
+            const fsPromises = await import('fs/promises');
+            existingCodexFiles = await Promise.all(
+              codexGlobMatches.map(async (filePath: string) => {
+                const fullPath = path.join(codexProjectDir, filePath);
+                const stats = await fsPromises.stat(fullPath);
+                return {
+                  path: filePath,
+                  size: stats.size,
+                  mtime: stats.mtimeMs,
+                };
+              })
+            );
+          } catch {
+            // Directory may not exist yet (first sync) — treat as empty
+          }
+
           plan = await syncManager.createPlan(
             config.organization,
             projectName,
             sourceDir,
-            [],  // Empty target - treat all files as creates
+            existingCodexFiles,
             syncOptions
           );
 
@@ -345,6 +400,12 @@ export function syncCommand(): Command {
           // Execute and add results
           const result = await syncManager.executePlan(plan, syncOptions);
 
+          // For to-codex: commit and push changes to codex repository
+          let pushResult: { pushed: boolean; message: string } | undefined;
+          if (direction === 'to-codex' && codexRepoPath && result.synced > 0) {
+            pushResult = await commitAndPushToCodex(codexRepoPath, projectName, result.synced);
+          }
+
           // Determine status: success, warning, or failure
           let status: 'success' | 'warning' | 'failure';
           if (!result.success && result.synced === 0) {
@@ -365,7 +426,8 @@ export function syncCommand(): Command {
               skipped: result.skipped,
               duration: result.duration,
               errors: result.errors
-            }
+            },
+            ...(pushResult ? { pushed: pushResult.pushed, pushMessage: pushResult.message } : {}),
           }, null, 2));
           return;
         }
@@ -449,39 +511,14 @@ export function syncCommand(): Command {
         const result = await syncManager.executePlan(plan, syncOptions);
         const duration = Date.now() - startTime;
 
-        // For to-codex: commit and push changes using @fractary/core RepoManager
+        // For to-codex: commit and push changes to codex repository
         if (direction === 'to-codex' && codexRepoPath && result.synced > 0) {
-          try {
-            if (!options.json) {
-              console.log(chalk.blue('Committing and pushing to codex...'));
-            }
-
-            const { RepoManager } = await import('@fractary/core/repo');
-            const repoManager = new RepoManager({ platform: 'github' }, codexRepoPath);
-
-            // Stage all changes
-            repoManager.stageAll();
-
-            // Check if there are any changes to commit
-            if (repoManager.isClean()) {
-              if (!options.json) {
-                console.log(chalk.dim('  No changes to push - codex is already up to date'));
-              }
-            } else {
-              // Commit with conventional format
-              repoManager.commit({
-                message: `Sync ${result.synced} files from ${projectName}`,
-              });
-
-              // Push to remote
-              repoManager.push({});
-
-              if (!options.json) {
-                console.log(chalk.dim('  Changes pushed to codex repository'));
-              }
-            }
-          } catch (error: any) {
-            console.error(chalk.red('Error pushing to codex:'), error.message);
+          console.log(chalk.blue('Committing and pushing to codex...'));
+          const pushResult = await commitAndPushToCodex(codexRepoPath, projectName, result.synced);
+          if (pushResult.pushed) {
+            console.log(chalk.dim(`  ${pushResult.message}`));
+          } else {
+            console.log(chalk.dim(`  ${pushResult.message}`));
           }
         }
 

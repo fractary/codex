@@ -320,11 +320,14 @@ export class SyncManager {
     let failed = 0
 
     if (options?.dryRun) {
-      // Dry run - just return what would happen
+      // Dry run - count actual operations (not totalFiles which may include all plan entries)
+      const actualChanges = plan.files.filter(
+        f => f.operation === 'create' || f.operation === 'update' || f.operation === 'delete'
+      ).length
       return {
         success: true,
         plan,
-        synced: plan.totalFiles,
+        synced: actualChanges,
         failed: 0,
         skipped: plan.skipped.length,
         errors: [],
