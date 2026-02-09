@@ -357,11 +357,18 @@ export function syncCommand(): Command {
               workId: options.workId || null,
               files: [],
               synced: 0,
+              skipped: plan.skipped.length,
               status: 'success',
-              message: 'No files to sync'
+              message: plan.skipped.length > 0
+                ? `No files to sync - ${plan.skipped.length} already in sync`
+                : 'No files to sync'
             }, null, 2));
           } else {
-            console.log(chalk.yellow('No files to sync.'));
+            if (plan.skipped.length > 0) {
+              console.log(chalk.green(`✓ All files already in sync (${plan.skipped.length} files)`));
+            } else {
+              console.log(chalk.yellow('No files to sync.'));
+            }
           }
           return;
         }
@@ -474,7 +481,7 @@ export function syncCommand(): Command {
         }
 
         if (plan.skipped.length > 0) {
-          console.log(chalk.dim(`${plan.skipped.length} files skipped (no changes)`));
+          console.log(chalk.dim(`${plan.skipped.length} files already in sync (skipped)`));
           console.log('');
         }
 
@@ -528,7 +535,7 @@ export function syncCommand(): Command {
           console.log(chalk.green(`✓ Sync completed successfully`));
           console.log(chalk.dim(`  Synced: ${result.synced} files`));
           if (result.skipped > 0) {
-            console.log(chalk.dim(`  Skipped: ${result.skipped} files`));
+            console.log(chalk.dim(`  Already in sync: ${result.skipped} files`));
           }
           console.log(chalk.dim(`  Duration: ${formatDuration(duration)}`));
         } else {
@@ -536,7 +543,7 @@ export function syncCommand(): Command {
           console.log(chalk.green(`  Synced: ${result.synced} files`));
           console.log(chalk.red(`  Failed: ${result.failed} files`));
           if (result.skipped > 0) {
-            console.log(chalk.dim(`  Skipped: ${result.skipped} files`));
+            console.log(chalk.dim(`  Already in sync: ${result.skipped} files`));
           }
 
           if (result.errors.length > 0) {
