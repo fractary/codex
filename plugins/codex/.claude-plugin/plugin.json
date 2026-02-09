@@ -4,7 +4,9 @@
   "description": "Knowledge retrieval and documentation sync - self-managing memory fabric with MCP integration. Reference docs via codex:// URIs (auto-fetched by MCP). Sync projects bidirectionally with central codex repository.",
   "commands": "./commands/",
   "agents": [
-    "./agents/configurator.md",
+    "./agents/config-initializer.md",
+    "./agents/config-updater.md",
+    "./agents/config-validator.md",
     "./agents/sync-manager.md"
   ],
   "skills": "./skills/"
