@@ -441,7 +441,7 @@ export async function installMcpServer(
   options: { backup?: boolean } = {}
 ): Promise<McpInstallResult> {
   const mcpJsonPath = path.join(projectRoot, '.mcp.json')
-  const { backup = true } = options
+  const { backup = false } = options
 
   let existingConfig: Record<string, unknown> = { mcpServers: {} }
   let backupPath: string | undefined

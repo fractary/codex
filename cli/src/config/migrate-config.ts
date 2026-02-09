@@ -64,7 +64,7 @@ export async function migrateConfig(
 
     // Create backup if requested
     let backupPath: string | undefined;
-    if (options?.createBackup !== false) {
+    if (options?.createBackup === true) {
       const suffix = options?.backupSuffix || new Date().toISOString().replace(/[:.]/g, '-');
       backupPath = `${legacyConfigPath}.backup-${suffix}`;
       await fs.writeFile(backupPath, content, 'utf-8');
