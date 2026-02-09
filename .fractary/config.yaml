@@ -83,4 +83,5 @@ codex:
         - '*.tmp'
     from_codex:
       include:
-        - codex://fractary/codex.fractary.com/docs/**
+        - codex://fractary/core/docs/**
+        - codex://fractary/faber/docs/**
