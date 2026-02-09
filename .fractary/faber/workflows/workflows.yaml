@@ -1,0 +1,7 @@
+# Workflow Registry - Lists available FABER workflows
+# Each workflow is defined in a separate file in this directory
+
+workflows:
+  - id: default
+    file: default.yaml
+    description: Default FABER workflow for software development

@@ -1,0 +1,86 @@
+version: '2.0'
+repo:
+  active_handler: github
+  handlers:
+    github:
+      owner: fractary
+      repo: codex
+      token: ${GITHUB_TOKEN}
+      api_url: https://api.github.com
+  defaults:
+    environments:
+      production:
+        branch: main
+        protected: true
+      test:
+        branch: test
+        protected: false
+    default_environment: production
+    pr:
+      merge:
+        strategy: squash
+        delete_branch: true
+work:
+  active_handler: github
+  handlers:
+    github:
+      owner: fractary
+      repo: codex
+      token: ${GITHUB_TOKEN}
+      api_url: https://api.github.com
+file:
+  schema_version: '2.0'
+  active_handler: local
+  handlers:
+    local:
+      type: local
+      local:
+        base_path: .fractary
+docs:
+  schema_version: '1.1'
+  custom_templates_path: .fractary/docs/templates/manifest.yaml
+  storage:
+    file_handlers:
+      - name: default
+        write: docs-write
+        archive: docs-archive
+spec:
+  schema_version: '1.0'
+  storage:
+    file_handlers:
+      - name: default
+        write: specs-write
+        archive: specs-archive
+logs:
+  schema_version: '2.0'
+  storage:
+    file_handlers:
+      - name: default
+        write: logs-write
+        archive: logs-archive
+faber:
+  workflows:
+    path: .fractary/faber/workflows
+    default: default
+    autonomy: guarded
+  runs:
+    path: .fractary/faber/runs
+codex:
+  schema_version: '2.0'
+  organization: fractary
+  project: codex
+  codex_repo: codex.fractary.com
+  remotes:
+    fractary/codex.fractary.com:
+      token: ${GITHUB_TOKEN}
+  sync:
+    to_codex:
+      include:
+        - docs/**
+        - README.md
+        - CLAUDE.md
+      exclude:
+        - '*.tmp'
+    from_codex:
+      include:
+        - codex://fractary/codex.fractary.com/docs/**
