@@ -1,6 +1,6 @@
 {
   "name": "fractary-codex",
-  "version": "5.9.0",
+  "version": "5.9.1",
   "description": "Knowledge retrieval and documentation sync - self-managing memory fabric with MCP integration. Reference docs via codex:// URIs (auto-fetched by MCP). Sync projects bidirectionally with central codex repository.",
   "commands": [
     "./commands/config-init.md",
