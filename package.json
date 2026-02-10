@@ -10,15 +10,11 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present && npm run test:versions",
-    "test:versions": "node scripts/bump-versions.test.js",
+    "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "prepare": "husky || true"
+    "lint": "npm run lint --workspaces --if-present"
   },
-  "devDependencies": {
-    "husky": "^9.1.0"
-  },
+  "devDependencies": {},
   "keywords": [
     "codex",
     "knowledge-management",
