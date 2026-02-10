@@ -24,12 +24,15 @@ sync:
       - "README.md"
     exclude:
       - "*.tmp"
+      - "_archive/**"
 
   # Files to pull FROM codex repository TO local
   # Use codex:// URIs with placeholders: {org}, {codex_repo}
   from_codex:
     include:
       - "codex://{org}/{codex_repo}/docs/**"
+    exclude:
+      - "_archive/**"
 
 # Remote repository authentication
 remotes:

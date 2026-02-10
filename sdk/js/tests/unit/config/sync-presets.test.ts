@@ -24,6 +24,8 @@ describe('SYNC_PATTERN_PRESETS', () => {
     expect(SYNC_PATTERN_PRESETS.standard.config.to_codex.include).toContain('docs/**')
     expect(SYNC_PATTERN_PRESETS.standard.config.to_codex.include).toContain('README.md')
     expect(SYNC_PATTERN_PRESETS.standard.config.to_codex.include).toContain('CLAUDE.md')
+    expect(SYNC_PATTERN_PRESETS.standard.config.to_codex.exclude).toContain('_archive/**')
+    expect(SYNC_PATTERN_PRESETS.standard.config.from_codex.exclude).toContain('_archive/**')
   })
 
   test('contains minimal preset', () => {
@@ -167,7 +169,9 @@ describe('generateSyncConfigFromPreset', () => {
     expect(config?.to_codex.include).toContain('docs/**')
     expect(config?.to_codex.include).toContain('README.md')
     expect(config?.to_codex.include).toContain('CLAUDE.md')
+    expect(config?.to_codex.exclude).toContain('_archive/**')
     expect(config?.from_codex.include[0]).toBe('codex://myorg/codex.myorg.com/docs/**')
+    expect(config?.from_codex.exclude).toContain('_archive/**')
   })
 
   test('generates config from minimal preset', () => {
