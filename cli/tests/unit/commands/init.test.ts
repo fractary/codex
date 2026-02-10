@@ -349,7 +349,7 @@ describe('init command', () => {
     });
 
     describe('backup creation', () => {
-      it('should create backup by default', async () => {
+      it('should not create backup by default', async () => {
         // Create existing config
         const existingConfig = {
           mcpServers: {
@@ -363,6 +363,22 @@ describe('init command', () => {
 
         const result = await installMcpServer(tempDir);
 
+        expect(result.backupPath).toBeUndefined();
+      });
+
+      it('should create backup when enabled', async () => {
+        const existingConfig = {
+          mcpServers: {
+            'other-server': { command: 'test' }
+          }
+        };
+        await fs.writeFile(
+          path.join(tempDir, '.mcp.json'),
+          JSON.stringify(existingConfig, null, 2)
+        );
+
+        const result = await installMcpServer(tempDir, '.fractary/config.yaml', { backup: true });
+
         expect(result.backupPath).toBeDefined();
         expect(result.backupPath).toContain('.mcp.json.backup.');
 
@@ -370,18 +386,6 @@ describe('init command', () => {
         const backupContent = await fs.readFile(result.backupPath!, 'utf-8');
         const backupConfig = JSON.parse(backupContent);
         expect(backupConfig.mcpServers['other-server']).toBeDefined();
-      });
-
-      it('should skip backup when disabled', async () => {
-        const existingConfig = { mcpServers: {} };
-        await fs.writeFile(
-          path.join(tempDir, '.mcp.json'),
-          JSON.stringify(existingConfig, null, 2)
-        );
-
-        const result = await installMcpServer(tempDir, '.fractary/config.yaml', { backup: false });
-
-        expect(result.backupPath).toBeUndefined();
       });
     });
 
