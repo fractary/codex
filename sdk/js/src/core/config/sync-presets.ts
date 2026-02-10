@@ -66,10 +66,11 @@ export const SYNC_PATTERN_PRESETS: Record<string, SyncPreset> = {
     config: {
       to_codex: {
         include: ['docs/**', 'README.md', 'CLAUDE.md'],
-        exclude: ['*.tmp'],
+        exclude: ['*.tmp', '_archive/**'],
       },
       from_codex: {
         include: ['codex://{org}/{codex_repo}/docs/**'],
+        exclude: ['_archive/**'],
       },
     },
   },
