@@ -1,39 +1,39 @@
-# @fractary/codex-mcp-server
+# @fractary/codex-mcp
 
 MCP (Model Context Protocol) server for Fractary Codex knowledge management.
 
 ## Overview
 
-This package provides a standalone MCP server that exposes Fractary Codex functionality as tools for AI agents. Supports both stdio and HTTP/SSE transports.
+Standalone MCP server that exposes Fractary Codex functionality as tools for AI agents. Supports stdio (default) and HTTP/SSE transports.
 
 ## Installation
 
 ```bash
-# Global
-npm install -g @fractary/codex-mcp-server
+# Direct usage (recommended)
+npx @fractary/codex-mcp
 
-# Direct usage
-npx @fractary/codex-mcp-server
+# Global install
+npm install -g @fractary/codex-mcp
 ```
 
 ## Quick Start
 
-### Claude Code Integration
+### Claude Code / MCP Client Integration
 
-Add to `.claude/settings.json`:
+Add to `.mcp.json` in your project root:
 
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
 ```
 
-### Stdio Mode
+### Stdio Mode (default)
 
 ```bash
 fractary-codex-mcp --config .fractary/config.yaml
@@ -49,62 +49,82 @@ fractary-codex-mcp --port 3000 --host localhost
 
 | Tool | Description |
 |------|-------------|
-| `codex_document_fetch` | Fetch document by URI |
-| `codex_search` | Search documents |
+| `codex_document_fetch` | Fetch a document by codex:// URI |
 | `codex_cache_list` | List cached documents |
-| `codex_cache_clear` | Clear cache by pattern |
+| `codex_cache_clear` | Clear cache entries by pattern |
+| `codex_cache_stats` | Get cache statistics |
+| `codex_cache_health` | Run health diagnostics |
+| `codex_file_sources_list` | List file plugin sources |
 
-## Documentation
+### codex_document_fetch
 
-**Full documentation**: [docs/mcp-server/](../../docs/mcp-server/)
+Fetch a document by its codex:// URI with automatic caching.
 
-- [Configuration](../../docs/mcp-server/#configuration)
-- [Archive Configuration](../../docs/mcp-server/#archive-configuration)
-- [Tools Reference](../../docs/mcp-server/#available-tools)
-- [Programmatic Usage](../../docs/mcp-server/#programmatic-usage)
-- [Troubleshooting](../../docs/mcp-server/#troubleshooting)
+**Parameters:**
+- `uri` (string, required) - Codex URI (e.g., `codex://org/project/docs/file.md`)
+- `bypass_cache` (boolean, optional) - Skip cache and fetch from source
+- `ttl` (number, optional) - Override TTL in seconds
+
+### codex_cache_list
+
+List documents currently in the cache.
+
+**Parameters:**
+- `status` (string, optional) - Filter: `fresh`, `stale`, `expired`, `all`
+- `limit` (number, optional) - Max entries to return
+
+### codex_cache_clear
+
+Clear cache entries.
+
+**Parameters:**
+- `pattern` (string, optional) - Glob pattern to match URIs
+- `all` (boolean, optional) - Clear entire cache
+
+### codex_cache_stats
+
+Get cache statistics (entry count, total size, hit rates). No parameters.
+
+### codex_cache_health
+
+Run diagnostics on the codex setup. No parameters.
+
+### codex_file_sources_list
+
+List file plugin sources configured in `.fractary/config.yaml`. No parameters.
 
 ## Configuration
 
 Uses `.fractary/config.yaml`:
 
 ```yaml
-organizationSlug: fractary
-
-cache:
-  dir: .fractary/codex/cache
-  defaultTtl: 3600
-
-storage:
-  providers:
-    - type: local
-      basePath: ./knowledge
-    - type: github
+codex:
+  schema_version: "2.0"
+  organization: myorg
+  project: myproject
+  codex_repo: codex.myorg.com
+  remotes:
+    myorg/codex.myorg.com:
       token: ${GITHUB_TOKEN}
 ```
+
+See the [Configuration Guide](../../docs/configuration.md) for the full reference.
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `GITHUB_TOKEN` | GitHub API token for private repository access |
 
 ## Development
 
 ```bash
-# Build
 npm run build
-
-# Watch mode
-npm run dev
-
-# Test
+npm run dev    # watch mode
 npm test
-
-# Type check
 npm run typecheck
 ```
 
 ## License
 
 MIT
-
-## Related
-
-- [@fractary/codex](https://www.npmjs.com/package/@fractary/codex) - Core SDK
-- [@fractary/codex-cli](https://www.npmjs.com/package/@fractary/codex-cli) - CLI tool
-- [MCP Specification](https://modelcontextprotocol.io)
