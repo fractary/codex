@@ -1,85 +1,108 @@
 # Fractary Codex Plugin
 
-Self-managing memory fabric with MCP integration for Claude Code.
+Claude Code plugin for knowledge retrieval and documentation synchronization.
 
 ## Overview
 
-The codex plugin provides intelligent knowledge retrieval and documentation synchronization across organization projects. Reference docs via `codex://` URIs (auto-fetched by MCP). Sync projects bidirectionally with central codex repository.
+The codex plugin provides document fetching via `codex://` URIs (auto-fetched by MCP) and bidirectional synchronization with a central codex repository.
 
 ## Quick Start
 
-### 1. Configure
+### 1. Initialize configuration
 
-```bash
-/fractary-codex:configure
+```
+/fractary-codex:config-init
 ```
 
-Sets up configuration at `.fractary/config.yaml`, cache directory, and MCP server.
+Sets up the codex section in `.fractary/config.yaml`, cache directory, and MCP server.
 
 **Restart Claude Code after initialization to load the MCP server.**
 
-### 2. Sync Documentation
+### 2. Sync documentation
 
-```bash
+```
 /fractary-codex:sync
 ```
 
-### 3. Reference Documents
+### 3. Reference documents
+
+Use `codex://` URIs in conversations - the MCP server handles fetching and caching automatically:
 
 ```
-codex://fractary/auth-service/docs/oauth.md
+codex://myorg/project/docs/api.md
 ```
 
-The MCP server automatically handles caching and fetching.
-
-## Key Commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
-| `/fractary-codex:configure` | Initialize configuration |
-| `/fractary-codex:sync` | Sync documentation |
-| `/fractary-codex:fetch <uri>` | Fetch document by URI |
-| `/fractary-codex:cache-list` | List cached documents |
-| `/fractary-codex:cache-clear` | Clear cache |
-| `/fractary-codex:health` | Run diagnostics |
+| `/fractary-codex:config-init` | Initialize codex configuration |
+| `/fractary-codex:config-update` | Update configuration fields |
+| `/fractary-codex:config-validate` | Validate configuration (read-only) |
+| `/fractary-codex:sync` | Sync project with codex repository |
 
-## Documentation
+### /fractary-codex:config-init
 
-**Full documentation**: [docs/plugins/](../../docs/plugins/)
+Initialize the codex section in `.fractary/config.yaml`.
 
-- [Commands Reference](../../docs/plugins/#commands)
-- [Sync Configuration](../../docs/plugins/#sync-configuration)
-- [MCP Integration](../../docs/plugins/#mcp-integration)
-- [Permissions](../../docs/plugins/#permissions)
-- [Troubleshooting](../../docs/plugins/#troubleshooting)
-- [Configuration Guide](../../docs/configuration.md)
+**Options** (passed as arguments):
+- `--org <slug>` - Organization slug
+- `--codex-repo <name>` - Codex repository name
+- `--sync-preset <name>` - Sync preset (`standard` or `minimal`)
+- `--force` - Overwrite existing configuration
+
+The agent auto-detects organization, project, and codex repo, then confirms with you before proceeding.
+
+### /fractary-codex:config-update
+
+Update specific fields in the codex configuration.
+
+**Options:**
+- `--org <slug>` - Update organization
+- `--codex-repo <name>` - Update codex repository
+- `--sync-preset <name>` - Update sync preset
+
+### /fractary-codex:config-validate
+
+Read-only validation of the codex configuration. Checks structure, formats, directories, MCP server config, and gitignore.
+
+### /fractary-codex:sync
+
+Sync project files with the codex repository.
+
+**Options:**
+- `--work-id <id>` - GitHub issue number to scope sync
+- `--to-codex` or `--from-codex` - Sync direction (default: bidirectional)
+- `--dry-run` - Preview changes without syncing
+- `--env <env>` - Target environment (`dev`, `test`, `staging`, `prod`)
+
+When `--work-id` is provided, the agent analyzes the GitHub issue to infer relevant file patterns and narrows the sync scope.
+
+## Agents
+
+The plugin delegates to four specialized agents:
+
+| Agent | Purpose |
+|-------|---------|
+| `config-initializer` | Runs `fractary-codex config-init` CLI with user confirmation |
+| `config-updater` | Runs `fractary-codex config-update` CLI |
+| `config-validator` | Runs `fractary-codex config-validate` CLI (read-only) |
+| `sync-manager` | Runs `fractary-codex sync` CLI with optional GitHub issue integration |
+
+All agents are thin wrappers around the CLI - they do not implement business logic directly.
 
 ## Architecture
 
 ```
-Request codex://org/project/docs/api.md
-         ↓
-  Check local cache (< 100ms)
-         ↓ (if expired/missing)
-  Fetch from source (< 2s)
-         ↓
-  Cache locally with TTL
-         ↓
-  Return content
+Plugin Command → Agent (Claude Haiku) → CLI → SDK → Storage/Cache
 ```
 
-**Key Benefits:**
-- **Fast**: < 100ms cache hits
-- **Secure**: Frontmatter-based permissions
-- **Multi-source**: GitHub, HTTP, MCP servers
-- **Offline**: Cached content available without network
+The MCP server provides direct tool access for AI agents:
+
+```
+Claude Code → MCP Server (stdio) → SDK → Storage/Cache
+```
 
 ## License
 
 MIT
-
-## See Also
-
-- [JavaScript SDK](../../sdk/js/) - Core SDK
-- [CLI](../../cli/) - Command-line interface
-- [MCP Server](../../mcp/server/) - MCP server package

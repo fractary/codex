@@ -1,202 +1,141 @@
 # Fractary Codex
 
-Core SDK for Fractary Codex - knowledge infrastructure for AI agents.
+Knowledge infrastructure for AI agents.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-The Codex SDK provides foundational infrastructure for managing organizational knowledge across AI agents and projects. It implements a universal reference system (`codex://` URIs), multi-provider storage, intelligent caching, and file synchronization.
+Fractary Codex provides infrastructure for managing organizational knowledge across AI agents and projects. It implements a universal reference system (`codex://` URIs), multi-provider storage, intelligent caching, and file synchronization.
 
-### Key Features
+## Packages
 
-- **Universal References**: `codex://` URI scheme for cross-project knowledge references
-- **Multi-Provider Storage**: Local filesystem, GitHub, and HTTP storage backends
-- **Intelligent Caching**: Multi-tier caching (L1 memory, L2 disk, L3 network) with LRU eviction
-- **File Synchronization**: Bidirectional sync with conflict detection
-- **Permission System**: Fine-grained access control (none/read/write/admin)
-- **Type-Safe**: Full TypeScript and Python type support
+| Package | Description | Install |
+|---------|-------------|---------|
+| [`@fractary/codex`](./sdk/js/) | JavaScript/TypeScript SDK | `npm install @fractary/codex` |
+| [`@fractary/codex-cli`](./cli/) | Command-line interface | `npm install -g @fractary/codex-cli` |
+| [`@fractary/codex-mcp`](./mcp/server/) | MCP server for AI agents | `npx @fractary/codex-mcp` |
+| [Claude Code Plugin](./plugins/codex/) | Claude Code integration | Install via plugin system |
 
-## SDKs
+## Quick Start
 
-This monorepo contains SDK implementations for multiple languages:
+### 1. Install and initialize
 
-| Language | Package | Status | Install |
-|----------|---------|--------|---------|
-| **JavaScript/TypeScript** | [`@fractary/codex`](./sdk/js/) | [![npm](https://img.shields.io/npm/v/@fractary/codex.svg)](https://www.npmjs.com/package/@fractary/codex) | `npm install @fractary/codex` |
-| **Python** | [`fractary-codex`](./sdk/py/) | In Development | `pip install fractary-codex` |
-
-## CLI
-
-A command-line interface is available for codex operations:
-
-| Tool | Package | Status | Install |
-|------|---------|--------|---------|
-| **Codex CLI** | [`@fractary/codex-cli`](./cli/) | Ready | `npm install -g @fractary/codex-cli` |
-
-**Quick example:**
 ```bash
-# Initialize codex in your project
-fractary-codex configure
+npm install -g @fractary/codex-cli
 
-# Sync project documentation with codex repository
+# Initialize codex config (requires .fractary/config.yaml from @fractary/core)
+fractary-codex config-init --org myorg --codex-repo codex.myorg.com
+```
+
+### 2. Fetch documents
+
+```bash
+fractary-codex document-fetch codex://myorg/project/docs/api.md
+```
+
+### 3. Sync with codex repository
+
+```bash
 fractary-codex sync --dry-run
+fractary-codex sync
+```
 
-# Fetch a document
-fractary-codex document-fetch codex://myorg/docs/api-guide.md
+### 4. Manage cache
 
-# Manage cache
-fractary-codex cache-list
+```bash
+fractary-codex cache-list --verbose
+fractary-codex cache-stats
 fractary-codex cache-clear --all
-
-# Run diagnostics
 fractary-codex cache-health
 ```
 
-See the [CLI documentation](./cli/README.md) for full command reference.
+### 5. Use programmatically
+
+```typescript
+import { CodexClient } from '@fractary/codex'
+
+const client = await CodexClient.create({ organizationSlug: 'myorg' })
+const result = await client.fetch('codex://myorg/project/docs/api.md')
+console.log(result.content.toString())
+```
 
 ## MCP Server
 
-A standalone Model Context Protocol server for AI agent integration:
+Add to `.mcp.json` for AI agent integration:
 
-| Tool | Package | Status | Install |
-|------|---------|--------|---------|
-| **MCP Server** | [`@fractary/codex-mcp-server`](./mcp/server/) | Ready | `npx @fractary/codex-mcp-server` |
-
-**Quick example:**
-```bash
-# Run MCP server with stdio transport (default)
-npx @fractary/codex-mcp-server --config .fractary/config.yaml
-
-# Run MCP server with HTTP transport
-npx @fractary/codex-mcp-server --port 3000 --config .fractary/config.yaml
-```
-
-**Claude Code integration:**
-Add to `.claude/settings.json`:
 ```json
 {
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
 ```
 
-See the [MCP Server documentation](./mcp/server/README.md) for full reference.
+## Claude Code Plugin
 
-## Quick Start
+The plugin provides slash commands for Claude Code:
 
-### JavaScript/TypeScript
+| Command | Description |
+|---------|-------------|
+| `/fractary-codex:config-init` | Initialize codex configuration |
+| `/fractary-codex:config-update` | Update configuration fields |
+| `/fractary-codex:config-validate` | Validate configuration (read-only) |
+| `/fractary-codex:sync` | Sync project with codex repository |
 
-```typescript
-import { parseReference, CacheManager } from '@fractary/codex'
+## URI Format
 
-// Parse a codex URI
-const ref = parseReference('codex://myorg/docs/api-guide.md')
-
-// Fetch with caching
-const cache = CacheManager.create({ cacheDir: '.fractary/codex/cache' })
-const content = await cache.get('codex://myorg/docs/api-guide.md')
 ```
-
-### Python
-
-```python
-import asyncio
-from fractary_codex import CodexClient
-
-async def main():
-    client = CodexClient()
-    doc = await client.fetch("codex://myorg/docs/api-guide.md")
-    print(doc.content)
-
-asyncio.run(main())
+codex://org/project/path/to/file.md
+       └─┬─┘└──┬──┘└──────┬───────┘
+         │     │          └─ File path within project
+         │     └─ Project/repository name
+         └─ Organization name
 ```
 
 ## Project Structure
 
 ```
 codex/
-├── sdk/
-│   ├── js/                 # JavaScript/TypeScript SDK
-│   │   ├── src/            # TypeScript source
-│   │   ├── tests/          # Test suite
-│   │   └── package.json    # npm configuration
-│   └── py/                 # Python SDK
-│       ├── fractary_codex/ # Python package
-│       ├── tests/          # Test suite
-│       └── pyproject.toml  # PyPI configuration
-├── cli/                    # Command-line interface
-│   ├── src/                # CLI source
-│   └── package.json        # npm configuration
-├── mcp/
-│   └── server/             # MCP server (standalone)
-│       ├── src/            # Server source
-│       └── package.json    # npm configuration
-├── plugins/
-│   └── codex/              # Claude Code plugin
-│       ├── agents/         # Plugin agents
-│       ├── commands/        # Plugin commands
-│       └── skills/         # Plugin skills
-├── docs/                   # Shared documentation
-├── specs/                  # Feature specifications
-└── README.md               # This file
+├── sdk/js/             # @fractary/codex - TypeScript SDK
+├── cli/                # @fractary/codex-cli - CLI tool
+├── mcp/server/         # @fractary/codex-mcp - MCP server
+├── plugins/codex/      # Claude Code plugin
+│   ├── agents/         # Plugin agents
+│   ├── commands/       # Plugin commands
+│   └── skills/         # Plugin skills
+├── docs/               # Documentation
+└── specs/              # Technical specifications
 ```
 
 ## Documentation
 
-### Getting Started
-
-- [JavaScript SDK](./sdk/js/README.md) - Installation and quick start for JS/TS
-- [Python SDK](./sdk/py/README.md) - Installation and quick start for Python
-
-### Reference
-
-- [Configuration Guide](./docs/configuration.md) - Complete configuration reference
-- [CLI Documentation](./docs/cli/) - Command-line interface reference
-- [MCP Server Documentation](./docs/mcp-server/) - AI agent integration
-- [Plugin Documentation](./docs/plugins/) - Claude Code plugin reference
-
-### Examples
-
-- [Usage Examples](./docs/examples/) - Real-world integration patterns and code samples
-
-### Technical Specifications
-
-- [Specification Documents](./docs/specs/) - Detailed technical specifications
+- [CLI Command Reference](./cli/README.md) - All commands with options and flags
+- [SDK API Reference](./sdk/js/README.md) - TypeScript/JavaScript SDK
+- [MCP Server Reference](./mcp/server/README.md) - AI agent integration
+- [Plugin Reference](./plugins/codex/README.md) - Claude Code plugin
+- [Configuration Guide](./docs/configuration.md) - Configuration reference
+- [Full Documentation Index](./docs/README.md) - All documentation
 
 ## Development
 
-### JavaScript SDK
-
 ```bash
-cd sdk/js
+# Install dependencies
 npm install
+
+# Build all packages
 npm run build
+
+# Run all tests
 npm test
+
+# Type check
+npm run typecheck
 ```
-
-### Python SDK
-
-```bash
-cd sdk/py
-pip install -e ".[dev]"
-pytest
-mypy fractary_codex
-```
-
-## Related Projects
-
-- **forge-bundle-codex-github-core** - GitHub Actions workflows for codex sync
-- **forge-bundle-codex-claude-agents** - Claude Code agents for codex management
 
 ## License
 
-MIT © Fractary Engineering
-
-## Contributing
-
-For issues or contributions, please visit the [GitHub repository](https://github.com/fractary/codex).
+MIT

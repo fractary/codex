@@ -680,10 +680,12 @@ interface McpServer {
 
 **Available Tools:**
 
-- `codex_fetch` - Fetch a document by URI
-- `codex_search` - Search documents
-- `codex_list` - List documents
-- `codex_invalidate` - Invalidate cache
+- `codex_document_fetch` - Fetch a document by URI
+- `codex_cache_list` - List cached documents
+- `codex_cache_clear` - Clear cache entries
+- `codex_cache_stats` - Cache statistics
+- `codex_cache_health` - Run diagnostics
+- `codex_file_sources_list` - List file plugin sources
 
 ### Permissions
 
@@ -739,31 +741,41 @@ function convertLegacyReferences(content: string, options?: {
 Error types thrown by the SDK.
 
 ```typescript
-class InvalidUriError extends Error {
-  uri: string
-  reason?: string
+// Base error for all SDK errors
+class CodexError extends Error {
+  // All SDK errors extend this class
 }
 
-class StorageError extends Error {
-  provider?: string
-  reference?: ResolvedReference
-  cause?: Error
+// Configuration loading/parsing errors
+class ConfigurationError extends CodexError {
+  // Config file missing, invalid YAML, etc.
 }
 
-class CacheError extends Error {
-  reference?: ResolvedReference
-  cause?: Error
+// Schema/format validation errors
+class ValidationError extends CodexError {
+  // Invalid URIs, bad config values, etc.
 }
 
-class ConfigError extends Error {
-  path?: string
-  cause?: Error
+// Permission check failures (extends Error directly, not CodexError)
+class PermissionDeniedError extends Error {
+  // Access denied to a document
 }
+```
 
-class PermissionError extends Error {
-  reference?: ResolvedReference
-  required?: Permission
-  actual?: Permission
+**Usage:**
+
+```typescript
+import {
+  CodexError, ConfigurationError, ValidationError, PermissionDeniedError
+} from '@fractary/codex'
+
+try {
+  await client.fetch(uri)
+} catch (err) {
+  if (err instanceof PermissionDeniedError) { /* access denied */ }
+  if (err instanceof ConfigurationError) { /* config issue */ }
+  if (err instanceof ValidationError) { /* validation issue */ }
+  if (err instanceof CodexError) { /* other SDK error */ }
 }
 ```
 
@@ -943,6 +955,5 @@ DEBUG=codex:cache,codex:storage node app.js
 ## See Also
 
 - [Configuration Guide](../../configuration.md) - Complete configuration reference
-- [Python SDK](../py/) - Python implementation
 - [CLI Documentation](../../cli/) - Command-line interface
 - [MCP Server Documentation](../../mcp-server/) - AI agent integration

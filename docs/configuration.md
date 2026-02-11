@@ -32,14 +32,14 @@ The SDK searches for configuration in the following order:
 
 ### Creating Configuration
 
-**Initialize with defaults:**
+**Initialize with CLI:**
 
 ```bash
-# JavaScript/TypeScript
-npx @fractary/codex init
+# Initialize codex config (requires base .fractary/config.yaml from @fractary/core)
+fractary-codex config-init
 
-# Python
-python -m fractary_codex init
+# Or specify options explicitly
+fractary-codex config-init --org myorg --codex-repo codex.myorg.com
 ```
 
 **Manual creation:**
@@ -224,24 +224,17 @@ Or sync all sources:
 The Codex MCP server automatically detects file plugin sources:
 
 ```json
-// .claude/settings.json
 {
   "mcpServers": {
     "fractary-codex": {
       "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp-server", "--config", ".fractary/config.yaml"]
+      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
     }
   }
 }
 ```
 
-Use the `codex_file_sources_list` tool to discover available sources:
-
-```typescript
-// List file plugin sources
-const sources = await client.call('codex_file_sources_list', {})
-// Returns: specs (.fractary/specs), logs (.fractary/logs), etc.
-```
+Use the `codex_file_sources_list` MCP tool to discover available sources.
 
 ## Configuration Schema
 
@@ -290,19 +283,6 @@ interface CodexConfig {
   permissions?: PermissionConfig
   sync?: SyncConfig
 }
-```
-
-### Python Dataclass
-
-```python
-@dataclass
-class CodexConfig:
-    organization: Optional[str] = None
-    cache_dir: str = ".fractary/codex/cache"
-    storage: Optional[List[StorageProviderConfig]] = None
-    types: Optional[Dict[str, ArtifactType]] = None
-    permissions: Optional[PermissionConfig] = None
-    sync: Optional[SyncConfig] = None
 ```
 
 ## Storage Providers
@@ -793,15 +773,11 @@ storage:
 cacheDir: ${CODEX_CACHE_DIR:-.fractary/codex/cache}
 ```
 
-### SDK-Specific Variables
+### Common Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CODEX_CONFIG_PATH` | Path to config file | `.fractary/config.yaml` |
-| `CODEX_CACHE_DIR` | Cache directory | `.fractary/codex/cache` |
-| `CODEX_ORGANIZATION` | Organization name | (auto-detect) |
-| `GITHUB_TOKEN` | GitHub access token | - |
-| `CODEX_LOG_LEVEL` | Log level (debug/info/warn/error) | `info` |
+| `GITHUB_TOKEN` | GitHub access token for private repos | - |
 
 ## Best Practices
 
@@ -1021,6 +997,5 @@ storage:
 ## See Also
 
 - [JavaScript SDK](./sdk/js/) - JS/TS SDK documentation
-- [Python SDK](./sdk/py/) - Python SDK documentation
 - [CLI Documentation](./cli/) - Command-line interface
 - [MCP Server](./mcp-server/) - AI agent integration
