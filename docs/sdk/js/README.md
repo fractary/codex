@@ -756,8 +756,8 @@ class ValidationError extends CodexError {
   // Invalid URIs, bad config values, etc.
 }
 
-// Permission check failures
-class PermissionDeniedError extends CodexError {
+// Permission check failures (extends Error directly, not CodexError)
+class PermissionDeniedError extends Error {
   // Access denied to a document
 }
 ```
@@ -765,14 +765,17 @@ class PermissionDeniedError extends CodexError {
 **Usage:**
 
 ```typescript
-import { CodexError, ConfigurationError, ValidationError } from '@fractary/codex'
+import {
+  CodexError, ConfigurationError, ValidationError, PermissionDeniedError
+} from '@fractary/codex'
 
 try {
   await client.fetch(uri)
 } catch (err) {
+  if (err instanceof PermissionDeniedError) { /* access denied */ }
   if (err instanceof ConfigurationError) { /* config issue */ }
   if (err instanceof ValidationError) { /* validation issue */ }
-  if (err instanceof CodexError) { /* general SDK error */ }
+  if (err instanceof CodexError) { /* other SDK error */ }
 }
 ```
 

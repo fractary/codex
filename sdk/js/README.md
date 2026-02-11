@@ -227,14 +227,18 @@ const results = await checker.runAll()
 ### Errors
 
 ```typescript
-import { CodexError, ConfigurationError, ValidationError } from '@fractary/codex'
+import {
+  CodexError, ConfigurationError, ValidationError, PermissionDeniedError
+} from '@fractary/codex'
 
 try {
   await client.fetch(uri)
 } catch (err) {
+  // PermissionDeniedError extends Error directly, not CodexError - check it first
+  if (err instanceof PermissionDeniedError) { /* access denied */ }
   if (err instanceof ConfigurationError) { /* config issue */ }
   if (err instanceof ValidationError) { /* validation issue */ }
-  if (err instanceof CodexError) { /* general SDK error */ }
+  if (err instanceof CodexError) { /* other SDK error */ }
 }
 ```
 
