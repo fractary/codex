@@ -9,7 +9,7 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, mkdirSync } from 'fs'
-import { join, dirname, resolve, relative } from 'path'
+import { join, dirname } from 'path'
 import {
   type MemoryConfig,
   type MemoryIndex,
@@ -30,7 +30,7 @@ function parseFrontmatter(content: string): MemoryFrontmatter | null {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (!match) return null
 
-  const yaml = match[1]
+  const yaml = match[1]!
   const frontmatter: Record<string, unknown> = {}
 
   let currentKey = ''
@@ -64,8 +64,8 @@ function parseFrontmatter(content: string): MemoryFrontmatter | null {
     // Key-value pair
     const kvMatch = trimmed.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.*)$/)
     if (kvMatch) {
-      const key = kvMatch[1]
-      let value = kvMatch[2].trim()
+      const key = kvMatch[1]!
+      let value = kvMatch[2]!.trim()
 
       if (value === '' || value === '[]') {
         // Could be start of array block or empty value

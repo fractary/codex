@@ -7,8 +7,8 @@
  * Based on SPEC-00034: Codex Memory System.
  */
 
-import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync, unlinkSync } from 'fs'
-import { join, dirname } from 'path'
+import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'fs'
+import { join } from 'path'
 import {
   type MemoryConfig,
   type MemoryType,
@@ -83,7 +83,7 @@ function getNextSequence(typeDir: string, prefix: string): number {
     for (const file of files) {
       const match = file.match(pattern)
       if (match) {
-        const seq = parseInt(match[1], 10)
+        const seq = parseInt(match[1]!, 10)
         if (seq > maxSeq) maxSeq = seq
       }
     }
@@ -157,7 +157,7 @@ export class MemoryWriter {
    * and index invalidation.
    */
   write(options: MemoryWriteOptions): MemoryWriteResult {
-    const { memory_type, title, description, body, frontmatter, template } = options
+    const { memory_type, title, description, body, frontmatter } = options
 
     // Check for duplicates
     const dupResult = this.checkDuplicate(frontmatter, memory_type)
@@ -233,13 +233,8 @@ export class MemoryWriter {
     }
 
     // Parse existing frontmatter as simple key-value
-    const existingContent = fmMatch[1]
+    const existingContent = fmMatch[1]!
     const bodyContent = fmMatch[2]
-
-    // Re-parse to get structured data
-    const existingFm: Record<string, unknown> = {}
-    // Simple parse: just rebuild from the parseFrontmatter approach
-    const tempContent = `---\n${existingContent}\n---`
 
     // Apply changes by reading existing and merging
     const lines = existingContent.split('\n')
@@ -273,8 +268,8 @@ export class MemoryWriter {
 
       const kvMatch = trimmed.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(.*)$/)
       if (kvMatch) {
-        const key = kvMatch[1]
-        let value = kvMatch[2].trim()
+        const key = kvMatch[1]!
+        let value = kvMatch[2]!.trim()
 
         if (value === '' || value === '[]') {
           currentKey = key
