@@ -434,6 +434,27 @@ export {
   type HealthCheckerOptions,
 } from './health/index.js'
 
+// Memory - Institutional memory system
+export {
+  // Types
+  type MemoryType,
+  type MemoryStatus,
+  type MemoryFrontmatter,
+  type MemoryIndex,
+  type MemoryIndexEntry,
+  type MemorySearchQuery,
+  type MemorySearchResult,
+  type MemoryWriteOptions,
+  type MemoryWriteResult,
+  type MemoryConfig,
+  MEMORY_TYPE_PREFIXES,
+  DEFAULT_MEMORY_CONFIG,
+  // Searcher
+  MemorySearcher,
+  // Writer
+  MemoryWriter,
+} from './memory/index.js'
+
 // Client - High-level facade
 export {
   CodexClient,

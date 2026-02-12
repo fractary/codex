@@ -128,6 +128,23 @@ export const BUILT_IN_TYPES: Record<string, ArtifactType> = {
     archiveAfterDays: null,
     archiveStorage: null,
   },
+
+  memory: {
+    name: 'memory',
+    description: 'Institutional memory entries (troubleshooting, decisions, patterns)',
+    patterns: [
+      'memory/**',
+      '.fractary/codex/memory/**',
+      '**/knowledge-base/**',
+    ],
+    defaultTtl: TTL.ONE_MONTH,
+    archiveAfterDays: 365,
+    archiveStorage: 'cloud',
+    syncPatterns: [
+      'memory/**',
+      '.fractary/codex/memory/**',
+    ],
+  },
 }
 
 /**

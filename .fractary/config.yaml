@@ -32,34 +32,22 @@ file:
   schema_version: '2.0'
   active_handler: local
   handlers:
-    local:
-      type: local
-      local:
-        base_path: .fractary
-    specs-write:
-      type: local
-      local:
-        base_path: .fractary/specs
-    specs-archive:
-      type: local
-      local:
-        base_path: .fractary/specs/archive
     logs-write:
       type: local
       local:
-        base_path: .fractary/logs
+        base_path: logs
     logs-archive:
       type: local
       local:
-        base_path: .fractary/logs/archive
+        base_path: logs/_archive
     docs-write:
       type: local
       local:
-        base_path: .fractary/docs
+        base_path: docs
     docs-archive:
       type: local
       local:
-        base_path: .fractary/docs/archive
+        base_path: docs/_archive
 docs:
   schema_version: '1.1'
   custom_templates_path: .fractary/docs/templates/manifest.yaml
@@ -68,13 +56,6 @@ docs:
       - name: default
         write: docs-write
         archive: docs-archive
-spec:
-  schema_version: '1.0'
-  storage:
-    file_handlers:
-      - name: default
-        write: specs-write
-        archive: specs-archive
 logs:
   schema_version: '2.0'
   storage:
@@ -100,6 +81,7 @@ codex:
   sync:
     to_codex:
       include:
+        - .fractary/codex/memory/**
         - docs/**
         - README.md
         - CLAUDE.md
@@ -108,5 +90,6 @@ codex:
     from_codex:
       include:
         - codex://fractary/codex.fractary.com/docs/**
+        - codex://fractary/codex.fractary.com/.fractary/codex/memory/**
         - codex://fractary/core/docs/**
         - codex://fractary/faber/docs/**
