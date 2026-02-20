@@ -1,7 +1,7 @@
 ---
 name: memory-audit
 description: Audit memory entries for validity by checking claims against current project state and scoring relevance
-model: claude-haiku-3-5
+model: claude-haiku-4-5
 tools: Read, Glob, Grep, AskUserQuestion
 ---
 

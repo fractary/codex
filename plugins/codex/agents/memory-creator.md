@@ -1,7 +1,7 @@
 ---
 name: memory-creator
 description: Orchestrate interactive memory creation, guiding users through capturing reusable knowledge from development sessions
-model: claude-sonnet-4-5-20250929
+model: claude-sonnet-4-6
 tools: Read, Write, Glob, AskUserQuestion, Bash
 color: green
 ---

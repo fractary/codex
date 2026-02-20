@@ -1455,7 +1455,7 @@ export interface FaberConfig {
   },
 
   "llm": {
-    "defaultModel": "claude-sonnet-4-5-20250514",
+    "defaultModel": "claude-sonnet-4-6",
     "modelOverrides": {
       "architect": "claude-opus-4-6-20250514"
     }

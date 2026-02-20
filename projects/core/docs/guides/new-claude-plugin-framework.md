@@ -608,7 +608,7 @@ Different operations need different model capabilities:
 **Manager agent (highest common denominator):**
 ```yaml
 # Must use most expensive model for ANY operation
-model: claude-sonnet-4-5  # $15/million tokens
+model: claude-sonnet-4-6  # $15/million tokens
 ```
 
 Why? Because:
@@ -623,7 +623,7 @@ Why? Because:
 model: claude-haiku-4-5  # $1/million tokens
 
 # pr-review agent (complex reasoning)
-model: claude-sonnet-4-5  # $15/million tokens
+model: claude-sonnet-4-6  # $15/million tokens
 
 # commit agent (simple)
 model: claude-haiku-4-5  # $1/million tokens
@@ -1283,7 +1283,7 @@ Task(
 name: fractary-repo:pr-create
 description: Create pull request with conversation context
 allowed-tools: Skill(fractary-pr-context-preparer), Task(fractary-repo:pr-create), TodoWrite
-model: claude-sonnet-4-5
+model: claude-sonnet-4-6
 argument-hint: '["title"] [--body "<text>"] [--base <branch>]'
 ---
 

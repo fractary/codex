@@ -1,7 +1,7 @@
 ---
 name: memory-auditor
 description: Perform in-depth auditing of memory entries, analyzing claims against actual project state and resolving outdated or contradictory knowledge
-model: claude-sonnet-4-5-20250929
+model: claude-sonnet-4-6
 tools: Read, Write, Glob, Grep, AskUserQuestion, Bash
 color: blue
 ---
