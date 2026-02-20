@@ -1,7 +1,7 @@
 ---
 name: memory-create
 description: Create structured memory entries from troubleshooting sessions, architectural decisions, performance findings, and other reusable knowledge
-model: claude-haiku-3-5
+model: claude-haiku-4-5
 tools: Read, Write, Glob, AskUserQuestion
 ---
 
