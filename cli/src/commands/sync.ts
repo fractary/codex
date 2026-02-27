@@ -18,7 +18,7 @@ import type {
   SyncOptions,
   SyncConfig
 } from '@fractary/codex';
-import { formatBytes, formatDuration } from '@fractary/codex';
+import { formatBytes, formatDuration, calculateContentHash } from '@fractary/codex';
 import { readYamlConfig } from '../config/migrate-config';
 
 /**
@@ -186,15 +186,20 @@ export function syncCommand(): Command {
           }
         }
 
-        // Convert matched paths to file objects with stat info
+        // Convert matched paths to file objects with stat info and content hash
+        const fsModuleLocal = await import('fs/promises');
         const targetFiles = await Promise.all(
           Array.from(matchedFilePaths).map(async (filePath) => {
             const fullPath = path.join(sourceDir, filePath);
-            const stats = await import('fs/promises').then(fs => fs.stat(fullPath));
+            const [stats, content] = await Promise.all([
+              fsModuleLocal.stat(fullPath),
+              fsModuleLocal.readFile(fullPath)
+            ]);
             return {
               path: filePath,
               size: stats.size,
-              mtime: stats.mtimeMs
+              mtime: stats.mtimeMs,
+              hash: calculateContentHash(content)
             };
           })
         );
@@ -311,7 +316,7 @@ export function syncCommand(): Command {
 
           // For to-codex: scan existing files in codex target for proper change detection
           const codexProjectDir = path.join(codexRepoPath, 'projects', projectName);
-          let existingCodexFiles: Array<{ path: string; size: number; mtime: number }> = [];
+          let existingCodexFiles: Array<{ path: string; size: number; mtime: number; hash?: string }> = [];
           try {
             const codexGlobMatches = await globSync('**/*', {
               cwd: codexProjectDir,
@@ -322,11 +327,15 @@ export function syncCommand(): Command {
             existingCodexFiles = await Promise.all(
               codexGlobMatches.map(async (filePath: string) => {
                 const fullPath = path.join(codexProjectDir, filePath);
-                const stats = await fsPromises.stat(fullPath);
+                const [stats, content] = await Promise.all([
+                  fsPromises.stat(fullPath),
+                  fsPromises.readFile(fullPath)
+                ]);
                 return {
                   path: filePath,
                   size: stats.size,
                   mtime: stats.mtimeMs,
+                  hash: calculateContentHash(content)
                 };
               })
             );
