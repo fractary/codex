@@ -83,7 +83,10 @@ export function createSyncPlan(
       })
     } else {
       // File exists in both - check for changes
-      const isDifferent = sourceFile.hash !== targetFile.hash
+      // Guard against undefined !== undefined being false (treats missing hashes as identical)
+      const isDifferent = (sourceFile.hash !== undefined && targetFile.hash !== undefined)
+        ? sourceFile.hash !== targetFile.hash
+        : sourceFile.size !== targetFile.size
 
       if (isDifferent) {
         if (options.force) {
