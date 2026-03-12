@@ -82,6 +82,24 @@ export function syncCommand(): Command {
     .option('--work-id <id>', 'GitHub issue number or URL to scope sync to')
     .action(async (name: string | undefined, options) => {
       try {
+        // Load .fractary/env/.env if it exists (before config reading so ${GITHUB_TOKEN} expands)
+        const envFilePath = path.join(process.cwd(), '.fractary', 'env', '.env');
+        try {
+          const { readFile } = await import('fs/promises');
+          const envContent = await readFile(envFilePath, 'utf-8');
+          for (const line of envContent.split('\n')) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) continue;
+            const eqIdx = trimmed.indexOf('=');
+            if (eqIdx === -1) continue;
+            const key = trimmed.slice(0, eqIdx).trim();
+            const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+            if (key && !process.env[key]) {
+              process.env[key] = val;
+            }
+          }
+        } catch { /* .env file is optional */ }
+
         // Load YAML config (unified config path)
         const configPath = path.join(process.cwd(), '.fractary', 'config.yaml');
         let config;
@@ -125,6 +143,9 @@ export function syncCommand(): Command {
 
         const direction = options.direction as SyncDirection;
         const targetBranch = getEnvironmentBranch(config, options.env);
+
+        // Resolve token for git authentication
+        const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined;
 
         // Create LocalStorage instance
         const localStorage = createLocalStorage({
@@ -234,7 +255,8 @@ export function syncCommand(): Command {
 
             // Clone codex to temp directory
             codexRepoPath = await ensureCodexCloned(config, {
-              branch: targetBranch
+              branch: targetBranch,
+              token,
             });
 
             if (!options.json) {
@@ -302,7 +324,8 @@ export function syncCommand(): Command {
 
             // Clone codex to temp directory
             codexRepoPath = await ensureCodexCloned(config, {
-              branch: targetBranch
+              branch: targetBranch,
+              token,
             });
 
             if (!options.json) {
