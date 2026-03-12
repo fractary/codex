@@ -131,12 +131,17 @@ export async function isValidGitRepo(repoPath: string): Promise<boolean> {
 /**
  * Construct the git repository URL from config
  */
-export function getCodexRepoUrl(config: CodexConfigWithRepo): string {
+export function getCodexRepoUrl(config: CodexConfigWithRepo, token?: string): string {
   const codexRepo = config.codex_repo || 'codex';
 
   // Validate GitHub names to prevent URL injection
   validateGitHubName(config.organization, 'organization');
   validateGitHubName(codexRepo, 'repository');
+
+  // Embed token in URL for HTTPS authentication if provided
+  if (token) {
+    return `https://x-access-token:${encodeURIComponent(token)}@github.com/${config.organization}/${codexRepo}.git`;
+  }
 
   // Default to GitHub
   // Format: https://github.com/{org}/{repo}.git
@@ -258,7 +263,7 @@ async function gitPull(repoPath: string): Promise<void> {
  */
 export async function ensureCodexCloned(
   config: CodexConfigWithRepo,
-  options?: { force?: boolean; branch?: string }
+  options?: { force?: boolean; branch?: string; token?: string }
 ): Promise<string> {
   const tempPath = getTempCodexPath(config);
   const branch = options?.branch || 'main';
@@ -266,6 +271,11 @@ export async function ensureCodexCloned(
   // If already exists and not forcing a fresh clone, update it
   if (await isValidGitRepo(tempPath) && !options?.force) {
     try {
+      // Update remote URL with token if provided (ensures auth on existing clones)
+      if (options?.token) {
+        const repoUrl = getCodexRepoUrl(config, options.token);
+        await execGit(tempPath, ['remote', 'set-url', 'origin', repoUrl]);
+      }
       await gitFetch(tempPath, branch);
       await gitCheckout(tempPath, branch);
       await gitPull(tempPath);
@@ -279,7 +289,7 @@ export async function ensureCodexCloned(
   }
 
   // Clone fresh
-  const repoUrl = getCodexRepoUrl(config);
+  const repoUrl = getCodexRepoUrl(config, options?.token);
 
   // Remove existing directory if present
   try {
