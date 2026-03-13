@@ -56,26 +56,15 @@ describe('sync/planner', () => {
       expect(plan.skipped[0]?.reason).toContain('identical')
     })
 
-    it('should detect conflicts when target is newer', () => {
+    it('should update files when hashes differ regardless of mtime', () => {
       const sourceFile = createFileInfo('docs/file.md', 100, 'sourcehash')
       sourceFile.mtime = Date.now() - 10000 // Older
       const targetFile = createFileInfo('docs/file.md', 100, 'targethash')
-      targetFile.mtime = Date.now() // Newer
+      targetFile.mtime = Date.now() // Newer (e.g. freshly cloned codex)
 
       const plan = createSyncPlan([sourceFile], [targetFile], {}, defaultConfig)
 
-      expect(plan.conflicts).toHaveLength(1)
-      expect(plan.conflicts[0]?.operation).toBe('conflict')
-    })
-
-    it('should force overwrite when force option is set', () => {
-      const sourceFile = createFileInfo('docs/file.md', 100, 'sourcehash')
-      sourceFile.mtime = Date.now() - 10000
-      const targetFile = createFileInfo('docs/file.md', 100, 'targethash')
-      targetFile.mtime = Date.now()
-
-      const plan = createSyncPlan([sourceFile], [targetFile], { force: true }, defaultConfig)
-
+      // Should update based on hash diff, not treat as conflict due to mtime
       expect(plan.files).toHaveLength(1)
       expect(plan.files[0]?.operation).toBe('update')
       expect(plan.conflicts).toHaveLength(0)

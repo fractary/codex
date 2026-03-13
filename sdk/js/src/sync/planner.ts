@@ -89,34 +89,18 @@ export function createSyncPlan(
         : sourceFile.size !== targetFile.size
 
       if (isDifferent) {
-        if (options.force) {
-          // Force overwrite
-          files.push({
-            path: sourceFile.path,
-            operation: 'update',
-            size: sourceFile.size,
-            mtime: sourceFile.mtime,
-            hash: sourceFile.hash,
-          })
-        } else if (targetFile.mtime > sourceFile.mtime) {
-          // Target is newer - conflict
-          conflicts.push({
-            path: sourceFile.path,
-            operation: 'conflict',
-            size: sourceFile.size,
-            mtime: sourceFile.mtime,
-            reason: 'Target file is newer than source',
-          })
-        } else {
-          // Source is newer - update
-          files.push({
-            path: sourceFile.path,
-            operation: 'update',
-            size: sourceFile.size,
-            mtime: sourceFile.mtime,
-            hash: sourceFile.hash,
-          })
-        }
+        // Content hashes differ - always update.
+        // We intentionally do NOT use mtime-based conflict detection because
+        // git clone/checkout does not preserve file timestamps, so freshly
+        // cloned codex files always appear "newer" than local source files,
+        // causing all changes to be silently classified as conflicts.
+        files.push({
+          path: sourceFile.path,
+          operation: 'update',
+          size: sourceFile.size,
+          mtime: sourceFile.mtime,
+          hash: sourceFile.hash,
+        })
       } else {
         // Files are identical - skip
         skipped.push({
