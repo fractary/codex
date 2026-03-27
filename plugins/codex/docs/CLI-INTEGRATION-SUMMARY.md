@@ -17,11 +17,11 @@ This document summarizes the migration of the codex plugin from custom bash scri
 **Commit**: 6e2195c
 
 **Created**:
-- `skills/cli-helper/` - Shared CLI delegation skill
-- `skills/cli-helper/scripts/invoke-cli.sh` - CLI wrapper with npx fallback
-- `skills/cli-helper/scripts/validate-cli.sh` - CLI availability check
-- `skills/cli-helper/scripts/parse-output.sh` - JSON parsing utility
-- `skills/cli-helper/workflow/invoke-cli.md` - Delegation workflow
+- `skills/fractary-codex-cli-helper/` - Shared CLI delegation skill
+- `skills/fractary-codex-cli-helper/scripts/invoke-cli.sh` - CLI wrapper with npx fallback
+- `skills/fractary-codex-cli-helper/scripts/validate-cli.sh` - CLI availability check
+- `skills/fractary-codex-cli-helper/scripts/parse-output.sh` - JSON parsing utility
+- `skills/fractary-codex-cli-helper/workflow/invoke-cli.md` - Delegation workflow
 - `package.json` - Added @fractary/cli dependency
 
 **Features**:

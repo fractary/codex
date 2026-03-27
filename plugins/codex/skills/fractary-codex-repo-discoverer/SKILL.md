@@ -87,7 +87,7 @@ If validation fails:
 
 Execute the discovery script:
 ```bash
-./skills/repo-discoverer/scripts/discover-repos.sh \
+./skills/fractary-codex-repo-discoverer/scripts/discover-repos.sh \
   --organization "<organization>" \
   --codex-repo "<codex_repo>" \
   --exclude "<exclude_patterns>" \
