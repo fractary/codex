@@ -1,12 +1,12 @@
 ---
 name: fractary-codex:sync
 description: Sync project with codex repository - delegates to fractary-codex:sync-manager agent
-allowed-tools: Task(fractary-codex:sync-manager)
+allowed-tools: Agent(fractary-codex:sync-manager)
 model: claude-haiku-4-5
 argument-hint: '[--work-id <id>] [--to-codex|--from-codex] [--dry-run] [--env <env>]'
 ---
 
-Use **Task** tool with `fractary-codex:sync-manager` agent to sync project with codex repository.
+Use **Agent** tool with `fractary-codex:sync-manager` agent to sync project with codex repository.
 
 The sync-manager agent will invoke the `fractary-codex sync` CLI directly.
 
@@ -37,7 +37,7 @@ The sync-manager will return a status indicating the outcome:
 - `failure`: Sync failed entirely
 
 ```
-Task(
+Agent(
   subagent_type="fractary-codex:sync-manager",
   description="Sync project with codex",
   prompt="Sync project with codex repository: $ARGUMENTS"
