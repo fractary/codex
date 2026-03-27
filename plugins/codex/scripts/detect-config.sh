@@ -25,7 +25,7 @@ fi
 cat <<EOF
 {
   "status": "not_found",
-  "suggested_action": "Run /fractary-codex:configure to create configuration",
+  "suggested_action": "Run /fractary-codex-configure to create configuration",
   "required_path": "$PROJECT_CONFIG",
   "required_format": "yaml (unified config with codex: section)"
 }

@@ -1,5 +1,5 @@
 ---
-name: sync-manager
+name: fractary-codex-sync-manager
 model: claude-haiku-4-5
 description: Sync project bidirectionally with codex repository
 tools: Bash

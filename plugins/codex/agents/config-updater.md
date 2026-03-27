@@ -1,5 +1,5 @@
 ---
-name: config-updater
+name: fractary-codex-config-updater
 model: claude-haiku-4-5
 description: Update specific fields in codex configuration
 tools: Bash, Read, AskUserQuestion
@@ -145,7 +145,7 @@ Error: Codex section not found
 
 The config-update command requires the codex section to exist.
 Run config-init first:
-  /fractary-codex:config-init
+  /fractary-codex-config-init
 ```
 
 </OUTPUTS>
@@ -161,7 +161,7 @@ DO NOT attempt workarounds or manual file edits.
 | Error | Resolution |
 |-------|------------|
 | "Configuration not found" | Run `fractary config-initialize` then `config-init` |
-| "Codex section not found" | Run `/fractary-codex:config-init` first |
+| "Codex section not found" | Run `/fractary-codex-config-init` first |
 | "Invalid organization name" | Use valid name (alphanumeric, hyphens, underscores) |
 | "No fields to update" | Provide at least one update flag |
 

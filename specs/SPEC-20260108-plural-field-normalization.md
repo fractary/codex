@@ -179,12 +179,12 @@ Run in real project: `/mnt/c/GitHub/corthos/lake.corthonomy.ai`
 
 ```bash
 # Dry-run
-/fractary-codex:sync --from-codex --env prod --dry-run
+/fractary-codex-sync --from-codex --env prod --dry-run
 
 # Expected: Find hundreds of files, not just 5
 
 # Actual sync
-/fractary-codex:sync --from-codex --env prod
+/fractary-codex-sync --from-codex --env prod
 
 # Verify file exists
 ls .fractary/codex/cache/corthosai/codex.corthos.ai/projects/etl.corthion.ai/docs/schema/ipeds/ic_py/README.md

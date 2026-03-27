@@ -17,7 +17,7 @@ Configuration agents use noun forms of their corresponding command verbs:
 - `fractary-core:config-updater` - Core plugin incremental updates
 - `fractary-core:env-switcher` - Environment switching
 - `fractary-faber:configurator` - FABER workflow configuration
-- `fractary-codex:configurator` - Codex plugin configuration
+- `fractary-codex-configurator` - Codex plugin configuration
 
 ### Migration History
 
@@ -186,7 +186,7 @@ When updating configuration:
 | Core (update) | `/fractary-core:config-update` |
 | Core (validate) | `/fractary-core:config-validate` |
 | Faber | `/fractary-faber:configure` |
-| Codex | `/fractary-codex:configure` |
+| Codex | `/fractary-codex-configure` |
 
 All commands support:
 - `--context "<text>"` - Natural language description of changes

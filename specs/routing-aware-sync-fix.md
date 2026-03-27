@@ -6,7 +6,7 @@
 
 ## Problem Statement
 
-When running `/fractary-codex:sync --from-codex --dry-run` in project `lake.corthonomy.ai`, only 5 local files are returned instead of hundreds of cross-project files from `etl.corthion.ai` that have `codex_sync_include: [lake.corthonomy.ai]` frontmatter.
+When running `/fractary-codex-sync --from-codex --dry-run` in project `lake.corthonomy.ai`, only 5 local files are returned instead of hundreds of cross-project files from `etl.corthion.ai` that have `codex_sync_include: [lake.corthonomy.ai]` frontmatter.
 
 ## Root Cause
 
@@ -26,7 +26,7 @@ Clone the codex repository to a **temporary location** for each sync operation, 
 
 **Architecture:**
 ```
-User runs: /fractary-codex:sync --from-codex
+User runs: /fractary-codex-sync --from-codex
   ↓
 CLI clones codex to temp dir: /tmp/fractary-codex-clone/corthosai/codex.corthos.ai/
   ↓  (shallow clone with git clone --depth 1)
@@ -243,7 +243,7 @@ pattern: "codex://corthosai/etl\\.corthion\\.ai/schemas/ipeds/.*"
 - Plugin does NOT expose cache clearing ✗
 
 **Future Enhancement:**
-Could add plugin command `/fractary-codex:cache-clear --pattern "..."` that delegates to CLI.
+Could add plugin command `/fractary-codex-cache-clear --pattern "..."` that delegates to CLI.
 
 **Workaround for now:**
 User can run CLI command directly in their project:
@@ -255,7 +255,7 @@ fractary codex cache clear --pattern "codex://corthosai/etl.corthion.ai/schemas/
 ## Success Criteria
 
 After implementation:
-1. User runs `/fractary-codex:sync --from-codex --dry-run` in `lake.corthonomy.ai`
+1. User runs `/fractary-codex-sync --from-codex --dry-run` in `lake.corthonomy.ai`
 2. CLI clones `codex.corthos.ai` to temp directory
 3. Routing scanner scans entire cloned codex (all projects)
 4. Returns files from `etl.corthion.ai` with `codex_sync_include: [lake.corthonomy.ai]`

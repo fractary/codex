@@ -1,5 +1,5 @@
 ---
-name: memory-create
+name: fractary-codex-memory-create
 description: Create structured memory entries from troubleshooting sessions, architectural decisions, performance findings, and other reusable knowledge
 model: claude-haiku-4-5
 tools: Read, Write, Glob, AskUserQuestion
@@ -327,7 +327,7 @@ Memory created successfully.
 Next steps:
   - Review and edit the draft content
   - Change status from 'draft' to 'active' when finalized
-  - Run /fractary-codex:memory-audit to validate memories periodically
+  - Run /fractary-codex-memory-audit to validate memories periodically
 ```
 
 </WORKFLOW>
@@ -369,7 +369,7 @@ Memory created successfully.
 Next steps:
   - Review and edit the draft content
   - Change status from 'draft' to 'active' when finalized
-  - Run /fractary-codex:memory-audit to validate memories periodically
+  - Run /fractary-codex-memory-audit to validate memories periodically
 ```
 
 ## Failure: Invalid Type

@@ -1,7 +1,7 @@
 {
   "$schema": "https://fractary.com/schemas/plugin-manifest-v1.json",
   "name": "@fractary/codex-plugin",
-  "version": "5.9.11",
+  "version": "5.9.12",
   "description": "Memory and knowledge management - Organizational knowledge base with cache and sync",
   "author": "Fractary Team",
   "homepage": "https://github.com/fractary/plugins",
@@ -18,7 +18,7 @@
   ],
   "agents": [
     {
-      "name": "codex-manager",
+      "name": "fractary-codex-codex-manager",
       "version": "2.0.0",
       "description": "Universal codex knowledge management agent",
       "source": "https://raw.githubusercontent.com/fractary/plugins/main/plugins/codex/agents/codex-manager/agent.yaml",
@@ -26,17 +26,17 @@
       "size": 1484
     },
     {
-      "name": "config-initializer",
+      "name": "fractary-codex-config-initializer",
       "version": "1.1.0",
       "description": "Initialize codex section in project configuration"
     },
     {
-      "name": "config-updater",
+      "name": "fractary-codex-config-updater",
       "version": "1.0.0",
       "description": "Update codex configuration fields"
     },
     {
-      "name": "config-validator",
+      "name": "fractary-codex-config-validator",
       "version": "1.0.0",
       "description": "Validate codex configuration (read-only)"
     }

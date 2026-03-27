@@ -13,7 +13,7 @@ The current sync implementation (`--from-codex`) only scans files in the **proje
 ### Current Broken Behavior
 
 ```
-User runs: /fractary-codex:sync --from-codex
+User runs: /fractary-codex-sync --from-codex
 
 Expected: Sync all files from codex where codex_sync_include matches this project
 Actual:   Only sync files from systems/this-project/ directory
@@ -121,7 +121,7 @@ codex.corthos.ai/
 
 ### Current Sync Results (BROKEN)
 ```bash
-$ fractary-codex:sync --from-codex --project lake.corthonomy.ai
+$ fractary-codex-sync --from-codex --project lake.corthonomy.ai
 
 Scanning: codex.corthos.ai/corthosai/lake.corthonomy.ai/
 Found: 5 files
@@ -134,7 +134,7 @@ Found: 5 files
 
 ### Expected Sync Results (CORRECT)
 ```bash
-$ fractary-codex:sync --from-codex --project lake.corthonomy.ai
+$ fractary-codex-sync --from-codex --project lake.corthonomy.ai
 
 Scanning: codex.corthos.ai/ (entire repository)
 Evaluating: 247 files with routing rules
@@ -544,14 +544,14 @@ Coding Standards`,
 
 2. **Run dry-run sync**: See what would be synced
    ```bash
-   fractary-codex:sync --from-codex --dry-run
+   fractary-codex-sync --from-codex --dry-run
    ```
 
 3. **Review and adjust**: Update patterns as needed
 
 4. **Execute sync**: Actually sync the files
    ```bash
-   fractary-codex:sync --from-codex
+   fractary-codex-sync --from-codex
    ```
 
 ## Performance Considerations

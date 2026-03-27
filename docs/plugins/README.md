@@ -11,7 +11,7 @@ The codex plugin provides document fetching via `codex://` URIs (auto-fetched by
 ### 1. Initialize (one-time setup)
 
 ```
-/fractary-codex:config-init
+/fractary-codex-config-init
 ```
 
 This creates the codex configuration, cache directory, and MCP server entry. **Restart Claude Code after initialization.**
@@ -19,8 +19,8 @@ This creates the codex configuration, cache directory, and MCP server entry. **R
 ### 2. Sync documentation
 
 ```
-/fractary-codex:sync --dry-run
-/fractary-codex:sync
+/fractary-codex-sync --dry-run
+/fractary-codex-sync
 ```
 
 ### 3. Use codex:// URIs
@@ -37,12 +37,12 @@ The MCP server handles fetching and caching automatically.
 
 | Command | Description |
 |---------|-------------|
-| `/fractary-codex:config-init` | Initialize codex configuration |
-| `/fractary-codex:config-update` | Update configuration fields |
-| `/fractary-codex:config-validate` | Validate configuration (read-only) |
-| `/fractary-codex:sync` | Sync project with codex repository |
+| `/fractary-codex-config-init` | Initialize codex configuration |
+| `/fractary-codex-config-update` | Update configuration fields |
+| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+| `/fractary-codex-sync` | Sync project with codex repository |
 
-### /fractary-codex:config-init
+### /fractary-codex-config-init
 
 Initialize the codex section in `.fractary/config.yaml`.
 
@@ -54,7 +54,7 @@ Initialize the codex section in `.fractary/config.yaml`.
 
 The agent auto-detects your organization, project, and codex repo, then asks for confirmation before proceeding.
 
-### /fractary-codex:config-update
+### /fractary-codex-config-update
 
 Update specific fields in the codex configuration.
 
@@ -63,11 +63,11 @@ Update specific fields in the codex configuration.
 - `--codex-repo <name>` - Update codex repository
 - `--sync-preset <name>` - Update sync preset
 
-### /fractary-codex:config-validate
+### /fractary-codex-config-validate
 
 Read-only validation of the codex configuration. Checks structure, formats, directories, MCP server config, and gitignore.
 
-### /fractary-codex:sync
+### /fractary-codex-sync
 
 Sync project files with the codex repository.
 
@@ -147,7 +147,7 @@ Claude Code → MCP Server (stdio) → SDK → Storage/Cache
 
 ## Troubleshooting
 
-**Configuration not found:** Run `/fractary-codex:config-init`. Requires base `.fractary/config.yaml` from `@fractary/core`.
+**Configuration not found:** Run `/fractary-codex-config-init`. Requires base `.fractary/config.yaml` from `@fractary/core`.
 
 **MCP tools not available:** Restart Claude Code after running `config-init`.
 

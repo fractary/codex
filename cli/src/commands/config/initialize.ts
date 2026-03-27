@@ -194,7 +194,7 @@ export function configInitializeCommand(): Command {
         console.log(chalk.bold('\nNext steps:'))
         console.log(chalk.dim('  1. Restart Claude Code to load the MCP server'))
         console.log(chalk.dim(`  2. Verify codex repository access: gh repo view ${org}/${codexRepo}`))
-        console.log(chalk.dim('  3. Run first sync: /fractary-codex:sync --from-codex --dry-run'))
+        console.log(chalk.dim('  3. Run first sync: /fractary-codex-sync --from-codex --dry-run'))
       } catch (error: any) {
         if (options.json) {
           console.log(JSON.stringify({ error: error.message }, null, 2))

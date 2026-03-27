@@ -81,10 +81,10 @@ The plugin provides slash commands for Claude Code:
 
 | Command | Description |
 |---------|-------------|
-| `/fractary-codex:config-init` | Initialize codex configuration |
-| `/fractary-codex:config-update` | Update configuration fields |
-| `/fractary-codex:config-validate` | Validate configuration (read-only) |
-| `/fractary-codex:sync` | Sync project with codex repository |
+| `/fractary-codex-config-init` | Initialize codex configuration |
+| `/fractary-codex-config-update` | Update configuration fields |
+| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+| `/fractary-codex-sync` | Sync project with codex repository |
 
 ## URI Format
 

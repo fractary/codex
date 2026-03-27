@@ -224,7 +224,7 @@ MCP Server:
 5. **Troubleshooting:** Common issues and resolutions
 6. **Rollback:** How to revert if needed (not recommended)
 
-**Key Message:** Existing users must re-run `/fractary-codex:init` after plugin update
+**Key Message:** Existing users must re-run `/fractary-codex-init` after plugin update
 
 ## User Experience
 
@@ -235,7 +235,7 @@ MCP Server:
 # (automatic via Claude Code plugin manager)
 
 # 2. Initialize in project
-/fractary-codex:init --org fractary --codex codex.fractary.com
+/fractary-codex-init --org fractary --codex codex.fractary.com
 
 # 3. Restart Claude Code
 # (required to load new MCP server config)
@@ -256,7 +256,7 @@ MCP Server:
 # (happens during plugin update)
 
 # 3. Re-run init command
-/fractary-codex:init
+/fractary-codex-init
 
 # Output:
 # ✓ Detected old MCP configuration
@@ -307,7 +307,7 @@ MCP Server:
 
 ### Performance Tests
 
-- [ ] **First install:** Time to complete `/fractary-codex:init`
+- [ ] **First install:** Time to complete `/fractary-codex-init`
 - [ ] **Migration:** Time to migrate from v4.3.3
 - [ ] **MCP startup:** Time for server to connect after restart
 - [ ] **npx download:** Time for npx to download package (first time)
