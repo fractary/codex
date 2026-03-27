@@ -127,7 +127,7 @@ jq -n \
     },
     next_steps: [
       "Restart Claude Code to load the MCP server",
-      "Run /fractary-codex:validate-setup to verify configuration",
+      "Run /fractary-codex-validate-setup to verify configuration",
       (if $migrated then "Old custom MCP server can be removed: plugins/codex/mcp-server/" else null end)
     ] | map(select(. != null))
   }'

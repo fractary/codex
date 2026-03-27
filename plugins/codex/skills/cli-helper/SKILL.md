@@ -1,5 +1,5 @@
 ---
-name: cli-helper
+name: fractary-codex-cli-helper
 description: Shared utility skill for invoking fractary CLI codex commands
 version: 1.0.0
 ---

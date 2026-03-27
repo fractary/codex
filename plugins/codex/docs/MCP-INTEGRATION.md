@@ -39,7 +39,7 @@ Examples:
 The easiest way to set up the MCP server is via the init command:
 
 ```bash
-/fractary-codex:configure --org fractary --codex codex.fractary.com
+/fractary-codex-configure --org fractary --codex codex.fractary.com
 ```
 
 This will:
@@ -185,9 +185,9 @@ Work without network access using cached content.
 Before going offline, cache frequently used documents:
 
 ```bash
-/fractary-codex:fetch codex://fractary/shared/standards/coding-guide.md
-/fractary-codex:fetch codex://fractary/shared/standards/api-design.md
-/fractary-codex:fetch codex://fractary/auth-service/docs/oauth.md
+/fractary-codex-fetch codex://fractary/shared/standards/coding-guide.md
+/fractary-codex-fetch codex://fractary/shared/standards/api-design.md
+/fractary-codex-fetch codex://fractary/auth-service/docs/oauth.md
 ```
 
 ### Fallback Behavior
@@ -329,11 +329,11 @@ This checks:
 2. **Verify source exists** in configuration
 3. **Test fetch directly:**
    ```bash
-   /fractary-codex:fetch codex://org/project/path
+   /fractary-codex-fetch codex://org/project/path
    ```
 4. **Check cache status:**
    ```bash
-   /fractary-codex:cache-list
+   /fractary-codex-cache-list
    ```
 
 ### Authentication Errors
@@ -353,7 +353,7 @@ This checks:
 
 1. **Check cache hit rate:**
    ```bash
-   /fractary-codex:cache-metrics
+   /fractary-codex-cache-metrics
    ```
 2. **Pre-cache frequent docs** before use
 3. **Increase TTL** for stable documents
@@ -363,23 +363,23 @@ This checks:
 
 1. **Check cache health:**
    ```bash
-   /fractary-codex:cache-health
+   /fractary-codex-cache-health
    ```
 2. **Clear expired entries:**
    ```bash
-   /fractary-codex:cache-clear --expired
+   /fractary-codex-cache-clear --expired
    ```
 3. **Rebuild cache index:**
    ```bash
-   /fractary-codex:cache-health --fix
+   /fractary-codex-cache-health --fix
    ```
 
 ## Performance Tips
 
 1. **Pre-cache frequently used docs:**
    ```bash
-   /fractary-codex:fetch codex://fractary/shared/standards/coding-guide.md
-   /fractary-codex:fetch codex://fractary/shared/standards/api-design.md
+   /fractary-codex-fetch codex://fractary/shared/standards/coding-guide.md
+   /fractary-codex-fetch codex://fractary/shared/standards/api-design.md
    ```
 
 2. **Adjust TTL by content stability:**
@@ -391,12 +391,12 @@ This checks:
 
 4. **Clear expired entries regularly:**
    ```bash
-   /fractary-codex:cache-clear --expired
+   /fractary-codex-cache-clear --expired
    ```
 
 5. **Monitor cache metrics:**
    ```bash
-   /fractary-codex:cache-metrics
+   /fractary-codex-cache-metrics
    ```
 
 ## Related Documentation

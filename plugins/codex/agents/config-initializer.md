@@ -1,5 +1,5 @@
 ---
-name: config-initializer
+name: fractary-codex-config-initializer
 model: claude-haiku-4-5
 description: Initialize codex section in project configuration (requires base config from @fractary/core)
 tools: Bash, Read, AskUserQuestion
@@ -197,12 +197,12 @@ Next Steps:
   1. Restart Claude Code (for MCP server)
   2. Verify codex repository access: gh repo view <org>/<codex-repo>
   3. Test: codex://org/proj/file.md
-  4. Run first sync: /fractary-codex:sync --from-codex --dry-run
+  4. Run first sync: /fractary-codex-sync --from-codex --dry-run
 
 Commands:
-  - /fractary-codex:config-update      # Update configuration
-  - /fractary-codex:config-validate    # Validate configuration
-  - /fractary-codex:sync              # Sync project with codex
+  - /fractary-codex-config-update      # Update configuration
+  - /fractary-codex-config-validate    # Validate configuration
+  - /fractary-codex-sync              # Sync project with codex
 ```
 
 ## Failure Output

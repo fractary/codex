@@ -1,5 +1,5 @@
 ---
-name: config-validator
+name: fractary-codex-config-validator
 model: claude-haiku-4-5
 description: Validate codex configuration (read-only check)
 tools: Bash, Read
@@ -138,7 +138,7 @@ Warnings:
   ⚠ mcp: .mcp.json not found
 
 To fix:
-  1. Run /fractary-codex:config-init to create the codex section
+  1. Run /fractary-codex-config-init to create the codex section
 ```
 
 ## Config Not Found
@@ -150,7 +150,7 @@ To fix:
 
 To set up configuration:
   1. Run fractary config-initialize (creates base config)
-  2. Run /fractary-codex:config-init (adds codex section)
+  2. Run /fractary-codex-config-init (adds codex section)
 ```
 
 </OUTPUTS>

@@ -84,7 +84,7 @@ Add to `.mcp.json`:
 ### For Claude Code Plugin Users
 
 ```
-/fractary-codex:config-init
+/fractary-codex-config-init
 ```
 
 Then use `codex://` URIs in conversations - the MCP server handles fetching automatically.

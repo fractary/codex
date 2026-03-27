@@ -37,12 +37,12 @@ Radical simplification of the codex plugin:
 
 ### Commands to KEEP (2)
 1. **init** (renamed from config-init)
-   - Command: `fractary-codex:init`
+   - Command: `fractary-codex-init`
    - Agent: `config-manager` (or `config-config-manager`)
    - Purpose: One-time setup of .fractary/codex/config.yaml
 
 2. **sync** (kept as-is)
-   - Command: `fractary-codex:sync`
+   - Command: `fractary-codex-sync`
    - Agent: `sync-manager` (or `syncer` or `sync-manager`)
    - Purpose: Bidirectional sync between project and codex repo
 
@@ -170,7 +170,7 @@ color: green
 **Command Template:**
 ```markdown
 ---
-name: fractary-codex:<command>
+name: fractary-codex-<command>
 description: <one-line description>
 model: claude-haiku-4-5
 argument-hint: [options]
@@ -198,7 +198,7 @@ DO NOT do any work yourself. ALL work is delegated to the agent.
 1. Parse arguments from user input
 2. Validate required arguments (show usage if missing)
 3. Use Task tool to launch agent:
-   - subagent_type: "fractary-codex:<agent-name>"
+   - subagent_type: "fractary-codex-<agent-name>"
    - prompt: "<formatted request with parsed arguments>"
    - description: "<command> operation"
 4. Display agent results verbatim to user
@@ -214,7 +214,7 @@ DO NOT do any work yourself. ALL work is delegated to the agent.
 
 **Changes:**
 - Rename file: `config-init.md` → `init.md`
-- Command name: `fractary-codex:config-init` → `fractary-codex:init`
+- Command name: `fractary-codex-config-init` → `fractary-codex-init`
 - Reduce from ~500 lines to ~50 lines
 - Parse args: `--org <name>`, `--codex <repo>`, `--yes`
 - Launch `config-manager` agent
@@ -370,23 +370,23 @@ plugins/codex/
 **For users upgrading from 3.x to 4.0:**
 
 1. **Command renames:**
-   - `/fractary-codex:config-init` → `/fractary-codex:init`
+   - `/fractary-codex-config-init` → `/fractary-codex-init`
 
 2. **Removed commands** (now handled automatically):
-   - `/fractary-codex:document-fetch` → Use `codex://` URIs (MCP auto-fetches)
-   - `/fractary-codex:cache-list` → Removed (cache self-manages)
-   - `/fractary-codex:cache-clear` → Removed (cache self-manages)
-   - `/fractary-codex:cache-stats` → Removed (cache self-manages)
-   - `/fractary-codex:cache-health` → Removed (cache self-manages)
-   - `/fractary-codex:config-migrate` → Manual migration required
-   - `/fractary-codex:config-validate` → Removed (CLI validates if installed)
-   - `/fractary-codex:validate-refs` → Removed
+   - `/fractary-codex-document-fetch` → Use `codex://` URIs (MCP auto-fetches)
+   - `/fractary-codex-cache-list` → Removed (cache self-manages)
+   - `/fractary-codex-cache-clear` → Removed (cache self-manages)
+   - `/fractary-codex-cache-stats` → Removed (cache self-manages)
+   - `/fractary-codex-cache-health` → Removed (cache self-manages)
+   - `/fractary-codex-config-migrate` → Manual migration required
+   - `/fractary-codex-config-validate` → Removed (CLI validates if installed)
+   - `/fractary-codex-validate-refs` → Removed
 
 3. **Migration path:**
    - If you have old JSON config, manually convert to YAML before installing 4.0
-   - Use `/fractary-codex:init` to create new config
+   - Use `/fractary-codex-init` to create new config
    - Trust MCP to manage cache automatically
-   - Use `/fractary-codex:sync` to force refreshes
+   - Use `/fractary-codex-sync` to force refreshes
 
 ## Benefits
 

@@ -4,14 +4,14 @@
 **Created:** 2026-01-08
 **Status:** Active
 **Priority:** High
-**Component:** fractary-codex:sync-manager agent
+**Component:** fractary-codex-sync-manager agent
 **Affected Projects:** All projects using codex sync (etl.corthion.ai confirmed)
 
 ---
 
 ## Executive Summary
 
-The `fractary-codex:sync-manager` agent is not correctly reading or applying glob patterns from `.fractary/codex/config.yaml` during sync operations. Instead of syncing 569 files matching configured patterns, it synced only 11 untracked root-level files that don't match any configured pattern.
+The `fractary-codex-sync-manager` agent is not correctly reading or applying glob patterns from `.fractary/codex/config.yaml` during sync operations. Instead of syncing 569 files matching configured patterns, it synced only 11 untracked root-level files that don't match any configured pattern.
 
 **Impact:** Critical - Documentation sync is completely broken, preventing proper codex repository updates.
 
@@ -21,7 +21,7 @@ The `fractary-codex:sync-manager` agent is not correctly reading or applying glo
 
 ### Expected Behavior
 
-When executing `/fractary-codex:sync --to-codex --env prod`, the sync-manager agent should:
+When executing `/fractary-codex-sync --to-codex --env prod`, the sync-manager agent should:
 
 1. Read glob patterns from `.fractary/codex/config.yaml` → `sync.to_codex` section
 2. Apply each glob pattern to find matching files in the project
@@ -165,7 +165,7 @@ $ git ls-files docs/schema/**/*.json docs/schema/**/*.md | wc -l
 
 2. **Execute sync:**
    ```bash
-   /fractary-codex:sync --to-codex --env prod
+   /fractary-codex-sync --to-codex --env prod
    ```
 
 3. **Observe results:**
@@ -175,7 +175,7 @@ $ git ls-files docs/schema/**/*.json docs/schema/**/*.md | wc -l
 
 4. **Verify with dry-run:**
    ```bash
-   /fractary-codex:sync --to-codex --env prod --dry-run
+   /fractary-codex-sync --to-codex --env prod --dry-run
    ```
    - Diagnostic shows 569 files should match
    - Actual sync behavior doesn't match diagnostic

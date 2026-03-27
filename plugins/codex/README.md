@@ -11,7 +11,7 @@ The codex plugin provides document fetching via `codex://` URIs (auto-fetched by
 ### 1. Initialize configuration
 
 ```
-/fractary-codex:config-init
+/fractary-codex-config-init
 ```
 
 Sets up the codex section in `.fractary/config.yaml`, cache directory, and MCP server.
@@ -21,7 +21,7 @@ Sets up the codex section in `.fractary/config.yaml`, cache directory, and MCP s
 ### 2. Sync documentation
 
 ```
-/fractary-codex:sync
+/fractary-codex-sync
 ```
 
 ### 3. Reference documents
@@ -36,12 +36,12 @@ codex://myorg/project/docs/api.md
 
 | Command | Description |
 |---------|-------------|
-| `/fractary-codex:config-init` | Initialize codex configuration |
-| `/fractary-codex:config-update` | Update configuration fields |
-| `/fractary-codex:config-validate` | Validate configuration (read-only) |
-| `/fractary-codex:sync` | Sync project with codex repository |
+| `/fractary-codex-config-init` | Initialize codex configuration |
+| `/fractary-codex-config-update` | Update configuration fields |
+| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+| `/fractary-codex-sync` | Sync project with codex repository |
 
-### /fractary-codex:config-init
+### /fractary-codex-config-init
 
 Initialize the codex section in `.fractary/config.yaml`.
 
@@ -53,7 +53,7 @@ Initialize the codex section in `.fractary/config.yaml`.
 
 The agent auto-detects organization, project, and codex repo, then confirms with you before proceeding.
 
-### /fractary-codex:config-update
+### /fractary-codex-config-update
 
 Update specific fields in the codex configuration.
 
@@ -62,11 +62,11 @@ Update specific fields in the codex configuration.
 - `--codex-repo <name>` - Update codex repository
 - `--sync-preset <name>` - Update sync preset
 
-### /fractary-codex:config-validate
+### /fractary-codex-config-validate
 
 Read-only validation of the codex configuration. Checks structure, formats, directories, MCP server config, and gitignore.
 
-### /fractary-codex:sync
+### /fractary-codex-sync
 
 Sync project files with the codex repository.
 

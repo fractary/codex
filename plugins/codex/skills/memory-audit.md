@@ -1,5 +1,5 @@
 ---
-name: memory-audit
+name: fractary-codex-memory-audit
 description: Audit memory entries for validity by checking claims against current project state and scoring relevance
 model: claude-haiku-4-5
 tools: Read, Glob, Grep, AskUserQuestion
@@ -336,7 +336,7 @@ Audited: MEM-TS-004-cors-error-proxy-config
 ```
 No memory files found in .fractary/codex/memory/
 
-To create memories, use /fractary-codex:memory-create
+To create memories, use /fractary-codex-memory-create
 ```
 
 ## Error: Memory Directory Not Found
@@ -347,7 +347,7 @@ Error: Memory directory .fractary/codex/memory/ does not exist.
 Create it with:
   mkdir -p .fractary/codex/memory
 
-Or create your first memory with /fractary-codex:memory-create
+Or create your first memory with /fractary-codex-memory-create
 ```
 
 </OUTPUTS>

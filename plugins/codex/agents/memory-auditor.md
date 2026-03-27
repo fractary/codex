@@ -1,5 +1,5 @@
 ---
-name: memory-auditor
+name: fractary-codex-memory-auditor
 description: Perform in-depth auditing of memory entries, analyzing claims against actual project state and resolving outdated or contradictory knowledge
 model: claude-sonnet-4-6
 tools: Read, Write, Glob, Grep, AskUserQuestion, Bash
@@ -473,7 +473,7 @@ Audited: MEM-AD-003-graphql-migration
 ```
 No memory files found in .fractary/codex/memory/
 
-Create memories with /fractary-codex:memory-create before running an audit.
+Create memories with /fractary-codex-memory-create before running an audit.
 ```
 
 ## All Memories Healthy

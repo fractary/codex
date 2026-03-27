@@ -76,9 +76,9 @@ The goal is to ensure users can seamlessly switch between interfaces with predic
 
 | Operation | TS SDK | Py SDK | CLI | MCP Server | Plugin Skill | Plugin Command |
 |-----------|--------|--------|-----|------------|--------------|----------------|
-| **Fetch document** | `storage.fetch()` | `storage.fetch()` | `fetch <uri>` | `codex_fetch` | `document-fetcher` | `/fractary-codex:fetch` |
-| **Fetch with bypass** | `storage.fetch({noCache})` | `storage.fetch(no_cache=True)` | `fetch --bypass-cache` | `codex_fetch {noCache: true}` | `document-fetcher {bypass_cache}` | `/fractary-codex:fetch --bypass-cache` |
-| **Fetch from branch** | `storage.fetch({branch})` | `storage.fetch(branch=)` | `fetch --branch <b>` | `codex_fetch {branch: "x"}` | `document-fetcher {branch}` | `/fractary-codex:fetch --branch` |
+| **Fetch document** | `storage.fetch()` | `storage.fetch()` | `fetch <uri>` | `codex_fetch` | `document-fetcher` | `/fractary-codex-fetch` |
+| **Fetch with bypass** | `storage.fetch({noCache})` | `storage.fetch(no_cache=True)` | `fetch --bypass-cache` | `codex_fetch {noCache: true}` | `document-fetcher {bypass_cache}` | `/fractary-codex-fetch --bypass-cache` |
+| **Fetch from branch** | `storage.fetch({branch})` | `storage.fetch(branch=)` | `fetch --branch <b>` | `codex_fetch {branch: "x"}` | `document-fetcher {branch}` | `/fractary-codex-fetch --branch` |
 
 **Alignment Status:** ✅ Good - All components support fetch with consistent parameters
 
@@ -92,13 +92,13 @@ The goal is to ensure users can seamlessly switch between interfaces with predic
 
 | Operation | TS SDK | Py SDK | CLI | MCP Server | Plugin Skill | Plugin Command |
 |-----------|--------|--------|-----|------------|--------------|----------------|
-| **List cache entries** | `cache.list()` | `cache.list()` | `cache list` | `codex_list` ⚠️ | `cache-list` | `/fractary-codex:cache-list` |
-| **List with filter** | `cache.list({org, project})` | `cache.list(org=, project=)` | `cache list --org --project` | `codex_list {org, project}` | `cache-list {filter}` | `/fractary-codex:cache-list --org --project` |
-| **Get cache stats** | `cache.getStats()` | `cache.get_stats()` | `cache stats` | ❌ **MISSING** | `cache-metrics` ⚠️ | `/fractary-codex:metrics` ⚠️ |
-| **Clear all cache** | `cache.clear()` | `cache.clear()` | `cache clear --all` | `codex_invalidate` ⚠️ | `cache-clear {scope: all}` | `/fractary-codex:cache-clear --all` |
-| **Clear expired** | `cache.clearExpired()` | `cache.clear_expired()` | `cache clear --expired` | ❌ **MISSING** | `cache-clear {scope: expired}` | `/fractary-codex:cache-clear --expired` |
-| **Clear by pattern** | `cache.invalidatePattern()` | `cache.invalidate_pattern()` | `cache clear --pattern` | `codex_invalidate {pattern}` | `cache-clear {scope: pattern}` | `/fractary-codex:cache-clear --pattern` |
-| **Health check** | ❌ **MISSING** | ❌ **MISSING** | `health` | ❌ **MISSING** | `cache-health` | `/fractary-codex:health` |
+| **List cache entries** | `cache.list()` | `cache.list()` | `cache list` | `codex_list` ⚠️ | `cache-list` | `/fractary-codex-cache-list` |
+| **List with filter** | `cache.list({org, project})` | `cache.list(org=, project=)` | `cache list --org --project` | `codex_list {org, project}` | `cache-list {filter}` | `/fractary-codex-cache-list --org --project` |
+| **Get cache stats** | `cache.getStats()` | `cache.get_stats()` | `cache stats` | ❌ **MISSING** | `cache-metrics` ⚠️ | `/fractary-codex-metrics` ⚠️ |
+| **Clear all cache** | `cache.clear()` | `cache.clear()` | `cache clear --all` | `codex_invalidate` ⚠️ | `cache-clear {scope: all}` | `/fractary-codex-cache-clear --all` |
+| **Clear expired** | `cache.clearExpired()` | `cache.clear_expired()` | `cache clear --expired` | ❌ **MISSING** | `cache-clear {scope: expired}` | `/fractary-codex-cache-clear --expired` |
+| **Clear by pattern** | `cache.invalidatePattern()` | `cache.invalidate_pattern()` | `cache clear --pattern` | `codex_invalidate {pattern}` | `cache-clear {scope: pattern}` | `/fractary-codex-cache-clear --pattern` |
+| **Health check** | ❌ **MISSING** | ❌ **MISSING** | `health` | ❌ **MISSING** | `cache-health` | `/fractary-codex-health` |
 
 **Alignment Status:** ⚠️ Issues Found
 
@@ -108,7 +108,7 @@ The goal is to ensure users can seamlessly switch between interfaces with predic
 | MCP `codex_list` | Ambiguous - list what? | `codex_cache_list` |
 | MCP `codex_invalidate` | Different term than CLI | `codex_cache_clear` |
 | Plugin `cache-metrics` | Different than CLI `cache stats` | `cache-stats` |
-| Plugin `/metrics` | Different than CLI `cache stats` | `/fractary-codex:cache-stats` |
+| Plugin `/metrics` | Different than CLI `cache stats` | `/fractary-codex-cache-stats` |
 
 **Missing Features:**
 | Feature | Missing From | Priority |
@@ -123,10 +123,10 @@ The goal is to ensure users can seamlessly switch between interfaces with predic
 
 | Operation | TS SDK | Py SDK | CLI | MCP Server | Plugin Skill | Plugin Command |
 |-----------|--------|--------|-----|------------|--------------|----------------|
-| **Sync single project** | `sync.syncProject()` | ❌ **MISSING** | `sync project [name]` | ❌ **MISSING** | `project-syncer` ⚠️ | `/fractary-codex:sync-project` |
-| **Sync with direction** | `sync.syncProject({direction})` | ❌ **MISSING** | `sync project --to-codex\|--from-codex` | ❌ **MISSING** | `project-syncer {direction}` | `/fractary-codex:sync-project --to-codex` |
-| **Sync dry-run** | `sync.syncProject({dryRun})` | ❌ **MISSING** | `sync project --dry-run` | ❌ **MISSING** | `project-syncer {dry_run}` | `/fractary-codex:sync-project --dry-run` |
-| **Sync organization** | `sync.syncOrg()` | ❌ **MISSING** | `sync org` | ❌ **MISSING** | `org-syncer` ⚠️ | `/fractary-codex:sync-org` |
+| **Sync single project** | `sync.syncProject()` | ❌ **MISSING** | `sync project [name]` | ❌ **MISSING** | `project-syncer` ⚠️ | `/fractary-codex-sync-project` |
+| **Sync with direction** | `sync.syncProject({direction})` | ❌ **MISSING** | `sync project --to-codex\|--from-codex` | ❌ **MISSING** | `project-syncer {direction}` | `/fractary-codex-sync-project --to-codex` |
+| **Sync dry-run** | `sync.syncProject({dryRun})` | ❌ **MISSING** | `sync project --dry-run` | ❌ **MISSING** | `project-syncer {dry_run}` | `/fractary-codex-sync-project --dry-run` |
+| **Sync organization** | `sync.syncOrg()` | ❌ **MISSING** | `sync org` | ❌ **MISSING** | `org-syncer` ⚠️ | `/fractary-codex-sync-org` |
 | **Create sync plan** | `sync.createSyncPlan()` | ❌ **MISSING** | *(internal)* | ❌ **MISSING** | *(internal)* | *(N/A)* |
 | **Evaluate sync paths** | `sync.evaluatePath()` | ❌ **MISSING** | *(internal)* | ❌ **MISSING** | *(internal)* | *(N/A)* |
 
@@ -173,11 +173,11 @@ The goal is to ensure users can seamlessly switch between interfaces with predic
 
 | Operation | TS SDK | Py SDK | CLI | MCP Server | Plugin Skill | Plugin Command |
 |-----------|--------|--------|-----|------------|--------------|----------------|
-| **Initialize config** | `config.loadConfig()` ⚠️ | `config.load_config()` ⚠️ | `init` | ❌ **MISSING** | `config-helper` | `/fractary-codex:init` |
-| **Init with org** | `config.loadConfig({org})` | `config.load_config(org=)` | `init --org <name>` | ❌ **MISSING** | `config-helper {org}` | `/fractary-codex:init --org` |
-| **Init with codex repo** | `config.loadConfig({codexRepo})` | `config.load_config(codex_repo=)` | `init --codex <repo>` | ❌ **MISSING** | `config-helper {codex}` | `/fractary-codex:init --codex` |
-| **Validate setup** | *(no explicit API)* | *(no explicit API)* | *(via health)* | ❌ **MISSING** | *(via health)* | `/fractary-codex:validate-setup` |
-| **Validate refs** | `migration.findLegacyReferences()` | `migration.scan_for_legacy_references()` | *(via migrate)* | ❌ **MISSING** | *(via migrator)* | `/fractary-codex:validate-refs` |
+| **Initialize config** | `config.loadConfig()` ⚠️ | `config.load_config()` ⚠️ | `init` | ❌ **MISSING** | `config-helper` | `/fractary-codex-init` |
+| **Init with org** | `config.loadConfig({org})` | `config.load_config(org=)` | `init --org <name>` | ❌ **MISSING** | `config-helper {org}` | `/fractary-codex-init --org` |
+| **Init with codex repo** | `config.loadConfig({codexRepo})` | `config.load_config(codex_repo=)` | `init --codex <repo>` | ❌ **MISSING** | `config-helper {codex}` | `/fractary-codex-init --codex` |
+| **Validate setup** | *(no explicit API)* | *(no explicit API)* | *(via health)* | ❌ **MISSING** | *(via health)* | `/fractary-codex-validate-setup` |
+| **Validate refs** | `migration.findLegacyReferences()` | `migration.scan_for_legacy_references()` | *(via migrate)* | ❌ **MISSING** | *(via migrator)* | `/fractary-codex-validate-refs` |
 
 **Alignment Status:** ⚠️ SDK naming is load vs CLI init
 
@@ -199,9 +199,9 @@ The goal is to ensure users can seamlessly switch between interfaces with predic
 
 | Operation | TS SDK | Py SDK | CLI | MCP Server | Plugin Skill | Plugin Command |
 |-----------|--------|--------|-----|------------|--------------|----------------|
-| **Migrate config** | `migration.migrateConfig()` | `migration.migrate_config()` ⚠️ | `migrate` | ❌ **MISSING** | `config-migrator` | `/fractary-codex:migrate` |
+| **Migrate config** | `migration.migrateConfig()` | `migration.migrate_config()` ⚠️ | `migrate` | ❌ **MISSING** | `config-migrator` | `/fractary-codex-migrate` |
 | **Detect version** | `migration.detectVersion()` | `migration.detect_version()` ⚠️ | *(internal)* | ❌ **MISSING** | *(internal)* | *(N/A)* |
-| **Convert references** | `migration.convertLegacyReferences()` | `migration.convert_legacy_references()` | `migrate --fix` | ❌ **MISSING** | `config-migrator {fix}` | `/fractary-codex:migrate --fix` |
+| **Convert references** | `migration.convertLegacyReferences()` | `migration.convert_legacy_references()` | `migrate --fix` | ❌ **MISSING** | `config-migrator {fix}` | `/fractary-codex-migrate --fix` |
 
 **Alignment Status:** ⚠️ Python SDK has partial implementation
 
@@ -239,7 +239,7 @@ The goal is to ensure users can seamlessly switch between interfaces with predic
 | **Build URI** | `buildUri()` | `build_uri()` | *(N/A)* | *(N/A)* | *(N/A)* | *(N/A)* |
 | **Validate URI** | `isValidUri()` | `is_valid_uri()` | *(internal)* | *(internal)* | *(internal)* | *(N/A)* |
 | **Resolve reference** | `resolveReference()` | `resolve_reference()` | *(internal)* | *(internal)* | *(internal)* | *(N/A)* |
-| **Convert legacy** | `convertLegacyReference()` | `convert_legacy_reference()` | `migrate --fix` | *(N/A)* | `config-migrator` | `/fractary-codex:validate-refs --fix` |
+| **Convert legacy** | `convertLegacyReference()` | `convert_legacy_reference()` | `migrate --fix` | *(N/A)* | `config-migrator` | `/fractary-codex-validate-refs --fix` |
 
 **Alignment Status:** ✅ Good - SDKs aligned, CLI/MCP/Plugin use internally
 
@@ -307,8 +307,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `document.fetch()` | `storage.fetch()` | ⚠️ RENAME |
 | **CLI** | `document fetch` | `fetch` | ⚠️ RENAME |
 | **MCP Tool** | `codex_document_fetch` | `codex_fetch` | ⚠️ RENAME |
-| **Plugin Skill** | `fractary-codex:document-fetch` | `document-fetcher` | ⚠️ RENAME |
-| **Plugin Command** | `/fractary-codex:document-fetch` | `/fractary-codex:fetch` | ⚠️ RENAME |
+| **Plugin Skill** | `fractary-codex-document-fetch` | `document-fetcher` | ⚠️ RENAME |
+| **Plugin Command** | `/fractary-codex-document-fetch` | `/fractary-codex-fetch` | ⚠️ RENAME |
 
 **Consistency Check:**
 - ✅ Noun "document" appears in ALL interfaces
@@ -325,8 +325,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `cache.clear()` | `cache.clear()` | ✅ CORRECT |
 | **CLI** | `cache clear` | `cache clear` | ✅ CORRECT |
 | **MCP Tool** | `codex_cache_clear` | `codex_invalidate` | ⚠️ RENAME |
-| **Plugin Skill** | `fractary-codex:cache-clear` | `cache-clear` | ⚠️ ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:cache-clear` | `/fractary-codex:cache-clear` | ✅ CORRECT |
+| **Plugin Skill** | `fractary-codex-cache-clear` | `cache-clear` | ⚠️ ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-cache-clear` | `/fractary-codex-cache-clear` | ✅ CORRECT |
 
 #### cache-health (noun: "cache", verb: "health")
 
@@ -336,8 +336,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `cache.health()` | *missing* | 🆕 ADD |
 | **CLI** | `cache health` | `health` | ⚠️ RENAME |
 | **MCP Tool** | `codex_cache_health` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:cache-health` | `cache-health` | ⚠️ ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:cache-health` | `/fractary-codex:health` | ⚠️ RENAME |
+| **Plugin Skill** | `fractary-codex-cache-health` | `cache-health` | ⚠️ ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-cache-health` | `/fractary-codex-health` | ⚠️ RENAME |
 
 #### cache-list (noun: "cache", verb: "list")
 
@@ -347,8 +347,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `cache.list()` | `cache.list()` | ✅ CORRECT |
 | **CLI** | `cache list` | `cache list` | ✅ CORRECT |
 | **MCP Tool** | `codex_cache_list` | `codex_list` | ⚠️ RENAME |
-| **Plugin Skill** | `fractary-codex:cache-list` | `cache-list` | ⚠️ ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:cache-list` | `/fractary-codex:cache-list` | ✅ CORRECT |
+| **Plugin Skill** | `fractary-codex-cache-list` | `cache-list` | ⚠️ ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-cache-list` | `/fractary-codex-cache-list` | ✅ CORRECT |
 
 #### cache-stats (noun: "cache", verb: "stats")
 
@@ -358,8 +358,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `cache.stats()` | *missing* | 🆕 ADD |
 | **CLI** | `cache stats` | `cache stats` | ✅ CORRECT |
 | **MCP Tool** | `codex_cache_stats` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:cache-stats` | `cache-metrics` | ⚠️ RENAME + ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:cache-stats` | `/fractary-codex:metrics` | ⚠️ RENAME |
+| **Plugin Skill** | `fractary-codex-cache-stats` | `cache-metrics` | ⚠️ RENAME + ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-cache-stats` | `/fractary-codex-metrics` | ⚠️ RENAME |
 
 ### Config Operations
 
@@ -371,8 +371,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `config.init()` | *missing* | 🆕 ADD |
 | **CLI** | `config init` | `init` | ⚠️ RENAME |
 | **MCP Tool** | `codex_config_init` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:config-init` | `config-helper` | ⚠️ RENAME + ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:config-init` | `/fractary-codex:init` | ⚠️ RENAME |
+| **Plugin Skill** | `fractary-codex-config-init` | `config-helper` | ⚠️ RENAME + ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-config-init` | `/fractary-codex-init` | ⚠️ RENAME |
 
 #### config-load (noun: "config", verb: "load")
 
@@ -382,8 +382,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `config.load()` | `load_config()` | ⚠️ RENAME |
 | **CLI** | `config load` | *(internal)* | ✅ INTERNAL |
 | **MCP Tool** | `codex_config_load` | *(internal)* | ✅ INTERNAL |
-| **Plugin Skill** | `fractary-codex:config-load` | *(internal)* | ✅ INTERNAL |
-| **Plugin Command** | `/fractary-codex:config-load` | *(internal)* | ✅ INTERNAL |
+| **Plugin Skill** | `fractary-codex-config-load` | *(internal)* | ✅ INTERNAL |
+| **Plugin Command** | `/fractary-codex-config-load` | *(internal)* | ✅ INTERNAL |
 
 #### config-migrate (noun: "config", verb: "migrate")
 
@@ -393,8 +393,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `config.migrate()` | `migrate_config()` | ⚠️ RENAME |
 | **CLI** | `config migrate` | `migrate` | ⚠️ RENAME |
 | **MCP Tool** | `codex_config_migrate` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:config-migrate` | `config-migrator` | ⚠️ RENAME + ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:config-migrate` | `/fractary-codex:migrate` | ⚠️ RENAME |
+| **Plugin Skill** | `fractary-codex-config-migrate` | `config-migrator` | ⚠️ RENAME + ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-config-migrate` | `/fractary-codex-migrate` | ⚠️ RENAME |
 
 #### config-validate (noun: "config", verb: "validate")
 
@@ -404,8 +404,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `config.validate()` | *missing* | 🆕 ADD |
 | **CLI** | `config validate` | *(via health)* | 🆕 ADD |
 | **MCP Tool** | `codex_config_validate` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:config-validate` | `config-validate` | ⚠️ ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:config-validate` | `/fractary-codex:validate-setup` | ⚠️ RENAME |
+| **Plugin Skill** | `fractary-codex-config-validate` | `config-validate` | ⚠️ ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-config-validate` | `/fractary-codex-validate-setup` | ⚠️ RENAME |
 
 ### Sync Operations
 
@@ -417,8 +417,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `sync()` | *entire sync/ module missing* | 🆕 ADD |
 | **CLI** | `sync` | `sync project` | ⚠️ RENAME |
 | **MCP Tool** | `codex_sync` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:sync` | `project-syncer` | ⚠️ RENAME + ADD PREFIX |
-| **Plugin Command** | `/fractary-codex:sync` | `/fractary-codex:sync-project` | ⚠️ RENAME |
+| **Plugin Skill** | `fractary-codex-sync` | `project-syncer` | ⚠️ RENAME + ADD PREFIX |
+| **Plugin Command** | `/fractary-codex-sync` | `/fractary-codex-sync-project` | ⚠️ RENAME |
 
 **Note:** Sync is a special case where the noun and verb are identical. All "project-sync" and "org-sync" terminology has been simplified to just "sync".
 
@@ -432,8 +432,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `types.add()` | `types.add()` | ✅ CORRECT |
 | **CLI** | `types add` | `types add` | ✅ CORRECT |
 | **MCP Tool** | `codex_types_add` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:types-add` | *missing* | 🆕 ADD |
-| **Plugin Command** | `/fractary-codex:types-add` | *missing* | 🆕 ADD |
+| **Plugin Skill** | `fractary-codex-types-add` | *missing* | 🆕 ADD |
+| **Plugin Command** | `/fractary-codex-types-add` | *missing* | 🆕 ADD |
 
 #### types-list (noun: "types", verb: "list")
 
@@ -443,8 +443,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `types.list()` | `types.list()` | ✅ CORRECT |
 | **CLI** | `types list` | `types list` | ✅ CORRECT |
 | **MCP Tool** | `codex_types_list` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:types-list` | *missing* | 🆕 ADD |
-| **Plugin Command** | `/fractary-codex:types-list` | *missing* | 🆕 ADD |
+| **Plugin Skill** | `fractary-codex-types-list` | *missing* | 🆕 ADD |
+| **Plugin Command** | `/fractary-codex-types-list` | *missing* | 🆕 ADD |
 
 #### types-remove (noun: "types", verb: "remove")
 
@@ -454,8 +454,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `types.remove()` | `types.remove()` | ✅ CORRECT |
 | **CLI** | `types remove` | `types remove` | ✅ CORRECT |
 | **MCP Tool** | `codex_types_remove` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:types-remove` | *missing* | 🆕 ADD |
-| **Plugin Command** | `/fractary-codex:types-remove` | *missing* | 🆕 ADD |
+| **Plugin Skill** | `fractary-codex-types-remove` | *missing* | 🆕 ADD |
+| **Plugin Command** | `/fractary-codex-types-remove` | *missing* | 🆕 ADD |
 
 #### types-show (noun: "types", verb: "show")
 
@@ -465,8 +465,8 @@ This table shows **all commands** across all interfaces with the proposed standa
 | **Python SDK** | `types.show()` | `types.get()` | ⚠️ RENAME |
 | **CLI** | `types show` | `types show` | ✅ CORRECT |
 | **MCP Tool** | `codex_types_show` | *missing* | 🆕 ADD |
-| **Plugin Skill** | `fractary-codex:types-show` | *missing* | 🆕 ADD |
-| **Plugin Command** | `/fractary-codex:types-show` | *missing* | 🆕 ADD |
+| **Plugin Skill** | `fractary-codex-types-show` | *missing* | 🆕 ADD |
+| **Plugin Command** | `/fractary-codex-types-show` | *missing* | 🆕 ADD |
 
 ### Permission Operations
 
@@ -673,12 +673,12 @@ This section has been replaced by the comprehensive command reference table abov
 | RENAME | `config-migrator` | `config-migrate` | ⚠️ Deprecate | LOW |
 | RENAME | `project-syncer` | `sync` | ⚠️ Deprecate | HIGH |
 | REMOVE | `org-syncer` | - | ⚠️ Yes | HIGH |
-| RENAME | `/fractary-codex:fetch` | `/fractary-codex:document-fetch` | ⚠️ Deprecate | HIGH |
-| RENAME | `/fractary-codex:init` | `/fractary-codex:config-init` | ⚠️ Deprecate | HIGH |
-| RENAME | `/fractary-codex:migrate` | `/fractary-codex:config-migrate` | ⚠️ Deprecate | HIGH |
-| RENAME | `/fractary-codex:metrics` | `/fractary-codex:cache-stats` | ⚠️ Deprecate | MEDIUM |
-| RENAME | `/fractary-codex:sync-project` | `/fractary-codex:sync` | ⚠️ Deprecate | HIGH |
-| REMOVE | `/fractary-codex:sync-org` | - | ⚠️ Yes | HIGH |
+| RENAME | `/fractary-codex-fetch` | `/fractary-codex-document-fetch` | ⚠️ Deprecate | HIGH |
+| RENAME | `/fractary-codex-init` | `/fractary-codex-config-init` | ⚠️ Deprecate | HIGH |
+| RENAME | `/fractary-codex-migrate` | `/fractary-codex-config-migrate` | ⚠️ Deprecate | HIGH |
+| RENAME | `/fractary-codex-metrics` | `/fractary-codex-cache-stats` | ⚠️ Deprecate | MEDIUM |
+| RENAME | `/fractary-codex-sync-project` | `/fractary-codex-sync` | ⚠️ Deprecate | HIGH |
+| REMOVE | `/fractary-codex-sync-org` | - | ⚠️ Yes | HIGH |
 | ADD | - | `types-list` | No | LOW |
 | ADD | - | `types-show` | No | LOW |
 | ADD | - | Direct MCP integration | No | MEDIUM |
@@ -894,16 +894,16 @@ types-list         # type operations grouped: types-*
 ### Plugin Commands
 
 ```bash
-# Pattern: /fractary-codex:kebab-case following noun-verb order
-/fractary-codex:document-fetch  # not: /fractary-codex:fetch
-/fractary-codex:cache-list      # not: /fractary-codex:list
-/fractary-codex:cache-stats     # not: /fractary-codex:metrics
-/fractary-codex:cache-clear     # not: /fractary-codex:invalidate
-/fractary-codex:cache-health    # not: /fractary-codex:health
-/fractary-codex:config-init     # not: /fractary-codex:init
-/fractary-codex:config-migrate  # not: /fractary-codex:migrate
-/fractary-codex:sync            # simplified from: /fractary-codex:sync-project
-/fractary-codex:types-list      # not: /fractary-codex:list-types
+# Pattern: /fractary-codex-kebab-case following noun-verb order
+/fractary-codex-document-fetch  # not: /fractary-codex-fetch
+/fractary-codex-cache-list      # not: /fractary-codex-list
+/fractary-codex-cache-stats     # not: /fractary-codex-metrics
+/fractary-codex-cache-clear     # not: /fractary-codex-invalidate
+/fractary-codex-cache-health    # not: /fractary-codex-health
+/fractary-codex-config-init     # not: /fractary-codex-init
+/fractary-codex-config-migrate  # not: /fractary-codex-migrate
+/fractary-codex-sync            # simplified from: /fractary-codex-sync-project
+/fractary-codex-types-list      # not: /fractary-codex-list-types
 ```
 
 ---

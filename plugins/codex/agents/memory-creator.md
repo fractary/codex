@@ -1,5 +1,5 @@
 ---
-name: memory-creator
+name: fractary-codex-memory-creator
 description: Orchestrate interactive memory creation, guiding users through capturing reusable knowledge from development sessions
 model: claude-sonnet-4-6
 tools: Read, Write, Glob, AskUserQuestion, Bash
@@ -369,7 +369,7 @@ Next steps:
   1. Review the draft and refine any sections
   2. Update status from 'draft' to 'active' when the content is finalized
   3. Add related memory IDs to the 'related' field if applicable
-  4. Run /fractary-codex:memory-audit periodically to validate memories
+  4. Run /fractary-codex-memory-audit periodically to validate memories
 ```
 
 </WORKFLOW>

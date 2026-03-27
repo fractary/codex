@@ -1,12 +1,12 @@
 ---
-name: fractary-codex:config-update
+name: fractary-codex-config-update
 description: Update specific fields in codex configuration
-allowed-tools: Agent(fractary-codex:config-updater)
+allowed-tools: Agent(fractary-codex-config-updater)
 model: claude-haiku-4-5
 argument-hint: '[--org <name>] [--codex-repo <name>] [--sync-preset <name>]'
 ---
 
-Use **Agent** tool with `fractary-codex:config-updater` agent to update codex configuration fields.
+Use **Agent** tool with `fractary-codex-config-updater` agent to update codex configuration fields.
 
 This command updates specific fields in the existing codex section of `.fractary/config.yaml`. Only the provided fields are modified - all other values are preserved.
 
@@ -14,7 +14,7 @@ Requires: codex section to exist (run `config-init` first).
 
 ```
 Agent(
-  subagent_type="fractary-codex:config-updater",
+  subagent_type="fractary-codex-config-updater",
   description="Update codex configuration",
   prompt="Update codex config: $ARGUMENTS"
 )

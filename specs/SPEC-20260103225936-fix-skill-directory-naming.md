@@ -7,13 +7,13 @@
 
 ## Overview
 
-Fix the `fractary-codex:sync` command failure caused by mismatched skill directory names and deprecated org-syncer references.
+Fix the `fractary-codex-sync` command failure caused by mismatched skill directory names and deprecated org-syncer references.
 
 ## Problem Statement
 
-The `/fractary-codex:sync --from-codex --environment production` command fails with:
+The `/fractary-codex-sync --from-codex --environment production` command fails with:
 ```
-Error: Unknown skill: fractary-codex:project-syncer
+Error: Unknown skill: fractary-codex-project-syncer
 ```
 
 ### Root Causes
@@ -28,7 +28,7 @@ Error: Unknown skill: fractary-codex:project-syncer
 Skills are auto-discovered from `./skills/` via `.claude-plugin/plugin.json`:
 - Plugin scans each subdirectory
 - Reads `SKILL.md` frontmatter `name:` field
-- Registers as `/fractary-codex:{skill-name}`
+- Registers as `/fractary-codex-{skill-name}`
 - Directory name is NOT used for registration
 
 ###Mismatched Skills
@@ -101,12 +101,12 @@ grep "^name:" skills/*/SKILL.md
 grep -r "org-syncer" agents/
 
 # Test sync command
-/fractary-codex:sync --from-codex --dry-run
+/fractary-codex-sync --from-codex --dry-run
 ```
 
 ## Expected Outcomes
 
-- ✅ `/fractary-codex:sync` commands work correctly
+- ✅ `/fractary-codex-sync` commands work correctly
 - ✅ All skills discoverable by agent
 - ✅ Directory names match skill names
 - ✅ Deprecated references removed

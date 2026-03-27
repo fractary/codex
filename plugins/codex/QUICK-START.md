@@ -11,7 +11,7 @@
 ### 1. Initialize codex configuration
 
 ```
-/fractary-codex:config-init
+/fractary-codex-config-init
 ```
 
 The agent will:
@@ -30,25 +30,25 @@ The agent will:
 
 To specify values explicitly:
 ```
-/fractary-codex:config-init --org myorg --codex-repo codex.myorg.com
+/fractary-codex-config-init --org myorg --codex-repo codex.myorg.com
 ```
 
 ### 2. Validate the configuration
 
 ```
-/fractary-codex:config-validate
+/fractary-codex-config-validate
 ```
 
 ### 3. Preview sync changes
 
 ```
-/fractary-codex:sync --dry-run
+/fractary-codex-sync --dry-run
 ```
 
 ### 4. Run the sync
 
 ```
-/fractary-codex:sync
+/fractary-codex-sync
 ```
 
 ### 5. Use codex:// URIs
@@ -65,41 +65,41 @@ The MCP server fetches and caches documents automatically.
 ### Update configuration
 
 ```
-/fractary-codex:config-update --org neworg
-/fractary-codex:config-update --sync-preset minimal
+/fractary-codex-config-update --org neworg
+/fractary-codex-config-update --sync-preset minimal
 ```
 
 ### Sync in one direction
 
 ```
-/fractary-codex:sync --to-codex
-/fractary-codex:sync --from-codex
+/fractary-codex-sync --to-codex
+/fractary-codex-sync --from-codex
 ```
 
 ### Sync scoped to a GitHub issue
 
 ```
-/fractary-codex:sync --work-id 42
+/fractary-codex-sync --work-id 42
 ```
 
 ### Sync from a different environment
 
 ```
-/fractary-codex:sync --env dev
+/fractary-codex-sync --env dev
 ```
 
 ## Command Reference
 
 | Command | Description |
 |---------|-------------|
-| `/fractary-codex:config-init` | Initialize codex configuration |
-| `/fractary-codex:config-update` | Update configuration fields |
-| `/fractary-codex:config-validate` | Validate configuration (read-only) |
-| `/fractary-codex:sync` | Sync project with codex repository |
+| `/fractary-codex-config-init` | Initialize codex configuration |
+| `/fractary-codex-config-update` | Update configuration fields |
+| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+| `/fractary-codex-sync` | Sync project with codex repository |
 
 ## Troubleshooting
 
-**Configuration not found:** Run `/fractary-codex:config-init` first. Requires base `.fractary/config.yaml` from `@fractary/core`.
+**Configuration not found:** Run `/fractary-codex-config-init` first. Requires base `.fractary/config.yaml` from `@fractary/core`.
 
 **Authentication failed:** Verify `GITHUB_TOKEN` is set and has access to the codex repository.
 

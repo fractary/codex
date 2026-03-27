@@ -224,7 +224,7 @@ Note: In v4.2, project-syncer and handler-sync-github were removed entirely. The
 
 1. **Initialize**:
    ```bash
-   /fractary-codex:configure
+   /fractary-codex-configure
    ```
 
    This automatically creates YAML config at `.fractary/config.yaml`

@@ -7,7 +7,7 @@
 
 ## Overview
 
-Add `--include` and `--exclude` flags to the `/fractary-codex:sync` command to allow users to narrow the scope of what gets synced. This enables syncing specific documents rather than syncing hundreds of documents every time.
+Add `--include` and `--exclude` flags to the `/fractary-codex-sync` command to allow users to narrow the scope of what gets synced. This enables syncing specific documents rather than syncing hundreds of documents every time.
 
 ## Problem Statement
 
@@ -95,22 +95,22 @@ b. Add to Options section (after line 72):
 c. Add to Examples section (after line 98):
 ```markdown
 # Sync only API documentation
-/fractary-codex:sync --include "docs/api/**"
+/fractary-codex-sync --include "docs/api/**"
 
 # Multiple include patterns (comma-separated)
-/fractary-codex:sync --include "docs/**,specs/**"
+/fractary-codex-sync --include "docs/**,specs/**"
 
 # Combine include with exclude
-/fractary-codex:sync --include "docs/**" --exclude "docs/private/**"
+/fractary-codex-sync --include "docs/**" --exclude "docs/private/**"
 
 # Sync specific files (comma-separated)
-/fractary-codex:sync --include "README.md,CLAUDE.md"
+/fractary-codex-sync --include "README.md,CLAUDE.md"
 
 # Multiple excludes
-/fractary-codex:sync --exclude "**/*.draft.md,docs/private/**"
+/fractary-codex-sync --exclude "**/*.draft.md,docs/private/**"
 
 # Dry-run to preview
-/fractary-codex:sync --include "docs/api/**" --dry-run
+/fractary-codex-sync --include "docs/api/**" --dry-run
 ```
 
 d. Add Step 2.5: Parse Include/Exclude Options (after Step 2, before Step 3):
@@ -225,32 +225,32 @@ if (exclude_patterns && exclude_patterns.length > 0) {
 
 1. Test single include pattern:
    ```bash
-   /fractary-codex:sync --include "docs/api/**" --dry-run
+   /fractary-codex-sync --include "docs/api/**" --dry-run
    ```
 
 2. Test multiple include patterns (comma-separated):
    ```bash
-   /fractary-codex:sync --include "docs/**,specs/**" --dry-run
+   /fractary-codex-sync --include "docs/**,specs/**" --dry-run
    ```
 
 3. Test include with exclude:
    ```bash
-   /fractary-codex:sync --include "docs/**" --exclude "docs/private/**" --dry-run
+   /fractary-codex-sync --include "docs/**" --exclude "docs/private/**" --dry-run
    ```
 
 4. Test multiple excludes (comma-separated):
    ```bash
-   /fractary-codex:sync --exclude "**/*.draft.md,docs/private/**" --dry-run
+   /fractary-codex-sync --exclude "**/*.draft.md,docs/private/**" --dry-run
    ```
 
 5. Test pattern that matches nothing:
    ```bash
-   /fractary-codex:sync --include "nonexistent/**" --dry-run
+   /fractary-codex-sync --include "nonexistent/**" --dry-run
    ```
 
 6. Test without filter (baseline - should work as before):
    ```bash
-   /fractary-codex:sync --dry-run
+   /fractary-codex-sync --dry-run
    ```
 
 ### Expected Results
@@ -353,17 +353,17 @@ if (exclude_patterns && exclude_patterns.length > 0) {
 
 ```bash
 # Sync only API documentation
-/fractary-codex:sync --include "docs/api/**" --dry-run
+/fractary-codex-sync --include "docs/api/**" --dry-run
 
 # Sync docs and specs, but not private docs
-/fractary-codex:sync --include "docs/**,specs/**" --exclude "docs/private/**"
+/fractary-codex-sync --include "docs/**,specs/**" --exclude "docs/private/**"
 
 # Sync just the README and CLAUDE.md
-/fractary-codex:sync --include "README.md,CLAUDE.md"
+/fractary-codex-sync --include "README.md,CLAUDE.md"
 
 # Multiple specific directories
-/fractary-codex:sync --include "docs/guides/**,docs/tutorials/**"
+/fractary-codex-sync --include "docs/guides/**,docs/tutorials/**"
 
 # Exclude draft files and private docs from normal sync
-/fractary-codex:sync --exclude "**/*.draft.md,docs/private/**"
+/fractary-codex-sync --exclude "**/*.draft.md,docs/private/**"
 ```
