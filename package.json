@@ -26,5 +26,16 @@
     "url": "git+https://github.com/fractary/codex.git"
   },
   "license": "MIT",
-  "author": "Fractary Engineering"
+  "author": "Fractary Engineering",  
+  "pi": {
+    "skills": [
+      "plugins/codex/skills"
+    ],
+    "prompts": [
+      "plugins/codex/commands"
+    ],
+    "agents": [
+      "plugins/codex/agents"
+    ]
+  }
 }
