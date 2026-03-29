@@ -136,7 +136,7 @@ sync:
 ## Architecture
 
 ```
-Plugin Command → Agent (Claude Haiku) → CLI → SDK → Storage/Cache
+Plugin Command → Agent → CLI → SDK → Storage/Cache
 ```
 
 The MCP server provides direct tool access for AI agents:

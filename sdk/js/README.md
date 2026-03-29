@@ -46,8 +46,8 @@ import {
   parseReference,
   buildUri,
   isValidUri,
-  CacheManager,
-  StorageManager,
+  createCacheManager,
+  createStorageManager,
   TypeRegistry
 } from '@fractary/codex'
 
@@ -134,8 +134,8 @@ GitHubStorage     // GitHub repositories (needs GITHUB_TOKEN for private repos)
 HttpStorage       // HTTP/HTTPS endpoints
 FilePluginStorage // File plugin integration
 
-// Manager
-const manager = StorageManager.create(config)
+// Factory
+const manager = createStorageManager(config)
 const result = await manager.fetch(ref, options?)
 // result: { content: Buffer, contentType?: string, size: number }
 ```
@@ -145,7 +145,7 @@ const result = await manager.fetch(ref, options?)
 TTL-based caching with disk persistence.
 
 ```typescript
-const cache = CacheManager.create(config)
+const cache = createCacheManager(config)
 
 await cache.get(ref, options?)        // Get from cache (or fetch)
 await cache.set(uri, result)          // Store in cache
@@ -161,7 +161,7 @@ await cache.listEntries(options?)     // List entries with filtering
 Maps file paths to artifact types with TTL defaults.
 
 ```typescript
-const registry = TypeRegistry.create()
+const registry = new TypeRegistry()
 
 registry.detectType('docs/api.md')    // 'docs'
 registry.getTtl('docs/api.md')        // 86400 (1 day)
@@ -184,9 +184,9 @@ registry.list()                       // List all types
 Bidirectional file synchronization.
 
 ```typescript
-const sync = SyncManager.create(config)
+const sync = createSyncManager(config)
 
-const plan = await sync.createPlan(org, project, targetDir, patterns)
+const plan = await sync.createPlan(org, project, sourceDir, targetFiles)
 // plan: { direction, operations[], stats, conflicts[] }
 
 const result = await sync.executePlan(plan, options?)
@@ -197,7 +197,7 @@ const result = await sync.executePlan(plan, options?)
 Fine-grained access control.
 
 ```typescript
-const permissions = PermissionManager.create(config)
+const permissions = new PermissionManager(config)
 
 permissions.isAllowed(context)        // Check if action allowed
 permissions.hasPermission(context, level) // Check permission level
@@ -219,7 +219,7 @@ const result = await ConfigManager.validate(options) // Validate config
 ### HealthChecker
 
 ```typescript
-const checker = HealthChecker.create(options)
+const checker = createHealthChecker(options)
 const results = await checker.runAll()
 // Checks: config, storage, client, cache, type registry
 ```
