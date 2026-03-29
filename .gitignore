@@ -63,3 +63,6 @@ yarn-error.log*
 
 # Legacy codex cache location (pre-v4.0)
 .codex-cache/
+
+docs/_archive/
+logs/_archive/
