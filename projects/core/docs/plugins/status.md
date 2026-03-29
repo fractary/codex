@@ -19,7 +19,7 @@ Add to your Claude Code settings:
 Then run the install command:
 
 ```
-/fractary-status:install
+/fractary-status-install
 ```
 
 Restart Claude Code to activate.
@@ -57,11 +57,11 @@ last: prompt...
 
 ### /install
 
-Install the status line plugin in the current project. Delegates to the `fractary-status:status-install` agent.
+Install the status line plugin in the current project. Delegates to the `fractary-status-status-install` agent.
 
 **Usage:**
 ```
-/fractary-status:install [options]
+/fractary-status-install [options]
 ```
 
 **Options:**
@@ -69,16 +69,16 @@ Install the status line plugin in the current project. Delegates to the `fractar
 
 **Example:**
 ```
-/fractary-status:install
+/fractary-status-install
 ```
 
 ### /sync
 
-Force refresh the status cache and display current repository status. Delegates to the `fractary-status:status-sync` agent.
+Force refresh the status cache and display current repository status. Delegates to the `fractary-status-status-sync` agent.
 
 **Usage:**
 ```
-/fractary-status:sync [options]
+/fractary-status-sync [options]
 ```
 
 **Options:**
@@ -86,12 +86,12 @@ Force refresh the status cache and display current repository status. Delegates 
 
 **Example:**
 ```
-/fractary-status:sync
+/fractary-status-sync
 ```
 
 ## Agents
 
-### fractary-status:status-install
+### fractary-status-status-install
 
 Handles the complete installation workflow for the status line plugin, including script execution, verification, and configuration of `.claude/settings.json`.
 
@@ -106,7 +106,7 @@ Handles the complete installation workflow for the status line plugin, including
 - Updates `.gitignore` to exclude cache files
 - Verifies all files are created correctly
 
-### fractary-status:status-sync
+### fractary-status-status-sync
 
 Forces a cache refresh and displays comprehensive repository status. Solves the "one step behind" problem by updating the cache and outputting status text that triggers a statusLine refresh.
 
@@ -127,7 +127,7 @@ Forces a cache refresh and displays comprehensive repository status. Solves the 
 ```
 User: Set up the status line for this project
 
-Claude: /fractary-status:install
+Claude: /fractary-status-install
 
 Running installation...
 Created: .fractary/status/
@@ -146,7 +146,7 @@ Restart Claude Code to activate the status line.
 ```
 User: The status line looks out of date
 
-Claude: /fractary-status:sync
+Claude: /fractary-status-sync
 
 Repository Status Synced
 ──────────────────────────────────────

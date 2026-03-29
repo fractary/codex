@@ -386,11 +386,11 @@ Plugins exist on a spectrum from ultra-lightweight to reasoning-heavy:
 ```markdown
 # Command file (5 lines)
 ---
-name: fractary-repo:branch-create
-allowed-tools: Agent(fractary-repo:branch-create)
+name: fractary-repo-branch-create
+allowed-tools: Agent(fractary-repo-branch-create)
 ---
 
-Invokes fractary-repo:branch-create agent.
+Invokes fractary-repo-branch-create agent.
 ```
 - Plugin = minimal wrapper
 - All logic in SDK via MCP
@@ -453,7 +453,7 @@ Invokes fractary-repo:branch-create agent.
 
 **Example 1: Pure Deterministic (Pattern 1)**
 ```
-User: /fractary-repo:branch-list --stale
+User: /fractary-repo-branch-list --stale
   ↓
 Command: 5 lines, invokes agent
   ↓
@@ -469,7 +469,7 @@ Result: List of stale branches
 
 **Example 2: Orchestration (Pattern 2)**
 ```
-User: /fractary-repo:branch-create --work-id 123
+User: /fractary-repo-branch-create --work-id 123
   ↓
 Command: 5 lines, invokes agent
   ↓
@@ -486,7 +486,7 @@ Result: Branch created with semantic name
 
 **Example 3: Hybrid Reasoning (Pattern 3)**
 ```
-User: /fractary-repo:commit (no message provided)
+User: /fractary-repo-commit (no message provided)
   ↓
 Command: 5 lines, invokes agent
   ↓
@@ -761,7 +761,7 @@ The 1:1 command-agent relationship enables reliable forced invocation:
 
 ```yaml
 # Command forces specific agent via Agent tool restriction
-allowed-tools: Agent(fractary-repo:branch-create)
+allowed-tools: Agent(fractary-repo-branch-create)
 ```
 
 This ensures:
@@ -816,9 +816,9 @@ Dedicated agents enable concurrent operations - you can invoke multiple agent in
 **Use case:** Process multiple items concurrently
 ```typescript
 // Invoke multiple agents in parallel (single message, multiple Agent calls)
-Agent({ subagent_type: "fractary-repo:branch-create", prompt: "Create branch for issue 123" })
-Agent({ subagent_type: "fractary-repo:branch-create", prompt: "Create branch for issue 456" })
-Agent({ subagent_type: "fractary-repo:branch-create", prompt: "Create branch for issue 789" })
+Agent({ subagent_type: "fractary-repo-branch-create", prompt: "Create branch for issue 123" })
+Agent({ subagent_type: "fractary-repo-branch-create", prompt: "Create branch for issue 456" })
+Agent({ subagent_type: "fractary-repo-branch-create", prompt: "Create branch for issue 789" })
 ```
 
 **Current limitations:**
@@ -852,7 +852,7 @@ Agent({ subagent_type: "fractary-repo:branch-create", prompt: "Create branch for
 ```typescript
 // PROPOSED (NOT CURRENTLY AVAILABLE)
 Agent({
-  subagent_type: "fractary-repo:commit",
+  subagent_type: "fractary-repo-commit",
   prompt: "Create commit with changes",
   run_in_background: true  // Not yet supported
 })
@@ -1024,7 +1024,7 @@ Commands should:
 **Tool Restriction (Critical):**
 ```yaml
 ---
-name: fractary-plugin:command
+name: fractary-plugin-command
 allowed-tools: Agent  # Physical constraint - Claude cannot use other tools
 ---
 ```
@@ -1040,13 +1040,13 @@ The `allowed-tools` field supports fine-grained restrictions using the syntax `T
 
 ```yaml
 # Restrict to specific agent only
-allowed-tools: Agent(fractary-repo:commit)
+allowed-tools: Agent(fractary-repo-commit)
 
 # Restrict to specific skill only
 allowed-tools: Skill(fractary-pr-context-preparer)
 
 # Restrict to namespace with wildcard
-allowed-tools: Agent(fractary-repo:*)
+allowed-tools: Agent(fractary-repo-*)
 
 # Multiple specific restrictions
 allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
@@ -1054,7 +1054,7 @@ allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
 
 This provides:
 - ✅ Exact control over which agents/skills can be invoked
-- ✅ Namespace isolation (e.g., only fractary-repo:* agents)
+- ✅ Namespace isolation (e.g., only fractary-repo-* agents)
 - ✅ Clear audit trail of permitted operations
 - ✅ Security against unintended invocations
 
@@ -1065,7 +1065,7 @@ Commands should show the Agent invocation explicitly:
 Create semantic commit using Agent tool:
 
 Agent(
-  subagent_type="fractary-repo:commit",
+  subagent_type="fractary-repo-commit",
   description="Create semantic commit",
   prompt="Create semantic commit with arguments: $ARGUMENTS"
 )
@@ -1073,7 +1073,7 @@ Agent(
 
 This teaches Claude:
 - HOW to invoke the agent (Agent tool)
-- WHICH agent to use (fractary-repo:commit)
+- WHICH agent to use (fractary-repo-commit)
 - WHAT parameters to pass
 - HOW to format the prompt
 
@@ -1133,10 +1133,10 @@ Command (allowed-tools: Skill, Agent)
 allowed-tools: Skill(fractary-pr-context-preparer), Agent
 
 # Or restrict both skill and agent to namespace
-allowed-tools: Skill(fractary-repo:*), Agent(fractary-repo:*)
+allowed-tools: Skill(fractary-repo-*), Agent(fractary-repo-*)
 
 # Or allow specific skill + specific agent
-allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo:pr-create)
+allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo-pr-create)
 ```
 
 **Syntax Pattern:** `ToolName(parameter:value)` where:
@@ -1207,7 +1207,7 @@ allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo:pr-creat
 **Structure:**
 ```markdown
 ---
-name: fractary-plugin:command-name
+name: fractary-plugin-command-name
 description: Brief description - delegates to agent
 allowed-tools: Agent
 model: claude-haiku-4-5
@@ -1219,14 +1219,14 @@ Brief description of what this command does.
 Agent tool invocation pattern:
 
 Agent(
-  subagent_type="fractary-plugin:command-name",
+  subagent_type="fractary-plugin-command-name",
   description="Short description",
   prompt="Operation with arguments: $ARGUMENTS"
 )
 ```
 
 **Frontmatter Fields:**
-- `name`: Namespaced command name (fractary-plugin:command-name)
+- `name`: Namespaced command name (fractary-plugin-command-name)
 - `description`: Brief description mentioning delegation
 - `allowed-tools: Agent`: **CRITICAL** - Physical enforcement of delegation
 - `model`: Usually `claude-haiku-4-5` for efficiency
@@ -1261,8 +1261,8 @@ The `$ARGUMENTS` value becomes: `"Fix bug" --type fix --work-id 123`
 **Example (Standard Pattern):**
 ```markdown
 ---
-name: fractary-repo:commit
-description: Create semantic commits - delegates to fractary-repo:commit agent
+name: fractary-repo-commit
+description: Create semantic commits - delegates to fractary-repo-commit agent
 allowed-tools: Agent
 model: claude-haiku-4-5
 argument-hint: '["message"] [--type <type>] [--work-id <id>] [--scope <scope>]'
@@ -1271,7 +1271,7 @@ argument-hint: '["message"] [--type <type>] [--work-id <id>] [--scope <scope>]'
 Create semantic commit using Agent tool:
 
 Agent(
-  subagent_type="fractary-repo:commit",
+  subagent_type="fractary-repo-commit",
   description="Create semantic commit",
   prompt="Create semantic commit with arguments: $ARGUMENTS"
 )
@@ -1280,9 +1280,9 @@ Agent(
 **Example (Hybrid Pattern with Skill):**
 ```markdown
 ---
-name: fractary-repo:pr-create
+name: fractary-repo-pr-create
 description: Create pull request with conversation context
-allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo:pr-create), TodoWrite
+allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo-pr-create), TodoWrite
 model: claude-sonnet-4-6
 argument-hint: '["title"] [--body "<text>"] [--base <branch>]'
 ---
@@ -1293,10 +1293,10 @@ argument-hint: '["title"] [--body "<text>"] [--base <branch>]'
 
 Skill(skill="fractary-pr-context-preparer")
 
-2. Use **Agent** tool with `fractary-repo:pr-create` subagent to create pull request:
+2. Use **Agent** tool with `fractary-repo-pr-create` subagent to create pull request:
 
 Agent(
-  subagent_type="fractary-repo:pr-create",
+  subagent_type="fractary-repo-pr-create",
   description="Create pull request",
   prompt="Create pull request with arguments: $ARGUMENTS. Use the prepared context from the previous skill call."
 )
@@ -1304,7 +1304,7 @@ Agent(
 
 **Note:** This example uses parameter-based restrictions:
 - `Skill(fractary-pr-context-preparer)` - Only this specific skill allowed
-- `Agent(fractary-repo:pr-create)` - Only this specific agent allowed
+- `Agent(fractary-repo-pr-create)` - Only this specific agent allowed
 - `TodoWrite` - For tracking the two-step sequence
 
 This prevents the command from invoking other skills or agents.
@@ -1315,7 +1315,7 @@ For hybrid commands that require skill-then-agent execution, include `TodoWrite`
 
 ```
 [ ] Step 1: Extract context using fractary-pr-context-preparer skill
-[ ] Step 2: Create PR using fractary-repo:pr-create agent
+[ ] Step 2: Create PR using fractary-repo-pr-create agent
 ```
 
 This ensures:
@@ -1356,8 +1356,8 @@ This ensures:
 **Structure:**
 ```markdown
 ---
-name: fractary-plugin:agent-name
-description: What this agent does. MUST BE USED for all {operation} operations from fractary-plugin:command command. Use PROACTIVELY when user requests {operation}.
+name: fractary-plugin-agent-name
+description: What this agent does. MUST BE USED for all {operation} operations from fractary-plugin-command command. Use PROACTIVELY when user requests {operation}.
 tools: fractary_plugin_tool_1, fractary_plugin_tool_2
 model: claude-haiku-4-5
 ---
@@ -1414,7 +1414,7 @@ Description of what this agent returns
 ```
 
 **Frontmatter Fields:**
-- `name`: Namespaced agent name (fractary-plugin:agent-name)
+- `name`: Namespaced agent name (fractary-plugin-agent-name)
 - `description`: Include "MUST BE USED" and "Use PROACTIVELY" for auto-triggering
 - `tools`: List of MCP tools this agent can use
 - `model`: Usually `claude-haiku-4-5` for efficiency
@@ -2118,19 +2118,19 @@ git commit -m "docs(plugin): update for v3.0 architecture"
 allowed-tools: Agent
 
 # Restrict to specific agent only
-allowed-tools: Agent(fractary-repo:commit)
+allowed-tools: Agent(fractary-repo-commit)
 
 # Restrict to namespace (all agents in fractary-repo)
-allowed-tools: Agent(fractary-repo:*)
+allowed-tools: Agent(fractary-repo-*)
 
 # Hybrid with specific skill + any agent
 allowed-tools: Skill(fractary-pr-context-preparer), Agent
 
 # Hybrid with specific skill + specific agent
-allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo:pr-create)
+allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo-pr-create)
 
 # Hybrid with namespace restrictions on both
-allowed-tools: Skill(fractary-repo:*), Agent(fractary-repo:*)
+allowed-tools: Skill(fractary-repo-*), Agent(fractary-repo-*)
 
 # Multiple bash commands only (example from official docs)
 allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
@@ -2849,19 +2849,19 @@ Where:
 
 **Restrict to specific agent:**
 ```yaml
-allowed-tools: Agent(fractary-repo:commit)
-# Can only invoke fractary-repo:commit agent
+allowed-tools: Agent(fractary-repo-commit)
+# Can only invoke fractary-repo-commit agent
 ```
 
 **Restrict to namespace:**
 ```yaml
-allowed-tools: Agent(fractary-repo:*)
+allowed-tools: Agent(fractary-repo-*)
 # Can invoke any agent in fractary-repo namespace
 ```
 
 **Hybrid with restrictions:**
 ```yaml
-allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo:pr-create)
+allowed-tools: Skill(fractary-pr-context-preparer), Agent(fractary-repo-pr-create)
 # Can only use that specific skill and that specific agent
 ```
 

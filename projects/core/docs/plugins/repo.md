@@ -165,7 +165,7 @@ Review a pull request.
 /pr-review <pr-number>
 ```
 
-This command delegates to the `fractary-repo:pr-review-agent` for comprehensive analysis.
+This command delegates to the `fractary-repo-pr-review-agent` for comprehensive analysis.
 
 ### /pull
 
@@ -222,7 +222,7 @@ Remove a git worktree.
 
 ## Agents
 
-### fractary-repo:pr-review-agent
+### fractary-repo-pr-review-agent
 
 Analyzes pull requests comprehensively including comments, reviews, CI status, and merge conflicts. Provides intelligent recommendations on whether to approve.
 
@@ -264,7 +264,7 @@ PR #42 created: https://github.com/myorg/myrepo/pull/42
 ```
 User: Review PR #42
 
-Claude: [Uses fractary-repo:pr-review-agent]
+Claude: [Uses fractary-repo-pr-review-agent]
 
 ## PR Review: #42 - Feature: User Authentication
 

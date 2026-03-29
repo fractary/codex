@@ -53,7 +53,7 @@ Upload a file to storage.
 /file-upload ./export.csv data/exports/report.csv
 ```
 
-This command delegates to the `fractary-file:file-upload` agent.
+This command delegates to the `fractary-file-file-upload` agent.
 
 ### /file-download
 
@@ -113,7 +113,7 @@ Show current file storage configuration.
 /file-show-config
 ```
 
-This command delegates to the `fractary-file:file-show-config` agent.
+This command delegates to the `fractary-file-file-show-config` agent.
 
 ### /file-switch-handler
 
@@ -129,7 +129,7 @@ Switch the active storage handler.
 /file-switch-handler s3
 ```
 
-This command delegates to the `fractary-file:file-switch-handler` agent.
+This command delegates to the `fractary-file-file-switch-handler` agent.
 
 ### /file-test-connection
 
@@ -140,11 +140,11 @@ Test the file storage connection.
 /file-test-connection
 ```
 
-This command delegates to the `fractary-file:file-test-connection` agent.
+This command delegates to the `fractary-file-file-test-connection` agent.
 
 ## Agents
 
-### fractary-file:file-show-config
+### fractary-file-file-show-config
 
 Shows current file plugin configuration.
 
@@ -152,7 +152,7 @@ Shows current file plugin configuration.
 - `/file-show-config` command
 - Proactively when user asks about storage config
 
-### fractary-file:file-switch-handler
+### fractary-file-file-switch-handler
 
 Switches the active storage handler.
 
@@ -160,7 +160,7 @@ Switches the active storage handler.
 - `/file-switch-handler` command
 - Proactively when user mentions switching storage or using S3/local
 
-### fractary-file:file-test-connection
+### fractary-file-file-test-connection
 
 Tests file storage connection.
 
@@ -173,11 +173,11 @@ Tests file storage connection.
 - Validates configuration
 - Reports connection status
 
-### fractary-file:file-upload
+### fractary-file-file-upload
 
 Uploads files to storage.
 
-### fractary-file:file-download
+### fractary-file-file-download
 
 Downloads files from storage.
 
@@ -188,7 +188,7 @@ Downloads files from storage.
 ```
 User: Show me the current file storage config
 
-Claude: [Uses fractary-file:file-show-config agent]
+Claude: [Uses fractary-file-file-show-config agent]
 
 ## File Storage Configuration
 
@@ -227,7 +227,7 @@ Note: Currently using local storage. Use /file-switch-handler s3 to use S3.
 ```
 User: Switch to S3 storage
 
-Claude: [Uses fractary-file:file-switch-handler agent]
+Claude: [Uses fractary-file-file-switch-handler agent]
 
 Switching to S3 storage...
 
@@ -246,7 +246,7 @@ All subsequent file operations will use S3.
 ```
 User: Test the storage connection
 
-Claude: [Uses fractary-file:file-test-connection agent]
+Claude: [Uses fractary-file-file-test-connection agent]
 
 ## Storage Connection Test
 
