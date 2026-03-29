@@ -55,6 +55,7 @@ fractary-codex cache-health
 ```typescript
 import { CodexClient } from '@fractary/codex'
 
+// organizationSlug is optional — auto-detected from git remote if omitted
 const client = await CodexClient.create({ organizationSlug: 'myorg' })
 const result = await client.fetch('codex://myorg/project/docs/api.md')
 console.log(result.content.toString())

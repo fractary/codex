@@ -69,8 +69,8 @@ Fetch a document by its codex:// URI with automatic caching.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `uri` | string | yes | Codex URI (e.g., `codex://org/project/docs/file.md`) |
-| `bypass_cache` | boolean | no | Skip cache and fetch from source |
-| `ttl` | number | no | Override TTL in seconds |
+| `noCache` | boolean | no | Bypass cache and fetch fresh content |
+| `branch` | string | no | Git branch to fetch from (default: `main`) |
 
 ### codex_cache_list
 
@@ -78,25 +78,33 @@ List documents currently in the cache.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `status` | string | no | Filter: `fresh`, `stale`, `expired`, `all` |
-| `limit` | number | no | Max entries to return |
+| `org` | string | no | Filter by organization |
+| `project` | string | no | Filter by project |
+| `includeExpired` | boolean | no | Include expired cache entries |
 
 ### codex_cache_clear
 
-Clear cache entries.
+Clear cache entries matching a pattern.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `pattern` | string | no | Glob pattern to match URIs |
-| `all` | boolean | no | Clear entire cache |
+| `pattern` | string | **yes** | URI pattern to invalidate (supports regex) |
 
 ### codex_cache_stats
 
-Get cache statistics (entry count, total size, hit rates). No parameters.
+Get cache statistics (entry count, total size, hit rates).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `json` | boolean | no | Return raw JSON stats object |
 
 ### codex_cache_health
 
-Run diagnostics on the codex setup. No parameters.
+Run diagnostics on the codex setup.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `json` | boolean | no | Return raw JSON health check results |
 
 ### codex_file_sources_list
 

@@ -94,7 +94,7 @@ All agents are thin wrappers around the CLI - they do not implement business log
 ## Architecture
 
 ```
-Plugin Command → Agent (Claude Haiku) → CLI → SDK → Storage/Cache
+Plugin Command → Agent → CLI → SDK → Storage/Cache
 ```
 
 The MCP server provides direct tool access for AI agents:

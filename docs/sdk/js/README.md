@@ -18,7 +18,6 @@ Comprehensive documentation for the `@fractary/codex` JavaScript/TypeScript SDK.
   - [Types](#types)
   - [Configuration](#configuration)
   - [Sync](#sync)
-  - [MCP Server](#mcp-server)
   - [Permissions](#permissions)
   - [Migration](#migration)
   - [Errors](#errors)
@@ -53,9 +52,8 @@ pnpm add @fractary/codex
 import {
   parseReference,
   resolveReference,
-  CacheManager,
-  StorageManager,
-  createMcpServer
+  createStorageManager,
+  createCacheManager,
 } from '@fractary/codex'
 
 // Parse a codex URI
@@ -64,8 +62,8 @@ console.log(ref.org)      // 'myorg'
 console.log(ref.path)     // 'docs/api-guide.md'
 
 // Create storage and cache managers
-const storage = StorageManager.create()
-const cache = CacheManager.create({ cacheDir: '.fractary/codex/cache' })
+const storage = createStorageManager()
+const cache = createCacheManager({ cacheDir: '.fractary/codex/cache' })
 cache.setStorageManager(storage)
 
 // Fetch content with caching
@@ -132,12 +130,13 @@ const uri = buildUri('fractary', 'codex', 'docs/api.md')
 buildUri('', 'project', 'path') // throws InvalidUriError
 ```
 
-#### validateUri
+#### validateUri / isValidUri
 
-Check if a string is a valid `codex://` URI.
+Check if a string is a valid `codex://` URI. Both names are exported; `isValidUri` is an alias for `validateUri`.
 
 ```typescript
 function validateUri(uri: string): boolean
+function isValidUri(uri: string): boolean  // alias for validateUri
 ```
 
 **Examples:**
@@ -221,9 +220,9 @@ APIs for working with file plugin sources and current project artifacts.
 
 Resolves and matches file paths against configured file plugin sources.
 
-```typescript
-import { FileSourceResolver } from '@fractary/codex'
+> **Note:** `FileSourceResolver` is not exported from the main `@fractary/codex` package index. It is an internal class. For file plugin path detection in external code, use `resolveReference()` with a `config` option — it handles file plugin source matching automatically.
 
+```typescript
 class FileSourceResolver {
   constructor(config: UnifiedConfig)
 
@@ -250,8 +249,6 @@ class FileSourceResolver {
 **Examples:**
 
 ```typescript
-import { FileSourceResolver } from '@fractary/codex'
-
 const config = {
   file: {
     sources: {
@@ -315,11 +312,12 @@ Multi-provider storage layer for fetching content from various sources.
 Orchestrates multiple storage providers with automatic fallback.
 
 ```typescript
-class StorageManager {
-  static create(options?: {
-    providers?: StorageProviderConfig[]
-  }): StorageManager
+// Factory function (exported from @fractary/codex)
+function createStorageManager(options?: {
+  providers?: StorageProviderConfig[]
+}): StorageManager
 
+class StorageManager {
   registerProvider(provider: StorageProvider, priority?: number): void
   fetch(reference: ResolvedReference, options?: FetchOptions): Promise<FetchResult>
   exists(reference: ResolvedReference): Promise<boolean>
@@ -342,9 +340,9 @@ interface FetchResult {
 **Examples:**
 
 ```typescript
-import { StorageManager } from '@fractary/codex'
+import { createStorageManager } from '@fractary/codex'
 
-const storage = StorageManager.create({
+const storage = createStorageManager({
   providers: [
     { type: 'local', basePath: './knowledge' },
     { type: 'github', token: process.env.GITHUB_TOKEN },
@@ -433,6 +431,8 @@ class HttpStorage implements StorageProvider {
 
 S3-compatible archive storage provider for transparent access to archived documents.
 
+> **Note:** `S3ArchiveStorage` is not exported from the main `@fractary/codex` package index. It is registered automatically by `CodexClient` when archive configuration is present in `.fractary/config.yaml`. You do not need to instantiate it directly — use `CodexClient.create()` and configure the `archive:` section in your YAML config.
+
 ```typescript
 class S3ArchiveStorage implements StorageProvider {
   constructor(options?: S3ArchiveStorageOptions)
@@ -465,14 +465,15 @@ Multi-tier caching system with LRU eviction and type-based TTL.
 Manages cached content with intelligent expiration.
 
 ```typescript
-class CacheManager {
-  static create(options?: {
-    cacheDir?: string
-    maxMemorySize?: number  // Bytes
-    defaultTtl?: number     // Seconds
-    typeRegistry?: TypeRegistry
-  }): CacheManager
+// Factory function (exported from @fractary/codex)
+function createCacheManager(options?: {
+  cacheDir?: string
+  maxMemorySize?: number  // Bytes
+  defaultTtl?: number     // Seconds
+  typeRegistry?: TypeRegistry
+}): CacheManager
 
+class CacheManager {
   setStorageManager(storage: StorageManager): void
   async get(reference: ResolvedReference | string): Promise<FetchResult>
   async set(reference: ResolvedReference, result: FetchResult, ttl?: number): Promise<void>
@@ -495,12 +496,12 @@ interface CacheStats {
 **Examples:**
 
 ```typescript
-import { CacheManager, StorageManager, TypeRegistry } from '@fractary/codex'
+import { createCacheManager, createStorageManager, TypeRegistry } from '@fractary/codex'
 
 const types = new TypeRegistry()
-const storage = StorageManager.create()
+const storage = createStorageManager()
 
-const cache = CacheManager.create({
+const cache = createCacheManager({
   cacheDir: '.fractary/codex/cache',
   maxMemorySize: 50 * 1024 * 1024, // 50 MB
   defaultTtl: 3600, // 1 hour
@@ -594,10 +595,13 @@ Configuration loading and management.
 
 #### loadConfig
 
-Load configuration from `.fractary/config.yaml`.
+Build a `CodexConfig` from environment variables and defaults. This is a lower-level function used internally by the sync engine.
 
 ```typescript
-function loadConfig(path?: string): CodexConfig
+function loadConfig(options?: {
+  organizationSlug?: string
+  cacheDir?: string
+}): CodexConfig
 
 interface CodexConfig {
   organization?: string
@@ -608,6 +612,8 @@ interface CodexConfig {
   sync?: SyncConfig
 }
 ```
+
+> **Note:** `loadConfig` reads from environment variables (e.g. `ORGANIZATION_SLUG`, `CODEX_CACHE_DIR`), not from a YAML file. To read the unified `.fractary/config.yaml` file, use `readUnifiedConfig(path?)` instead, or use the high-level `CodexClient.create()` which handles config loading automatically.
 
 See [Configuration Guide](../../configuration.md) for complete configuration reference.
 
@@ -630,11 +636,21 @@ File synchronization engine.
 Orchestrates bidirectional file synchronization.
 
 ```typescript
+// Factory function (exported from @fractary/codex)
+function createSyncManager(options: {
+  config: CodexConfig
+  dryRun?: boolean
+}): SyncManager
+
 class SyncManager {
-  static create(options: {
-    config: CodexConfig
-    dryRun?: boolean
-  }): SyncManager
+  // Create a sync plan from a source directory and list of target files
+  async createPlan(
+    org: string,
+    project: string,
+    sourceDir: string,
+    targetFiles: FileInfo[],
+    options?: SyncOptions
+  ): Promise<SyncPlan>
 
   async sync(directory: string, options?: {
     direction?: 'to-codex' | 'from-codex' | 'bidirectional'
@@ -650,42 +666,6 @@ interface SyncResult {
   errors: Error[]
 }
 ```
-
-### MCP Server
-
-Model Context Protocol server for AI agent integration.
-
-#### createMcpServer
-
-Create an MCP server instance.
-
-```typescript
-function createMcpServer(options: {
-  name: string
-  version?: string
-  cache?: CacheManager
-  storage?: StorageManager
-  cacheDir?: string
-}): McpServer
-
-interface McpServer {
-  start(options?: { host?: string; port?: number }): Promise<void>
-  stop(): Promise<void>
-  callTool(name: string, args: Record<string, unknown>): Promise<ToolResult>
-  listTools(): McpTool[]
-  listResources(): Promise<McpResource[]>
-  readResource(uri: string): Promise<ResourceContent[]>
-}
-```
-
-**Available Tools:**
-
-- `codex_document_fetch` - Fetch a document by URI
-- `codex_cache_list` - List cached documents
-- `codex_cache_clear` - Clear cache entries
-- `codex_cache_stats` - Cache statistics
-- `codex_cache_health` - Run diagnostics
-- `codex_file_sources_list` - List file plugin sources
 
 ### Permissions
 
@@ -858,20 +838,17 @@ Ensure your `tsconfig.json` includes:
 **Configuration Not Found:**
 
 ```typescript
-import { loadConfig } from '@fractary/codex'
+import { CodexClient } from '@fractary/codex'
 
-const config = loadConfig()
-if (!config) {
-  console.log('Config not found, checking paths...')
-  // Check .fractary/config.yaml exists
-}
+// CodexClient.create() reads .fractary/config.yaml automatically
+const client = await CodexClient.create()
 ```
 
 **Solutions:**
 
 1. Create config file: `mkdir -p .fractary && touch .fractary/config.yaml`
-2. Use absolute path: `const config = loadConfig('/absolute/path/to/config.yaml')`
-3. Set environment variable: `export CODEX_CONFIG_PATH=/path/to/config.yaml`
+2. Pass an explicit config path: `const client = await CodexClient.create({ configPath: '/absolute/path/to/config.yaml' })`
+3. Set organization slug via env: `export ORGANIZATION_SLUG=myorg`
 
 ### URI and Reference Errors
 
@@ -908,7 +885,7 @@ parseReference('codex://org')  // Missing project and path
 **Cache Always Misses:**
 
 ```typescript
-const cache = CacheManager.create({ cacheDir: '.fractary/codex/cache' })
+const cache = createCacheManager({ cacheDir: '.fractary/codex/cache' })
 const stats = await cache.getStats()
 console.log('Hit rate:', stats.hitRate)
 console.log('Total entries:', stats.totalEntries)

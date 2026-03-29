@@ -17,18 +17,26 @@ Complete reference for configuring the Fractary Codex SDK.
 - [Best Practices](#best-practices)
 - [Examples](#examples)
 
+## Configuration Systems
+
+Fractary Codex uses two distinct configuration systems. Understanding the difference prevents confusion:
+
+| System | What it is | How it's read |
+|--------|-----------|---------------|
+| **Unified Config** (`.fractary/config.yaml`) | The YAML file you write and manage. Contains `file:` and `codex:` sections. | Read by `readUnifiedConfig(path?)` and `CodexClient.create()` |
+| **Legacy CodexConfig** | Internal TypeScript schema used by the sync engine. Has `storage[]`, `types`, `permissions`, `sync` fields. | Built from environment variables by `loadConfig()` |
+
+**As a user, you only need to know about the Unified Config.** The `codex:` and `file:` YAML sections are what you write. The legacy `CodexConfig` is an internal implementation detail.
+
+---
+
 ## Configuration File
 
 The Codex SDK uses a unified YAML configuration file located at `.fractary/config.yaml` in your project root. This unified configuration includes both Codex plugin settings and File plugin integration.
 
 ### File Location
 
-The SDK searches for configuration in the following order:
-
-1. `.fractary/config.yaml` (unified configuration)
-2. `~/.fractary/config.yaml` (user-wide defaults)
-3. Environment variables
-4. Default values
+The SDK reads configuration from `.fractary/config.yaml` in your project root (or a path you specify explicitly via `CodexClient.create({ configPath: '...' })`). There is no automatic fallback chain — provide an explicit path if your config is not in the default location.
 
 ### Creating Configuration
 
@@ -238,41 +246,13 @@ Use the `codex_file_sources_list` MCP tool to discover available sources.
 
 ## Configuration Schema
 
-### Root Configuration
+### Unified Config (`.fractary/config.yaml`)
 
-```yaml
-# Organization name (auto-detected from git if not specified)
-organization: string
+This is the file you write. It has two top-level sections: `file:` (file plugin) and `codex:` (knowledge management). See the [Unified Configuration Structure](#unified-configuration-structure) section above for the full YAML schema.
 
-# Cache directory path (default: .fractary/codex/cache)
-cacheDir: string
+### Legacy CodexConfig (Internal)
 
-# Storage provider configurations
-storage:
-  - type: string
-    # ... provider-specific options
-
-# Custom artifact types
-types:
-  [typeName]:
-    # ... type configuration
-
-# Permission rules
-permissions:
-  default: string
-  rules:
-    - pattern: string
-      permission: string
-
-# Sync configuration
-sync:
-  bidirectional: boolean
-  conflictResolution: string
-  exclude:
-    - string
-```
-
-### TypeScript Interface
+> **For reference only.** This schema is used internally by the sync engine and built from environment variables via `loadConfig()`. You do not write this format — you write the Unified YAML config above.
 
 ```typescript
 interface CodexConfig {
@@ -757,7 +737,7 @@ sync:
 
 Environment variables can be used in configuration with `${VAR_NAME}` syntax.
 
-### Common Variables
+### Using Variables in Config
 
 ```yaml
 storage:
@@ -773,11 +753,14 @@ storage:
 cacheDir: ${CODEX_CACHE_DIR:-.fractary/codex/cache}
 ```
 
-### Common Variables
+### Variable Reference
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `GITHUB_TOKEN` | GitHub access token for private repos | - |
+| `ORGANIZATION_SLUG` / `CODEX_ORG_SLUG` | Override the organization slug | Auto-detected from git |
+| `CODEX_SOURCE_DIR` | Override the source directory for sync | - |
+| `CODEX_TARGET_DIR` | Override the target directory for sync | - |
 
 ## Best Practices
 
@@ -801,39 +784,36 @@ storage:
 
 ### 2. Organize by Environment
 
-```yaml
-# .fractary/config.yaml (base config)
-organization: fractary
-cacheDir: .fractary/codex/cache
-
-# .fractary/codex.dev.yaml (development)
-storage:
-  - type: local
-    basePath: ./knowledge
-
-# .fractary/codex.prod.yaml (production)
-storage:
-  - type: github
-    token: ${GITHUB_TOKEN}
-  - type: http
-    baseUrl: https://codex.example.com
-```
-
-Load with:
+Use an explicit config path per environment:
 
 ```typescript
+import { CodexClient, readUnifiedConfig } from '@fractary/codex'
+
 const env = process.env.NODE_ENV || 'dev'
-const config = loadConfig(`.fractary/codex.${env}.yaml`)
+const configPath = `.fractary/codex.${env}.yaml`
+const client = await CodexClient.create({ configPath })
+```
+
+Or use environment variables to vary behavior without multiple config files:
+
+```yaml
+# .fractary/config.yaml (single file, all environments)
+codex:
+  remotes:
+    myorg/codex.myorg.com:
+      token: ${GITHUB_TOKEN}  # Set per-environment in CI/CD secrets
 ```
 
 ### 3. Layer Configurations
 
-Use multiple configs for different scopes:
+Use an explicit config path for local overrides:
 
-```
-~/.fractary/config.yaml     # User-wide defaults
-.fractary/config.yaml       # Project-specific
-.fractary/codex.local.yaml # Local overrides (gitignored)
+```bash
+# .gitignore
+.fractary/config.local.yaml
+
+# Usage
+fractary-codex config-init --config .fractary/config.local.yaml
 ```
 
 ### 4. Document Custom Types
