@@ -49,7 +49,7 @@ Create a new specification.
 /spec-create --title "User Authentication API" --type api --template api --work-id 123
 ```
 
-This command can also be used interactively, where it delegates to the `fractary-spec:spec-create` agent.
+This command can also be used interactively, where it delegates to the `fractary-spec-spec-create` agent.
 
 ### /spec-refine
 
@@ -65,7 +65,7 @@ Refine a specification through critical review.
 /spec-refine SPEC-20240115
 ```
 
-This command delegates to the `fractary-spec:spec-refine` agent.
+This command delegates to the `fractary-spec-spec-refine` agent.
 
 ### /spec-validate
 
@@ -81,7 +81,7 @@ Validate implementation against a specification.
 /spec-validate SPEC-20240115
 ```
 
-This command delegates to the `fractary-spec:spec-validate` agent.
+This command delegates to the `fractary-spec-spec-validate` agent.
 
 ### /spec-archive
 
@@ -102,7 +102,7 @@ Archive a completed specification.
 
 ## Agents
 
-### fractary-spec:spec-create
+### fractary-spec-spec-create
 
 Creates specifications from conversation context. Analyzes requirements and generates structured specification documents.
 
@@ -116,7 +116,7 @@ Creates specifications from conversation context. Analyzes requirements and gene
 - Generates structured specification
 - Links to work items
 
-### fractary-spec:spec-refine
+### fractary-spec-spec-refine
 
 Critically reviews and improves specifications. Identifies gaps, ambiguities, and areas for improvement.
 
@@ -130,7 +130,7 @@ Critically reviews and improves specifications. Identifies gaps, ambiguities, an
 - Identifies missing sections
 - Suggests improvements
 
-### fractary-spec:spec-validate
+### fractary-spec-spec-validate
 
 Validates implementation against specification requirements. Checks that acceptance criteria are met.
 
@@ -144,7 +144,7 @@ Validates implementation against specification requirements. Checks that accepta
 - Reports coverage gaps
 - Suggests corrections
 
-### fractary-spec:spec-archive
+### fractary-spec-spec-archive
 
 Archives specifications for completed work. Stores specs with metadata for future reference.
 
@@ -159,7 +159,7 @@ Archives specifications for completed work. Stores specs with metadata for futur
 ```
 User: I need to create a spec for the authentication feature
 
-Claude: [Uses fractary-spec:spec-create agent]
+Claude: [Uses fractary-spec-spec-create agent]
 
 I'll create a specification for the authentication feature. Let me gather some details:
 
@@ -194,7 +194,7 @@ Path: specs/SPEC-20240115-user-authentication-api.md
 ```
 User: The spec needs more detail, can you refine it?
 
-Claude: [Uses fractary-spec:spec-refine agent]
+Claude: [Uses fractary-spec-spec-refine agent]
 
 I've reviewed SPEC-20240115 and identified these areas for refinement:
 
@@ -217,7 +217,7 @@ Would you like me to update the spec with these improvements?
 ```
 User: I think I'm done implementing the auth feature, validate against the spec
 
-Claude: [Uses fractary-spec:spec-validate agent]
+Claude: [Uses fractary-spec-spec-validate agent]
 
 ## Validation Results: SPEC-20240115
 

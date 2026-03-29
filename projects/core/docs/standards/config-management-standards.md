@@ -13,10 +13,10 @@ All plugins share a common configuration approach to ensure:
 ## Agent Naming Convention
 
 Configuration agents use noun forms of their corresponding command verbs:
-- `fractary-core:config-initializer` - Core plugin configuration (fresh setup)
-- `fractary-core:config-updater` - Core plugin incremental updates
-- `fractary-core:env-switcher` - Environment switching
-- `fractary-faber:configurator` - FABER workflow configuration
+- `fractary-core-config-initializer` - Core plugin configuration (fresh setup)
+- `fractary-core-config-updater` - Core plugin incremental updates
+- `fractary-core-env-switcher` - Environment switching
+- `fractary-faber-configurator` - FABER workflow configuration
 - `fractary-codex-configurator` - Codex plugin configuration
 
 ### Migration History
@@ -25,18 +25,18 @@ The core agents were renamed from `configurator` to operation-specific noun-form
 
 | Old Name | New Name |
 |----------|----------|
-| `fractary-core:configurator` | `fractary-core:config-initializer` (fresh setup) |
-| `fractary-core:configurator` | `fractary-core:config-updater` (incremental) |
-| `fractary-core:switch-env` | `fractary-core:env-switcher` |
+| `fractary-core-configurator` | `fractary-core-config-initializer` (fresh setup) |
+| `fractary-core-configurator` | `fractary-core-config-updater` (incremental) |
+| `fractary-core-switch-env` | `fractary-core-env-switcher` |
 
 Core plugin commands:
-- `/fractary-core:config-init` - Initialize configuration
-- `/fractary-core:config-update` - Incremental updates
-- `/fractary-core:config-validate` - Validate configuration
-- `/fractary-core:config-show` - Show configuration
-- `/fractary-core:env-switch` - Switch environment
-- `/fractary-core:env-list` - List environments
-- `/fractary-core:env-show` - Show environment status
+- `/fractary-core-config-init` - Initialize configuration
+- `/fractary-core-config-update` - Incremental updates
+- `/fractary-core-config-validate` - Validate configuration
+- `/fractary-core-config-show` - Show configuration
+- `/fractary-core-env-switch` - Switch environment
+- `/fractary-core-env-list` - List environments
+- `/fractary-core-env-show` - Show environment status
 
 ## Gitignore Section Markers
 
@@ -182,10 +182,10 @@ When updating configuration:
 
 | Plugin | Command |
 |--------|---------|
-| Core (init) | `/fractary-core:config-init` |
-| Core (update) | `/fractary-core:config-update` |
-| Core (validate) | `/fractary-core:config-validate` |
-| Faber | `/fractary-faber:configure` |
+| Core (init) | `/fractary-core-config-init` |
+| Core (update) | `/fractary-core-config-update` |
+| Core (validate) | `/fractary-core-config-validate` |
+| Faber | `/fractary-faber-configure` |
 | Codex | `/fractary-codex-configure` |
 
 All commands support:

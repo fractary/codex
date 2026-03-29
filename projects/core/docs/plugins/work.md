@@ -33,7 +33,7 @@ work:
 Initialize with:
 
 ```bash
-fractary-core:config-init --plugins work
+fractary-core-config-init --plugins work
 ```
 
 ## Slash Commands
@@ -148,7 +148,7 @@ Refine issue requirements through clarifying questions.
 /issue-refine <issue-number>
 ```
 
-This command delegates to the `fractary-work:issue-refine-agent` for interactive refinement.
+This command delegates to the `fractary-work-issue-refine-agent` for interactive refinement.
 
 ### /issue-create-bulk
 
@@ -159,11 +159,11 @@ Create multiple related issues.
 /issue-create-bulk [context]
 ```
 
-This command delegates to the `fractary-work:issue-bulk-creator` agent to analyze context and create multiple issues.
+This command delegates to the `fractary-work-issue-bulk-creator` agent to analyze context and create multiple issues.
 
 ## Agents
 
-### fractary-work:issue-refine-agent
+### fractary-work-issue-refine-agent
 
 Reviews GitHub issues and asks clarifying questions to ensure requirement clarity. Focuses on WHAT (requirements, goals, scope, acceptance criteria), not HOW (implementation).
 
@@ -177,7 +177,7 @@ Reviews GitHub issues and asks clarifying questions to ensure requirement clarit
 - Asks targeted clarifying questions
 - Updates issue with refined requirements
 
-### fractary-work:issue-bulk-creator
+### fractary-work-issue-bulk-creator
 
 Autonomous agent for creating multiple related issues at once. Analyzes project structure and conversation context to intelligently determine what issues to create.
 
@@ -210,7 +210,7 @@ Issue #45 created: https://github.com/myorg/myrepo/issues/45
 ```
 User: Can you refine issue #45 to make the requirements clearer?
 
-Claude: [Uses fractary-work:issue-refine-agent]
+Claude: [Uses fractary-work-issue-refine-agent]
 
 I've analyzed issue #45 and have some clarifying questions:
 
@@ -227,7 +227,7 @@ Please provide answers so I can update the issue with clearer requirements.
 ```
 User: I need to break down the auth feature into smaller issues
 
-Claude: [Uses fractary-work:issue-bulk-creator]
+Claude: [Uses fractary-work-issue-bulk-creator]
 
 Based on the auth feature, here's my plan for creating issues:
 

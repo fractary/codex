@@ -48,13 +48,13 @@ Add plugins to your settings:
 Plugins read configuration from `.fractary/config.yaml`. Initialize with:
 
 ```bash
-fractary-core:config-init
+fractary-core-config-init
 ```
 
 Or configure specific plugins:
 
 ```bash
-fractary-core:config-init --plugins work,repo
+fractary-core-config-init --plugins work,repo
 ```
 
 See the [Configuration Guide](/docs/guides/configuration.md) for complete options.
@@ -77,14 +77,14 @@ Agents handle complex, multi-step tasks autonomously:
 
 | Agent | Plugin | Description |
 |-------|--------|-------------|
-| `fractary-work:issue-refine-agent` | Work | Reviews issues and asks clarifying questions |
-| `fractary-work:issue-bulk-creator` | Work | Creates multiple related issues at once |
-| `fractary-repo:pr-review-agent` | Repo | Analyzes PRs with comments, reviews, CI status |
-| `fractary-spec:spec-create` | Spec | Creates specifications from context |
-| `fractary-spec:spec-refine` | Spec | Improves specifications through review |
-| `fractary-logs:logs-analyze` | Logs | Analyzes logs for patterns and errors |
-| `fractary-docs:docs-write` | Docs | Creates documentation |
-| `fractary-docs:docs-audit` | Docs | Audits documentation quality |
+| `fractary-work-issue-refine-agent` | Work | Reviews issues and asks clarifying questions |
+| `fractary-work-issue-bulk-creator` | Work | Creates multiple related issues at once |
+| `fractary-repo-pr-review-agent` | Repo | Analyzes PRs with comments, reviews, CI status |
+| `fractary-spec-spec-create` | Spec | Creates specifications from context |
+| `fractary-spec-spec-refine` | Spec | Improves specifications through review |
+| `fractary-logs-logs-analyze` | Logs | Analyzes logs for patterns and errors |
+| `fractary-docs-docs-write` | Docs | Creates documentation |
+| `fractary-docs-docs-audit` | Docs | Audits documentation quality |
 
 ## Quick Reference
 
@@ -172,7 +172,7 @@ Claude: /issue-create "Implement user authentication" --type feature --labels "e
 
 User: The requirements are unclear, can you refine them?
 
-Claude: [Uses fractary-work:issue-refine-agent to ask clarifying questions]
+Claude: [Uses fractary-work-issue-refine-agent to ask clarifying questions]
 ```
 
 ### Repository Workflow
@@ -188,7 +188,7 @@ Claude: /commit-push-pr --message "Add authentication system" --type feat --titl
 ```
 User: Create a spec for the API design
 
-Claude: [Uses fractary-spec:spec-create agent to create specification from conversation context]
+Claude: [Uses fractary-spec-spec-create agent to create specification from conversation context]
 
 User: Can you validate this against the implementation?
 
