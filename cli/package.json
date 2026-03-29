@@ -17,7 +17,7 @@
     "url": "git+https://github.com/fractary/codex.git",
     "directory": "cli"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Fractary Engineering",
   "type": "module",
   "bin": {
