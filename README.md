@@ -19,29 +19,41 @@ Fractary Codex provides infrastructure for managing organizational knowledge acr
 
 ## Quick Start
 
-### 1. Install and initialize
+> **New here?** See the [Getting Started Guide](./docs/getting-started.md) for a full walkthrough: creating a codex repository, setting up a GitHub token, and running your first sync.
+
+### 1. Install
 
 ```bash
-npm install -g @fractary/codex-cli
+npm install @fractary/codex          # SDK (required by CLI and MCP server)
+npm install -g @fractary/codex-cli   # CLI
+```
 
-# Initialize codex config (requires .fractary/config.yaml from @fractary/core)
+### 2. Initialize configuration
+
+Codex configuration lives in the `codex:` section of `.fractary/config.yaml`, alongside other Fractary plugin settings. This file is created by `@fractary/core` — initialize that first.
+
+**Recommended:** Use the Claude Code plugin. The `/fractary-codex-config-init` agent auto-detects your organization, project, and codex repository before writing anything.
+
+**Alternative:** Use the CLI directly:
+
+```bash
 fractary-codex config-init --org myorg --codex-repo codex.myorg.com
 ```
 
-### 2. Fetch documents
+### 3. Fetch documents
 
 ```bash
 fractary-codex document-fetch codex://myorg/project/docs/api.md
 ```
 
-### 3. Sync with codex repository
+### 4. Sync with codex repository
 
 ```bash
 fractary-codex sync --dry-run
 fractary-codex sync
 ```
 
-### 4. Manage cache
+### 5. Manage cache
 
 ```bash
 fractary-codex cache-list --verbose
@@ -50,7 +62,7 @@ fractary-codex cache-clear --all
 fractary-codex cache-health
 ```
 
-### 5. Use programmatically
+### 6. Use programmatically
 
 ```typescript
 import { CodexClient } from '@fractary/codex'
@@ -114,12 +126,14 @@ codex/
 
 ## Documentation
 
+- [Getting Started Guide](./docs/getting-started.md) - First-time setup walkthrough
+- [Full Documentation Index](./docs/README.md) - All documentation
+- [Feature Guides](./docs/features/) - Organized by function, all interfaces side-by-side
+- [Configuration Guide](./docs/configuration.md) - Complete configuration reference
 - [CLI Command Reference](./cli/README.md) - All commands with options and flags
 - [SDK API Reference](./sdk/js/README.md) - TypeScript/JavaScript SDK
 - [MCP Server Reference](./mcp/server/README.md) - AI agent integration
 - [Plugin Reference](./plugins/codex/README.md) - Claude Code plugin
-- [Configuration Guide](./docs/configuration.md) - Configuration reference
-- [Full Documentation Index](./docs/README.md) - All documentation
 
 ## Development
 

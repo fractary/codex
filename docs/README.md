@@ -1,15 +1,44 @@
 # Fractary Codex Documentation
 
-Knowledge infrastructure for AI agents - universal document references, intelligent caching, and cross-project knowledge sharing.
+Knowledge infrastructure for AI agents — universal document references, intelligent caching, and cross-project knowledge sharing.
 
-## Components
+## Getting Started
 
-| Component | Description | Documentation |
-|-----------|-------------|---------------|
-| **JavaScript/TypeScript SDK** | Core SDK for Node.js | [SDK Reference](./sdk/js/) |
-| **CLI** | Command-line interface | [CLI Reference](./cli/) |
-| **MCP Server** | Model Context Protocol server for AI agents | [MCP Server Reference](./mcp-server/) |
-| **Claude Code Plugin** | Plugin for Claude Code integration | [Plugin Reference](./plugins/) |
+New to Fractary Codex? Start here:
+
+- [Getting Started Guide](./getting-started.md) — Codex repo setup, GitHub token, installation, first sync
+
+---
+
+## Feature Guides
+
+Organized by what you want to do. Each guide shows all available interfaces (SDK / CLI / MCP / Plugin) side-by-side.
+
+| Feature | Description | Guide |
+|---------|-------------|-------|
+| **Configuration** | Initialize, update, and validate your codex config | [features/config.md](./features/config.md) |
+| **Fetch Documents** | Retrieve docs via `codex://` URIs | [features/fetch-documents.md](./features/fetch-documents.md) |
+| **Sync** | Push/pull files with a central codex repository | [features/sync.md](./features/sync.md) |
+| **Cache Management** | List, clear, and diagnose the document cache | [features/cache.md](./features/cache.md) |
+
+---
+
+## Cross-Interface Quick Reference
+
+| Operation | SDK | CLI | MCP | Plugin |
+|-----------|-----|-----|-----|--------|
+| Fetch document | `client.fetch(uri)` | `document-fetch` | `codex_document_fetch` | *(auto via MCP)* |
+| List cache | `client.listCacheEntries()` | `cache-list` | `codex_cache_list` | — |
+| Clear cache | — | `cache-clear` | `codex_cache_clear` | — |
+| Cache stats | — | `cache-stats` | `codex_cache_stats` | — |
+| Cache health | `client.getHealthChecks()` | `cache-health` | `codex_cache_health` | — |
+| List file sources | — | — | `codex_file_sources_list` | — |
+| Sync | — | `sync` | — | `/fractary-codex-sync` |
+| Initialize config | — | `config-init` | — | `/fractary-codex-config-init` |
+| Update config | — | `config-update` | — | `/fractary-codex-config-update` |
+| Validate config | — | `config-validate` | — | `/fractary-codex-config-validate` |
+
+---
 
 ## Architecture
 
@@ -35,78 +64,26 @@ Knowledge infrastructure for AI agents - universal document references, intellig
 └──────────────────────────────────────────────────────────┘
 ```
 
-## Getting Started
+---
 
-### For CLI Users
+## Reference Documentation
 
-```bash
-npm install -g @fractary/codex-cli
+Detailed reference for each interface and configuration:
 
-# Initialize (requires .fractary/config.yaml from @fractary/core)
-fractary-codex config-init
+| Reference | Description |
+|-----------|-------------|
+| [Configuration Guide](./configuration.md) | Complete config schema reference |
+| [CLI Reference](./cli/) | All CLI commands, options, and examples |
+| [SDK Reference](./sdk/js/) | JavaScript/TypeScript SDK API |
+| [MCP Server Reference](./mcp-server/) | MCP tools for AI agent integration |
+| [Plugin Reference](./plugins/) | Claude Code plugin commands |
 
-# Fetch a document
-fractary-codex document-fetch codex://myorg/project/docs/api.md
-
-# Sync with codex repository
-fractary-codex sync --dry-run
-```
-
-### For SDK Users
-
-```bash
-npm install @fractary/codex
-```
-
-```typescript
-import { CodexClient } from '@fractary/codex'
-
-const client = await CodexClient.create()
-const result = await client.fetch('codex://myorg/project/docs/api.md')
-console.log(result.content.toString())
-```
-
-### For AI Agent Integration
-
-Add to `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "fractary-codex": {
-      "command": "npx",
-      "args": ["-y", "@fractary/codex-mcp", "--config", ".fractary/config.yaml"]
-    }
-  }
-}
-```
-
-### For Claude Code Plugin Users
-
-```
-/fractary-codex-config-init
-```
-
-Then use `codex://` URIs in conversations - the MCP server handles fetching automatically.
-
-## URI Format
-
-```
-codex://org/project/path/to/file.md
-       └─┬─┘└──┬──┘└──────┬───────┘
-         │     │          └─ File path within project
-         │     └─ Project/repository name
-         └─ Organization name
-```
-
-## Cross-Cutting Guides
-
-- [Configuration Guide](./configuration.md) - Configuration reference for all components
+---
 
 ## Additional Resources
 
-- [Technical Specifications](./specs/) - Architecture and design specifications
+- [Technical Specifications](./specs/) — Architecture and design specifications
 
 ## License
 
-MIT - see [LICENSE](../LICENSE)
+MIT — see [LICENSE](../LICENSE)
