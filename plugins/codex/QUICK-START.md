@@ -11,10 +11,10 @@
 ### 1. Initialize codex configuration
 
 ```
-/fractary-codex-config-init
+/fractary-codex-config init
 ```
 
-The agent will:
+The skill will:
 1. Auto-detect your organization from the git remote
 2. Discover the codex repository
 3. Ask you to confirm the detected settings
@@ -30,13 +30,13 @@ The agent will:
 
 To specify values explicitly:
 ```
-/fractary-codex-config-init --org myorg --codex-repo codex.myorg.com
+/fractary-codex-config init --org myorg --codex-repo codex.myorg.com
 ```
 
 ### 2. Validate the configuration
 
 ```
-/fractary-codex-config-validate
+/fractary-codex-config validate
 ```
 
 ### 3. Preview sync changes
@@ -65,8 +65,8 @@ The MCP server fetches and caches documents automatically.
 ### Update configuration
 
 ```
-/fractary-codex-config-update --org neworg
-/fractary-codex-config-update --sync-preset minimal
+/fractary-codex-config update --org neworg
+/fractary-codex-config update --sync-preset minimal
 ```
 
 ### Sync in one direction
@@ -92,14 +92,14 @@ The MCP server fetches and caches documents automatically.
 
 | Command | Description |
 |---------|-------------|
-| `/fractary-codex-config-init` | Initialize codex configuration |
-| `/fractary-codex-config-update` | Update configuration fields |
-| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+| `/fractary-codex-config init` | Initialize codex configuration |
+| `/fractary-codex-config update` | Update configuration fields |
+| `/fractary-codex-config validate` | Validate configuration (read-only) |
 | `/fractary-codex-sync` | Sync project with codex repository |
 
 ## Troubleshooting
 
-**Configuration not found:** Run `/fractary-codex-config-init` first. Requires base `.fractary/config.yaml` from `@fractary/core`.
+**Configuration not found:** Run `/fractary-codex-config init` first. Requires base `.fractary/config.yaml` from `@fractary/core`.
 
 **Authentication failed:** Verify `GITHUB_TOKEN` is set and has access to the codex repository.
 

@@ -30,12 +30,6 @@
   "pi": {
     "skills": [
       "plugins/codex/skills"
-    ],
-    "prompts": [
-      "plugins/codex/commands"
-    ],
-    "agents": [
-      "plugins/codex/agents"
     ]
   }
 }

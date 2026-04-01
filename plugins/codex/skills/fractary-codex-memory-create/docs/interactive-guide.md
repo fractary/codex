@@ -1,6 +1,6 @@
 # Interactive Guide
 
-Rich interactive guidance for memory creation when context is limited or absent. This merges the best of both the original skill workflow and the memory-creator agent's interactive flows.
+Rich interactive guidance for memory creation when context is limited or absent.
 
 ## Type Selection (when no --template or --memory-type)
 

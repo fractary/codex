@@ -32,7 +32,7 @@ npm install -g @fractary/codex-cli   # CLI
 
 Codex configuration lives in the `codex:` section of `.fractary/config.yaml`, alongside other Fractary plugin settings. This file is created by `@fractary/core` — initialize that first.
 
-**Recommended:** Use the Claude Code plugin. The `/fractary-codex-config-init` agent auto-detects your organization, project, and codex repository before writing anything.
+**Recommended:** Use the Claude Code plugin. The `/fractary-codex-config init` skill auto-detects your organization, project, and codex repository before writing anything.
 
 **Alternative:** Use the CLI directly:
 
@@ -90,13 +90,13 @@ Add to `.mcp.json` for AI agent integration:
 
 ## Claude Code Plugin
 
-The plugin provides slash commands for Claude Code:
+The plugin provides skills for Claude Code, invocable as slash commands:
 
-| Command | Description |
-|---------|-------------|
-| `/fractary-codex-config-init` | Initialize codex configuration |
-| `/fractary-codex-config-update` | Update configuration fields |
-| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+| Skill | Description |
+|-------|-------------|
+| `/fractary-codex-config init` | Initialize codex configuration |
+| `/fractary-codex-config update` | Update configuration fields |
+| `/fractary-codex-config validate` | Validate configuration (read-only) |
 | `/fractary-codex-sync` | Sync project with codex repository |
 
 ## URI Format
@@ -117,9 +117,7 @@ codex/
 ├── cli/                # @fractary/codex-cli - CLI tool
 ├── mcp/server/         # @fractary/codex-mcp - MCP server
 ├── plugins/codex/      # Claude Code plugin
-│   ├── agents/         # Plugin agents
-│   ├── commands/       # Plugin commands
-│   └── skills/         # Plugin skills
+│   └── skills/         # Plugin skills (config, sync, memory, etc.)
 ├── docs/               # Documentation
 └── specs/              # Technical specifications
 ```

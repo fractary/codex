@@ -11,7 +11,7 @@ The codex plugin provides document fetching via `codex://` URIs (auto-fetched by
 ### 1. Initialize configuration
 
 ```
-/fractary-codex-config-init
+/fractary-codex-config init
 ```
 
 Sets up the codex section in `.fractary/config.yaml`, cache directory, and MCP server.
@@ -32,39 +32,35 @@ Use `codex://` URIs in conversations - the MCP server handles fetching and cachi
 codex://myorg/project/docs/api.md
 ```
 
-## Commands
+## Skills
 
-| Command | Description |
-|---------|-------------|
-| `/fractary-codex-config-init` | Initialize codex configuration |
-| `/fractary-codex-config-update` | Update configuration fields |
-| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+| Skill | Description |
+|-------|-------------|
+| `/fractary-codex-config init` | Initialize codex configuration |
+| `/fractary-codex-config update` | Update configuration fields |
+| `/fractary-codex-config validate` | Validate configuration (read-only) |
 | `/fractary-codex-sync` | Sync project with codex repository |
+| `/fractary-codex-memory-create` | Create structured memory entries |
+| `/fractary-codex-memory-audit` | Audit memory entries for validity |
 
-### /fractary-codex-config-init
+### /fractary-codex-config
 
-Initialize the codex section in `.fractary/config.yaml`.
+Consolidated configuration skill with three operations: `init`, `update`, `validate`. All delegate to the `fractary-codex` CLI.
 
-**Options** (passed as arguments):
+**Init options:**
 - `--org <slug>` - Organization slug
 - `--codex-repo <name>` - Codex repository name
 - `--sync-preset <name>` - Sync preset (`standard` or `minimal`)
 - `--force` - Overwrite existing configuration
 
-The agent auto-detects organization, project, and codex repo, then confirms with you before proceeding.
+The skill auto-detects organization, project, and codex repo, then confirms with you before proceeding.
 
-### /fractary-codex-config-update
-
-Update specific fields in the codex configuration.
-
-**Options:**
+**Update options:**
 - `--org <slug>` - Update organization
 - `--codex-repo <name>` - Update codex repository
 - `--sync-preset <name>` - Update sync preset
 
-### /fractary-codex-config-validate
-
-Read-only validation of the codex configuration. Checks structure, formats, directories, MCP server config, and gitignore.
+**Validate:** Read-only check of structure, formats, directories, MCP server config, and gitignore.
 
 ### /fractary-codex-sync
 
@@ -76,25 +72,12 @@ Sync project files with the codex repository.
 - `--dry-run` - Preview changes without syncing
 - `--env <env>` - Target environment (`dev`, `test`, `staging`, `prod`)
 
-When `--work-id` is provided, the agent analyzes the GitHub issue to infer relevant file patterns and narrows the sync scope.
-
-## Agents
-
-The plugin delegates to four specialized agents:
-
-| Agent | Purpose |
-|-------|---------|
-| `config-initializer` | Runs `fractary-codex config-init` CLI with user confirmation |
-| `config-updater` | Runs `fractary-codex config-update` CLI |
-| `config-validator` | Runs `fractary-codex config-validate` CLI (read-only) |
-| `sync-manager` | Runs `fractary-codex sync` CLI with optional GitHub issue integration |
-
-All agents are thin wrappers around the CLI - they do not implement business logic directly.
+When `--work-id` is provided, the skill analyzes the GitHub issue to infer relevant file patterns and narrows the sync scope.
 
 ## Architecture
 
 ```
-Plugin Command → Agent → CLI → SDK → Storage/Cache
+Plugin Skill → CLI → SDK → Storage/Cache
 ```
 
 The MCP server provides direct tool access for AI agents:

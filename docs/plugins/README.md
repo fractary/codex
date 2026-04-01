@@ -11,7 +11,7 @@ The codex plugin provides document fetching via `codex://` URIs (auto-fetched by
 ### 1. Initialize (one-time setup)
 
 ```
-/fractary-codex-config-init
+/fractary-codex-config init
 ```
 
 This creates the codex configuration, cache directory, and MCP server entry. **Restart Claude Code after initialization.**
@@ -33,39 +33,37 @@ codex://myorg/project/docs/api.md
 
 The MCP server handles fetching and caching automatically.
 
-## Commands
+## Skills
 
-| Command | Description |
-|---------|-------------|
-| `/fractary-codex-config-init` | Initialize codex configuration |
-| `/fractary-codex-config-update` | Update configuration fields |
-| `/fractary-codex-config-validate` | Validate configuration (read-only) |
+The plugin provides skills invocable as slash commands:
+
+| Skill | Description |
+|-------|-------------|
+| `/fractary-codex-config init` | Initialize codex configuration |
+| `/fractary-codex-config update` | Update configuration fields |
+| `/fractary-codex-config validate` | Validate configuration (read-only) |
 | `/fractary-codex-sync` | Sync project with codex repository |
+| `/fractary-codex-memory-create` | Create structured memory entries |
+| `/fractary-codex-memory-audit` | Audit memory entries for validity |
 
-### /fractary-codex-config-init
+### /fractary-codex-config
 
-Initialize the codex section in `.fractary/config.yaml`.
+Consolidated configuration skill with three operations: `init`, `update`, `validate`. All delegate to the `fractary-codex` CLI.
 
-**Options:**
+**Init options:**
 - `--org <slug>` - Organization slug
 - `--codex-repo <name>` - Codex repository name
 - `--sync-preset <name>` - Sync preset (`standard` or `minimal`)
 - `--force` - Overwrite existing configuration
 
-The agent auto-detects your organization, project, and codex repo, then asks for confirmation before proceeding.
+The skill auto-detects your organization, project, and codex repo, then asks for confirmation before proceeding.
 
-### /fractary-codex-config-update
-
-Update specific fields in the codex configuration.
-
-**Options:**
+**Update options:**
 - `--org <slug>` - Update organization
 - `--codex-repo <name>` - Update codex repository
 - `--sync-preset <name>` - Update sync preset
 
-### /fractary-codex-config-validate
-
-Read-only validation of the codex configuration. Checks structure, formats, directories, MCP server config, and gitignore.
+**Validate:** Read-only check of configuration structure, formats, directories, MCP server config, and gitignore.
 
 ### /fractary-codex-sync
 
@@ -77,20 +75,7 @@ Sync project files with the codex repository.
 - `--dry-run` - Preview changes without syncing
 - `--env <env>` - Target environment (`dev`, `test`, `staging`, `prod`)
 
-When `--work-id` is provided, the agent analyzes the GitHub issue to infer relevant file patterns and narrows the sync scope.
-
-## Agents
-
-The plugin delegates to four specialized agents:
-
-| Agent | Purpose |
-|-------|---------|
-| `config-initializer` | Runs `fractary-codex config-init` CLI with user confirmation |
-| `config-updater` | Runs `fractary-codex config-update` CLI |
-| `config-validator` | Runs `fractary-codex config-validate` CLI (read-only) |
-| `sync-manager` | Runs `fractary-codex sync` CLI with optional GitHub issue integration |
-
-All agents are thin wrappers around the CLI. They do not implement business logic directly.
+When `--work-id` is provided, the skill analyzes the GitHub issue to infer relevant file patterns and narrows the sync scope.
 
 ## Sync Configuration
 
@@ -136,7 +121,7 @@ sync:
 ## Architecture
 
 ```
-Plugin Command → Agent → CLI → SDK → Storage/Cache
+Plugin Skill → CLI → SDK → Storage/Cache
 ```
 
 The MCP server provides direct tool access for AI agents:
@@ -147,7 +132,7 @@ Claude Code → MCP Server (stdio) → SDK → Storage/Cache
 
 ## Troubleshooting
 
-**Configuration not found:** Run `/fractary-codex-config-init`. Requires base `.fractary/config.yaml` from `@fractary/core`.
+**Configuration not found:** Run `/fractary-codex-config init`. Requires base `.fractary/config.yaml` from `@fractary/core`.
 
 **MCP tools not available:** Restart Claude Code after running `config-init`.
 
