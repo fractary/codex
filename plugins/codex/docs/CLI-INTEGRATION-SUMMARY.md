@@ -1,5 +1,7 @@
 # Codex Plugin CLI Integration - Implementation Summary
 
+> **Note (v6.0):** In v6.0.0, the plugin was further migrated from agents+commands to a skills-only architecture. All agents and commands referenced below have been replaced by skills. See the v6.0.0 commit for details.
+
 This document summarizes the migration of the codex plugin from custom bash scripts to @fractary/cli integration.
 
 ## Overview

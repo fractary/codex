@@ -37,7 +37,7 @@ Synchronizes your project with the codex repository based on the `sync:` pattern
 - `--env <env>` — Target environment (`dev`, `test`, `staging`, `prod`)
 - `--work-id <id>` — GitHub issue number to scope the sync
 
-When `--work-id` is provided, the agent analyzes the GitHub issue to infer relevant file patterns and narrows the sync scope automatically.
+When `--work-id` is provided, the skill analyzes the GitHub issue to infer relevant file patterns and narrows the sync scope automatically.
 
 ### Sync: CLI
 

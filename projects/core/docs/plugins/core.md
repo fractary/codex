@@ -44,7 +44,7 @@ Initialize Fractary Core configuration for all plugins.
 
 **Usage:**
 ```
-/fractary-core:config-init [options]
+/fractary-core-config-init [options]
 ```
 
 **Options:**
@@ -59,7 +59,7 @@ Initialize Fractary Core configuration for all plugins.
 
 **Example:**
 ```
-/fractary-core:config-init --work-platform github --file-handler local
+/fractary-core-config-init --work-platform github --file-handler local
 ```
 
 ### /config-update
@@ -68,7 +68,7 @@ Incrementally update existing Fractary Core configuration using natural language
 
 **Usage:**
 ```
-/fractary-core:config-update --context "<description>" [options]
+/fractary-core-config-update --context "<description>" [options]
 ```
 
 **Options:**
@@ -79,7 +79,7 @@ Incrementally update existing Fractary Core configuration using natural language
 
 **Example:**
 ```
-/fractary-core:config-update --context "switch to jira for work tracking"
+/fractary-core-config-update --context "switch to jira for work tracking"
 ```
 
 ### /config-validate
@@ -88,7 +88,7 @@ Validate the current Fractary Core configuration.
 
 **Usage:**
 ```
-/fractary-core:config-validate [options]
+/fractary-core-config-validate [options]
 ```
 
 **Options:**
@@ -97,7 +97,7 @@ Validate the current Fractary Core configuration.
 
 **Example:**
 ```
-/fractary-core:config-validate --verbose
+/fractary-core-config-validate --verbose
 ```
 
 ### /config-show
@@ -106,7 +106,7 @@ Display the current Fractary Core configuration with sensitive values automatica
 
 **Usage:**
 ```
-/fractary-core:config-show [options]
+/fractary-core-config-show [options]
 ```
 
 **Options:**
@@ -114,7 +114,7 @@ Display the current Fractary Core configuration with sensitive values automatica
 
 **Example:**
 ```
-/fractary-core:config-show
+/fractary-core-config-show
 ```
 
 ### /env-switch
@@ -123,7 +123,7 @@ Switch to a different environment mid-session, loading credentials from the corr
 
 **Usage:**
 ```
-/fractary-core:env-switch <environment> [options]
+/fractary-core-env-switch <environment> [options]
 ```
 
 **Options:**
@@ -132,8 +132,8 @@ Switch to a different environment mid-session, loading credentials from the corr
 
 **Example:**
 ```
-/fractary-core:env-switch test
-/fractary-core:env-switch prod --clear
+/fractary-core-env-switch test
+/fractary-core-env-switch prod --clear
 ```
 
 ### /env-list
@@ -142,7 +142,7 @@ List all available environments detected from `.env` files in the project root.
 
 **Usage:**
 ```
-/fractary-core:env-list
+/fractary-core-env-list
 ```
 
 ### /env-show
@@ -151,12 +151,12 @@ Show the current environment status and credential availability (values masked).
 
 **Usage:**
 ```
-/fractary-core:env-show
+/fractary-core-env-show
 ```
 
 ## Agents
 
-### fractary-core:config-initializer
+### fractary-core-config-initializer
 
 Handles fresh setup and force-overwrite of Fractary Core configuration. Auto-detects platforms from git remote, generates configuration via the `fractary-core` CLI, creates supporting directories, and validates the result.
 
@@ -171,7 +171,7 @@ Handles fresh setup and force-overwrite of Fractary Core configuration. Auto-det
 - Sets up `.gitignore` rules for archive directories
 - Validates configuration after creation
 
-### fractary-core:config-updater
+### fractary-core-config-updater
 
 Incrementally updates existing `.fractary/config.yaml` based on natural language instructions. Modifies only the sections relevant to the requested change and preserves all unrelated sections.
 
@@ -186,7 +186,7 @@ Incrementally updates existing `.fractary/config.yaml` based on natural language
 - Applies targeted edits to specific config sections
 - Validates configuration after updates
 
-### fractary-core:env-switcher
+### fractary-core-env-switcher
 
 Switches the active environment mid-session by loading credentials from environment-specific `.env` files. Essential for FABR workflows where different phases target different environments.
 
@@ -207,7 +207,7 @@ Switches the active environment mid-session by loading credentials from environm
 ```
 User: Set up Fractary for this project
 
-Claude: /fractary-core:config-init
+Claude: /fractary-core-config-init
 
 Detecting platforms from git remote...
 Platform detected: GitHub (owner/repo)
@@ -219,9 +219,9 @@ Plugins configured: work (github), repo (github), logs, file (local), spec, docs
 Project: owner/repo
 
 Next steps:
-1. Review config: /fractary-core:config-show
+1. Review config: /fractary-core-config-show
 2. Set credentials in .env file
-3. Test: /fractary-work:issue-list
+3. Test: /fractary-work-issue-list
 ```
 
 ### Updating Configuration
@@ -229,7 +229,7 @@ Next steps:
 ```
 User: Switch our work tracking to Jira
 
-Claude: /fractary-core:config-update --context "switch to jira for work tracking"
+Claude: /fractary-core-config-update --context "switch to jira for work tracking"
 
 Sections to MODIFY: work
 Sections PRESERVED: repo, logs, file, spec, docs
@@ -248,18 +248,18 @@ Configuration updated and validated successfully.
 ```
 User: I'm in the evaluate phase, switch to test
 
-Claude: /fractary-core:env-switch test
+Claude: /fractary-core-env-switch test
 
 Environment switched to: test
 Credentials loaded from: .env -> .env.test -> .env.local
 
 Commands will now use test credentials.
-To switch back: /fractary-core:env-switch <name>
-To view status: /fractary-core:env-show
+To switch back: /fractary-core-env-switch <name>
+To view status: /fractary-core-env-show
 
 User: Now release to production
 
-Claude: /fractary-core:env-switch prod --clear
+Claude: /fractary-core-env-switch prod --clear
 
 Environment switched to: prod
 Credentials loaded from: .env -> .env.prod -> .env.local

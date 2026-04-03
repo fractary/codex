@@ -34,9 +34,9 @@ Organized by what you want to do. Each guide shows all available interfaces (SDK
 | Cache health | `client.getHealthChecks()` | `cache-health` | `codex_cache_health` | — |
 | List file sources | — | — | `codex_file_sources_list` | — |
 | Sync | — | `sync` | — | `/fractary-codex-sync` |
-| Initialize config | — | `config-init` | — | `/fractary-codex-config-init` |
-| Update config | — | `config-update` | — | `/fractary-codex-config-update` |
-| Validate config | — | `config-validate` | — | `/fractary-codex-config-validate` |
+| Initialize config | — | `config-init` | — | `/fractary-codex-config init` |
+| Update config | — | `config-update` | — | `/fractary-codex-config update` |
+| Validate config | — | `config-validate` | — | `/fractary-codex-config validate` |
 
 ---
 

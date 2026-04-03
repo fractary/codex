@@ -49,7 +49,7 @@ Write documentation with AI assistance.
 /docs-write --type api --title "User API" --source src/api/user/
 ```
 
-This command delegates to the `fractary-docs:docs-write` agent.
+This command delegates to the `fractary-docs-docs-write` agent.
 
 ### /docs-list
 
@@ -69,7 +69,7 @@ List documentation files.
 /docs-list --type guide
 ```
 
-This command delegates to the `fractary-docs:docs-list` agent.
+This command delegates to the `fractary-docs-docs-list` agent.
 
 ### /docs-validate
 
@@ -85,7 +85,7 @@ Validate documentation against type-specific rules.
 /docs-validate api-auth
 ```
 
-This command delegates to the `fractary-docs:docs-validate` agent.
+This command delegates to the `fractary-docs-docs-validate` agent.
 
 ### /docs-audit
 
@@ -104,7 +104,7 @@ Audit documentation quality and find gaps.
 /docs-audit --report gaps
 ```
 
-This command delegates to the `fractary-docs:docs-audit` agent.
+This command delegates to the `fractary-docs-docs-audit` agent.
 
 ### /docs-check-consistency
 
@@ -123,11 +123,11 @@ Check if documentation is consistent with code changes.
 /docs-check-consistency --source src/
 ```
 
-This command delegates to the `fractary-docs:docs-check-consistency` agent.
+This command delegates to the `fractary-docs-docs-check-consistency` agent.
 
 ## Agents
 
-### fractary-docs:docs-write
+### fractary-docs-docs-write
 
 Creates or updates documentation with AI assistance.
 
@@ -141,7 +141,7 @@ Creates or updates documentation with AI assistance.
 - Maintains consistent style
 - Links to related docs
 
-### fractary-docs:docs-list
+### fractary-docs-docs-list
 
 Lists documentation files.
 
@@ -149,7 +149,7 @@ Lists documentation files.
 - `/docs-list` command
 - Proactively when user asks what docs exist
 
-### fractary-docs:docs-validate
+### fractary-docs-docs-validate
 
 Validates documentation against type-specific rules.
 
@@ -162,7 +162,7 @@ Validates documentation against type-specific rules.
 - Validates format compliance
 - Reports errors and warnings
 
-### fractary-docs:docs-audit
+### fractary-docs-docs-audit
 
 Audits documentation quality, finds gaps, and identifies issues.
 
@@ -176,7 +176,7 @@ Audits documentation quality, finds gaps, and identifies issues.
 - Calculates coverage metrics
 - Provides recommendations
 
-### fractary-docs:docs-check-consistency
+### fractary-docs-docs-check-consistency
 
 Checks if documentation is consistent with code changes.
 
@@ -197,7 +197,7 @@ Checks if documentation is consistent with code changes.
 ```
 User: Document the authentication API
 
-Claude: [Uses fractary-docs:docs-write agent]
+Claude: [Uses fractary-docs-docs-write agent]
 
 I'll document the authentication API. Let me analyze the source code...
 
@@ -237,7 +237,7 @@ Documentation saved to: docs/api/auth.md
 ```
 User: Audit our documentation for gaps
 
-Claude: [Uses fractary-docs:docs-audit agent]
+Claude: [Uses fractary-docs-docs-audit agent]
 
 ## Documentation Audit Report
 
@@ -272,7 +272,7 @@ Would you like me to generate documentation for any of these gaps?
 ```
 User: Check if docs are up to date with the code
 
-Claude: [Uses fractary-docs:docs-check-consistency agent]
+Claude: [Uses fractary-docs-docs-check-consistency agent]
 
 ## Documentation Consistency Check
 
@@ -305,7 +305,7 @@ Would you like me to update the outdated documentation?
 ```
 User: Validate the API documentation
 
-Claude: [Uses fractary-docs:docs-validate agent]
+Claude: [Uses fractary-docs-docs-validate agent]
 
 ## Validation: api-auth.md
 

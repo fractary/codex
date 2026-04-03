@@ -1,49 +1,57 @@
 ---
 name: fractary-codex-sync
-description: Sync project bidirectionally with codex repository, with optional GitHub issue scoping. Use when syncing with the codex.
+description: Sync project bidirectionally with codex repository, with optional GitHub issue scoping
 ---
 
 # Codex Sync
 
-Sync the current project with the codex repository. Supports bidirectional sync, issue-scoped sync, and dry-run previews.
+Invokes the `fractary-codex sync` CLI to synchronize files between this project and the codex repository. When `--work-id` is provided, narrows sync scope based on issue context and posts a summary comment.
 
-## Arguments
+## Workflow
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `--work-id <id>` | No | GitHub issue number or URL to scope sync to |
-| `--to-codex` | No | Push local files to codex repository |
-| `--from-codex` | No | Pull files from codex to local cache |
-| `--dry-run` | No | Preview what would be synced (no changes made) |
-| `--env <env>` | No | Target environment (dev, test, staging, prod) |
+### 1. Validate CLI
 
-If no direction is specified, performs bidirectional sync (both to-codex and from-codex).
+```bash
+fractary-codex --version
+```
 
-When `--work-id` is provided, the sync will:
-1. Fetch the issue description and comments to understand context
-2. Narrow the sync to documents relevant to that issue
-3. Create a comment on the issue after sync completion
+If unavailable, fall back to `npx @fractary/codex-cli`. If neither works, report error and stop.
 
-## Execution
+### 2. Parse Arguments and Build Command
 
-Run: `fractary-codex sync [--work-id <id>] [--to-codex|--from-codex] [--dry-run] [--env <env>]`
+Map user arguments to CLI flags:
+
+| User Argument | CLI Flag |
+|---------------|----------|
+| `--work-id <id>` | `--work-id <id>` |
+| `--to-codex` | `--direction to-codex` |
+| `--from-codex` | `--direction from-codex` |
+| (neither) | (bidirectional, default) |
+| `--dry-run` | `--dry-run` |
+| `--env <env>` | `--env <env>` |
+| `--include <pattern>` | `--include <pattern>` (repeatable) |
+| `--exclude <pattern>` | `--exclude <pattern>` (repeatable) |
+
+### 3. Work ID Integration (conditional)
+
+**If `--work-id` is provided:** Read `docs/work-id-integration.md` for the full issue inference and comment workflow. Execute those steps before building the final CLI command.
+
+**If no `--work-id`:** Skip directly to step 4.
+
+### 4. Execute Sync
+
+```bash
+fractary-codex sync --json [--direction <dir>] [--work-id <id>] [--include <pattern>...] [--dry-run] [--env <env>]
+```
+
+Always use `--json` for structured output.
+
+### 5. Report Results
+
+Parse JSON output. Report status as success/warning/failure with file counts.
 
 ## Critical Rules
 
-**This is a READ-ONLY operation with respect to configuration:**
-- NEVER modify `.fractary/config.yaml` or any configuration files
-- NEVER add, remove, or change sync patterns
-- NEVER "fix" configuration if sync finds no files
-- If sync fails or finds no files, report the error and STOP
-- The user must manually fix their own configuration
-
-**After sync completes, DO NOT take any follow-up actions** to "help" fix problems. Simply report the results.
-
-## Status Codes
-
-The sync returns a status indicating the outcome:
-- `success`: Sync completed successfully with no issues
-- `warning`: Sync completed but with conflicts or partial failures
-- `failure`: Sync failed entirely
-
-Report the status and any details to the user.
+1. **ONLY use `fractary-codex sync` CLI** — no manual file operations, no git operations
+2. **NEVER modify config files** — this is a sync operation, not a configuration operation
+3. **If sync fails, report the error and stop** — do not attempt fixes

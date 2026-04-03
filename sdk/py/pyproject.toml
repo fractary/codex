@@ -7,7 +7,7 @@ name = "fractary-codex"
 version = "0.2.0"
 description = "Knowledge infrastructure SDK for AI agents - universal references, multi-tier caching, storage abstraction"
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 requires-python = ">=3.9"
 authors = [
     { name = "Fractary Engineering", email = "engineering@fractary.com" }
@@ -26,7 +26,7 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",

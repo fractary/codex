@@ -8,9 +8,9 @@ Codex configuration lives in the `codex:` section of `.fractary/config.yaml`. Th
 
 | Operation | CLI | Plugin |
 |-----------|-----|--------|
-| [Initialize](#initialize-config) | `fractary-codex config-init` | `/fractary-codex-config-init` |
-| [Update](#update-config) | `fractary-codex config-update` | `/fractary-codex-config-update` |
-| [Validate](#validate-config) | `fractary-codex config-validate` | `/fractary-codex-config-validate` |
+| [Initialize](#initialize-config) | `fractary-codex config-init` | `/fractary-codex-config init` |
+| [Update](#update-config) | `fractary-codex config-update` | `/fractary-codex-config update` |
+| [Validate](#validate-config) | `fractary-codex config-validate` | `/fractary-codex-config validate` |
 
 > Config operations are not available via SDK or MCP — use the CLI or Claude Code plugin.
 
@@ -23,10 +23,10 @@ Adds the `codex:` section to `.fractary/config.yaml`. Also creates the cache dir
 ### Initialize Config: Plugin
 
 ```
-/fractary-codex-config-init
+/fractary-codex-config init
 ```
 
-The agent auto-detects your organization from git remotes, derives the project name from the directory, and discovers the codex repository. It presents a summary for confirmation before writing anything.
+The skill auto-detects your organization from git remotes, derives the project name from the directory, and discovers the codex repository. It presents a summary for confirmation before writing anything.
 
 **Options:**
 - `--org <slug>` — Override organization slug
@@ -34,7 +34,7 @@ The agent auto-detects your organization from git remotes, derives the project n
 - `--sync-preset minimal` — Use minimal sync config (default: `standard`)
 - `--force` — Overwrite existing `codex:` section
 
-> Recommended over the CLI for first-time setup — the agent has more context and produces a more accurate initial config.
+> Recommended over the CLI for first-time setup — the skill has more context and produces a more accurate initial config.
 
 ### Initialize Config: CLI
 
@@ -77,10 +77,10 @@ Updates specific fields in the existing `codex:` section. At least one field mus
 ### Update Config: Plugin
 
 ```
-/fractary-codex-config-update
+/fractary-codex-config update
 ```
 
-Describe the change in natural language and the agent applies the appropriate field update.
+Describe the change in natural language and the skill applies the appropriate field update.
 
 **Options:**
 - `--org <slug>` — Update organization slug
@@ -128,7 +128,7 @@ Read-only validation of the codex configuration. Does not modify any files.
 ### Validate Config: Plugin
 
 ```
-/fractary-codex-config-validate
+/fractary-codex-config validate
 ```
 
 ### Validate Config: CLI

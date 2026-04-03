@@ -25,15 +25,12 @@
     "type": "git",
     "url": "git+https://github.com/fractary/codex.git"
   },
-  "license": "MIT",
-  "author": "Fractary Engineering",  
+  "license": "Apache-2.0",
+  "author": "Fractary Engineering",
   "main": ".opencode/plugins/fractary-codex.js",
   "pi": {
     "skills": [
       "plugins/codex/skills"
-    ],
-    "agents": [
-      "plugins/codex/agents"
     ]
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@fractary/codex",
-  "version": "0.12.22",
+  "version": "0.12.24",
   "description": "Knowledge infrastructure SDK for AI agents - universal references, multi-tier caching, storage abstraction, and sync",
   "keywords": [
     "codex",
@@ -23,7 +23,7 @@
     "type": "git",
     "url": "git+https://github.com/fractary/codex.git"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Fractary Engineering",
   "type": "module",
   "exports": {

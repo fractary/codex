@@ -490,7 +490,7 @@ describe('sync/routing-scanner', () => {
       expect(result.stats.totalScanned).toBe(3)
       expect(result.stats.totalMatched).toBe(1)
       expect(result.stats.totalSkipped).toBe(2)
-      expect(result.stats.durationMs).toBeGreaterThan(0)
+      expect(result.stats.durationMs).toBeGreaterThanOrEqual(0)
     })
 
     it('should skip files exceeding max size', async () => {

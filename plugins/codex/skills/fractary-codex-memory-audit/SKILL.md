@@ -3,301 +3,48 @@ name: fractary-codex-memory-audit
 description: Audit memory entries for validity by checking claims against current project state and scoring relevance
 ---
 
-<CONTEXT>
-You are the **memory-audit skill** for the fractary-codex plugin.
+# Memory Audit
 
-Your responsibility is to audit existing memory entries for validity and relevance. You scan all memories stored in `.fractary/codex/memory/`, parse their frontmatter and content, extract key claims, and verify those claims against the current project state. Memories that are outdated, incorrect, or no longer relevant are flagged for user action.
+Scans memories in `.fractary/codex/memory/`, extracts verifiable claims, checks them against current project state, and scores validity.
 
-**What You Audit:**
-- Factual accuracy of claims (referenced files exist, packages are still in use, configurations match)
-- Relevance to the current project state (technologies still in use, patterns still applied)
-- Freshness (how long since creation or last audit)
-- Consistency (no contradictions between memories)
+## Workflow
 
-**Validity Scoring:**
-Each memory receives a validity score from 0.0 to 1.0:
-| Score Range | Meaning |
-|-------------|---------|
-| 0.8 - 1.0 | Valid -- claims verified, content current |
-| 0.5 - 0.79 | Partially valid -- some claims outdated or unverifiable |
-| 0.0 - 0.49 | Likely invalid -- significant claims contradicted or references broken |
+1. **Discover memories**: Search for files matching `.fractary/codex/memory/**/*.md`. Filter by `--type` or `--id` if provided. Skip `status: deprecated`.
+2. **Extract claims**: Parse each memory for file references, package names, config keys, code references, version references.
+3. **Verify claims**: Check each claim against project state — search for files, search content for packages/code/config, read files for versions.
+4. **Score validity**: Read `docs/scoring-algorithm.md` for the scoring formula.
+5. **Deep analysis** (if `--deep`): Read `docs/deep-analysis.md` for git history, contradiction detection, and superseded memory checks.
+6. **Present findings**: For memories below threshold (default 0.5), read `docs/user-decisions.md` for the decision flow.
+7. **Apply decisions**: Update frontmatter based on user choices (keep/update/deprecate/delete).
+8. **Update timestamps**: Set `last_audited` to current time for all audited memories.
+9. **Print summary**: Total scanned, score distribution, actions taken.
 
-**Architecture Role:**
-```
-User / Agent
-  -> memory-audit skill (you)
-    -> Reads memories from .fractary/codex/memory/
-    -> Checks claims against project files (package.json, source code, config)
-    -> Scores validity
-    -> Presents low-scoring memories for user action
-    -> Updates frontmatter based on user decisions
-```
-</CONTEXT>
+## Critical Rules
 
-<CRITICAL_RULES>
-1. **ALWAYS parse both frontmatter and body** of each memory file
-2. **ALWAYS verify claims against actual project state** -- never assume a claim is valid without checking
-3. **ALWAYS ask the user** for memories scoring below 0.5 to get user decisions
-4. **NEVER delete or modify memory content without user approval**
-5. **ALWAYS update the `last_audited` timestamp** in frontmatter after auditing each memory
-6. **NEVER change memory status without explicit user decision** -- only update `last_audited` automatically
-7. **PRESENT evidence** when flagging a memory -- show what claim failed and what the current state is
-8. **SKIP memories with status `deprecated`** -- they have already been retired
-</CRITICAL_RULES>
+1. ALWAYS verify claims against actual project state — never assume validity
+2. ALWAYS ask the user before changing status or deleting
+3. NEVER modify memory content without user approval — only `last_audited` updates automatically
+4. ALWAYS provide evidence when flagging — show claim, current state, and conflict
+5. Skip `status: deprecated` memories unless needed for cross-reference
 
-<INPUTS>
-The skill runs without required parameters. Optional arguments:
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `--type <type>` | No | Audit only memories of a specific type (e.g., `troubleshooting`, `pattern`) |
-| `--threshold <float>` | No | Override the default action threshold (default: 0.5). Memories below this score trigger user prompts |
-| `--stale-days <int>` | No | Flag memories not audited in this many days (default: 90) |
-| `--id <memory-id>` | No | Audit a single memory by ID |
-
-**Examples:**
-- No args: Audit all active memories
-- `--type troubleshooting`: Audit only troubleshooting memories
-- `--threshold 0.7`: Flag any memory below 0.7 validity
-- `--stale-days 30`: Also flag memories not audited in 30 days
-- `--id MEM-TS-004-cors-error-proxy-config`: Audit a single memory
-</INPUTS>
-
-<WORKFLOW>
-
-## Step 1: Load All Memories
-
-Discover memory files by searching for files matching `.fractary/codex/memory/**/*.md`.
-
-If `--type` is provided, narrow the search to `.fractary/codex/memory/{type}/*.md`.
-
-If `--id` is provided, locate the specific file at `.fractary/codex/memory/**/{id}.md`.
-
-Read each discovered file and parse the YAML frontmatter and Markdown body.
-
-Skip any memory with `status: deprecated`.
-
-## Step 2: Extract Claims from Each Memory
-
-For each memory, extract verifiable claims from the body content:
-
-**File references:** Paths mentioned in the text (e.g., `src/api/router.ts`, `config/database.yml`)
-**Package references:** Package names mentioned (e.g., `express`, `@prisma/client`)
-**Configuration claims:** Settings, environment variables, config keys mentioned
-**Code patterns:** Function names, class names, module paths referenced
-**Version references:** Specific version numbers mentioned (e.g., `Node 18`, `React 18.2`)
-
-Build a checklist of verifiable claims for each memory.
-
-## Step 3: Verify Claims Against Project State
-
-For each extracted claim, check the current project state:
-
-**File existence:** Search for the referenced file path.
-
-**Package presence:** Search for the package name in `package.json`. Also check nested `package.json` files.
-
-**Configuration values:** Search for the config key in likely config files.
-
-**Code references:** Search the codebase for the function name, class name, or pattern.
-
-**Version checks:** Read `package.json` to check engines and dependencies for version info.
-
-## Step 4: Score Validity
-
-Calculate a validity score (0.0 to 1.0) for each memory:
-
-**Scoring algorithm:**
-```
-claims_verified = number of claims that checked out
-claims_total = total verifiable claims extracted
-claims_failed = number of claims that are contradicted by current state
-claims_unverifiable = claims that cannot be checked (neutral)
-
-base_score = claims_verified / (claims_verified + claims_failed)
-staleness_penalty = 0.1 if not audited in {stale_days} days, else 0.0
-
-validity_score = max(0.0, base_score - staleness_penalty)
-```
-
-If a memory has no verifiable claims, assign a score of 0.5 (neutral) and flag it as "unverifiable."
-
-## Step 5: Present Low-Scoring Memories to User
-
-For each memory with a validity score below the threshold (default 0.5), ask the user what to do. Present the memory details including:
-- Memory ID and title
-- Type and creation date
-- Failed claims with evidence
-- Available actions: Keep as-is, Update, Deprecate, or Delete
-
-## Step 6: Apply User Decisions
-
-Based on the user's choice for each flagged memory:
-
-### Keep as-is
-- Update only `last_audited` timestamp in frontmatter
-- No other changes
-
-### Update
-- Present the current memory content to the user
-- Ask what should be changed (or let the memory-creator handle a rewrite)
-- Update the memory content and `last_audited` timestamp
-- Keep `status: active` (or `draft` if major changes)
-
-### Deprecate
-- Set `status: deprecated` in frontmatter
-- Set `deprecated_date: {now}` in frontmatter
-- Update `last_audited` timestamp
-- Do not delete the file
-
-### Delete
-- Confirm deletion with the user one more time
-- If confirmed, delete the file
-- If not, fall back to deprecation
-
-## Step 7: Update Audited Timestamps
-
-For all memories that were audited (even those that scored above the threshold), update the `last_audited` field in their frontmatter to the current timestamp.
-
-## Step 8: Print Audit Summary
+## Summary Format
 
 ```
 Memory Audit Complete
 
-  Total memories scanned: 24
-  Skipped (deprecated):   3
-  Audited:               21
+  Total scanned: N
+  Skipped (deprecated): N
+  Audited: N
 
   Score distribution:
-    Valid (0.8-1.0):     14
-    Partial (0.5-0.79):   4
-    Low (0.0-0.49):        3
+    Valid (0.8-1.0):   N
+    Partial (0.5-0.79): N
+    Warning (0.3-0.49): N
+    Critical (0.0-0.29): N
 
   Actions taken:
-    Kept as-is:           1
-    Updated:              1
-    Deprecated:           1
-    Deleted:              0
-
-  All last_audited timestamps updated.
+    Kept as-is: N
+    Updated: N
+    Deprecated: N
+    Deleted: N
 ```
-
-</WORKFLOW>
-
-<COMPLETION_CRITERIA>
-Operation is complete when:
-
-**For successful audit:**
-- All target memories loaded and parsed
-- Claims extracted and verified against project state
-- Validity scores calculated for each memory
-- Low-scoring memories presented to user for decisions
-- User decisions applied (status changes, deletions, updates)
-- `last_audited` timestamps updated for all audited memories
-- Summary printed
-
-**For single-memory audit (--id):**
-- Specified memory loaded and audited
-- Result presented to user if below threshold
-- Timestamp updated
-
-**For failure:**
-- Clear error message with reason
-- No partial updates applied
-- User informed of which memories were and were not audited
-</COMPLETION_CRITERIA>
-
-<OUTPUTS>
-
-## Full Audit Summary
-
-```
-Memory Audit Complete
-
-  Total memories scanned: 24
-  Skipped (deprecated):   3
-  Audited:               21
-
-  Score distribution:
-    Valid (0.8-1.0):     14
-    Partial (0.5-0.79):   4
-    Low (0.0-0.49):        3
-
-  Actions taken:
-    Kept as-is:           1
-    Updated:              1
-    Deprecated:           1
-    Deleted:              0
-
-  All last_audited timestamps updated.
-```
-
-## Single Memory Audit
-
-```
-Audited: MEM-TS-004-cors-error-proxy-config
-
-  Title:    CORS error in proxy configuration
-  Type:     troubleshooting
-  Created:  2025-10-15
-  Score:    0.85 (valid)
-
-  Claims checked:
-    [pass] File src/proxy/config.ts exists
-    [pass] Package http-proxy-middleware in dependencies
-    [pass] CORS_ORIGIN env var referenced in .env.example
-    [skip] Error message text (not verifiable)
-
-  Status: No action needed. last_audited updated.
-```
-
-## No Memories Found
-
-```
-No memory files found in .fractary/codex/memory/
-
-To create memories, use the fractary-codex-memory-create skill.
-```
-
-## Error: Memory Directory Not Found
-
-```
-Error: Memory directory .fractary/codex/memory/ does not exist.
-
-Create it with:
-  mkdir -p .fractary/codex/memory
-
-Or create your first memory with the fractary-codex-memory-create skill.
-```
-
-</OUTPUTS>
-
-<ERROR_HANDLING>
-
-### Memory Directory Not Found
-- Report that no memory directory exists
-- Suggest creating one or using memory-create first
-- Do not attempt to create the directory
-
-### Malformed Frontmatter
-- Log a warning for the specific memory file
-- Skip that memory in scoring
-- Include in summary as "skipped (parse error)"
-- Continue auditing remaining memories
-
-### Unverifiable Claims
-- Assign neutral weight (do not count as pass or fail)
-- Note as "unverifiable" in the claim check output
-- If all claims are unverifiable, score as 0.5
-
-### User Interruption
-- If the user cancels mid-audit, report progress so far
-- Do not revert already-applied changes (timestamps, status changes)
-- Note which memories were not yet audited
-
-### File Write Failure
-- If updating frontmatter fails, report the error
-- Continue with remaining memories
-- Include failures in the final summary
-
-</ERROR_HANDLING>

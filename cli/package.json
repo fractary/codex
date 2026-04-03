@@ -1,6 +1,6 @@
 {
   "name": "@fractary/codex-cli",
-  "version": "0.10.30",
+  "version": "0.10.31",
   "description": "Command-line interface for Fractary Codex knowledge management",
   "keywords": [
     "codex",
@@ -17,7 +17,7 @@
     "url": "git+https://github.com/fractary/codex.git",
     "directory": "cli"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Fractary Engineering",
   "type": "module",
   "bin": {

@@ -42,7 +42,7 @@ This document covers:
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    Layer 3: Claude Code Plugins                     │
-│  /fractary-work:issue-fetch  /fractary-repo:commit  /fractary-faber:run  │
+│  /fractary-work-issue-fetch  /fractary-repo-commit  /fractary-faber-run  │
 │                                                                     │
 │  Purpose: Claude-specific UX, natural language routing              │
 │  Implementation: Thin wrappers that invoke CLI or SDK               │
@@ -84,7 +84,7 @@ This document covers:
 ### 2.3 Data Flow Example
 
 ```
-User types: /fractary-repo:commit "Add feature"
+User types: /fractary-repo-commit "Add feature"
 
 1. Plugin Layer (commands/commit.md):
    - Parses natural language arguments
@@ -1517,15 +1517,15 @@ fractary spec create --work-id 123
 
 | Plugin Command | CLI Command |
 |---------------|-------------|
-| `/fractary-work:issue-fetch 123` | `fractary work issue fetch 123` |
-| `/fractary-work:issue-create` | `fractary work issue create` |
-| `/fractary-work:comment-create 123 "msg"` | `fractary work comment create 123 "msg"` |
-| `/fractary-repo:commit "msg"` | `fractary repo commit --message "msg"` |
-| `/fractary-repo:branch-create "desc"` | `fractary repo branch create --description "desc"` |
-| `/fractary-repo:pr-create "title"` | `fractary repo pr create --title "title"` |
-| `/fractary-faber:run 123` | `fractary faber run --work-id 123` |
-| `/fractary-spec:create` | `fractary spec create` |
-| `/fractary-logs:capture 123` | `fractary logs capture 123` |
+| `/fractary-work-issue-fetch 123` | `fractary work issue fetch 123` |
+| `/fractary-work-issue-create` | `fractary work issue create` |
+| `/fractary-work-comment-create 123 "msg"` | `fractary work comment create 123 "msg"` |
+| `/fractary-repo-commit "msg"` | `fractary repo commit --message "msg"` |
+| `/fractary-repo-branch-create "desc"` | `fractary repo branch create --description "desc"` |
+| `/fractary-repo-pr-create "title"` | `fractary repo pr create --title "title"` |
+| `/fractary-faber-run 123` | `fractary faber run --work-id 123` |
+| `/fractary-spec-create` | `fractary spec create` |
+| `/fractary-logs-capture 123` | `fractary logs capture 123` |
 
 ### 6.3 Common Options
 

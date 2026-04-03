@@ -85,10 +85,10 @@ Codex adds a `codex:` section to your existing `.fractary/config.yaml`. There ar
 Run the slash command in a Claude Code session:
 
 ```
-/fractary-codex-config-init
+/fractary-codex-config init
 ```
 
-The agent auto-detects your organization (from git remotes), project name, and codex repository. It presents its findings for confirmation before writing anything. This is the recommended path because it inspects your actual git setup and existing config to construct a more accurate initial configuration.
+The skill auto-detects your organization (from git remotes), project name, and codex repository. It presents its findings for confirmation before writing anything. This is the recommended path because it inspects your actual git setup and existing config to construct a more accurate initial configuration.
 
 After initialization, **restart Claude Code** to activate the MCP server tools.
 

@@ -1,65 +1,39 @@
 ---
 name: fractary-codex-config
-description: Initialize, update, or validate codex configuration in .fractary/config.yaml. Use when managing codex configuration.
+description: Initialize, update, or validate codex configuration in .fractary/config.yaml
 ---
 
-# Codex Configuration Management
+# Codex Config Manager
 
-Manage the codex section of `.fractary/config.yaml`. Supports three operations: initialize, update, and validate.
+Manages the `codex:` section in `.fractary/config.yaml`. Three operations:
 
-## Arguments
+## Operations
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `init` | — | Initialize the codex section in an existing config |
-| `update` | — | Update specific fields in the codex configuration |
-| `validate` | — | Validate the codex configuration (read-only) |
+- **init**: First-time setup of codex configuration. Read `docs/init-protocol.md` for detailed instructions.
+- **update**: Modify existing config fields. Read `docs/update-protocol.md` for detailed instructions.
+- **validate**: Check config integrity (read-only). Read `docs/validate-protocol.md` for detailed instructions.
 
-### Init Arguments
+## Routing
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `--org <name>` | No | Organization name |
-| `--codex <repo>` | No | Codex repository name |
-| `--sync-preset <name>` | No | Sync preset to apply |
-| `--force` | No | Overwrite existing codex section |
+Parse the first positional argument to determine operation:
+- `init` or no arguments with no existing codex section → init operation
+- `update` or field-specific flags present (`--org`, `--codex-repo`, `--sync-preset`) → update operation
+- `validate` → validate operation
 
-### Update Arguments
+## Common Rules
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `--org <name>` | No | Organization name |
-| `--codex-repo <name>` | No | Codex repository name |
-| `--sync-preset <name>` | No | Sync preset to apply |
+1. ALL operations delegate to CLI: `fractary-codex config-{operation}` or `npx @fractary/codex-cli config-{operation}`
+2. NEVER write YAML directly — the CLI handles file I/O, validation, and persistence
+3. `.fractary/config.yaml` must exist (created by `@fractary/core`'s config-initialize). If missing, tell user to run that first.
+4. Ask the user for ALL confirmations — never proceed without explicit user approval
+5. ALWAYS use `--json` flag when invoking CLI for structured output parsing
 
-### Validate Arguments
+## Quick Reference
 
-No arguments. This is a read-only operation.
+| CLI Command | Purpose |
+|-------------|---------|
+| `fractary-codex config-init --org <org> --project <name> --codex-repo <repo> --sync-preset <preset> --json` | Initialize config |
+| `fractary-codex config-update --org <org> --codex-repo <repo> --sync-preset <preset> --json` | Update fields |
+| `fractary-codex config-validate --json` | Validate config |
 
-## Execution
-
-### Initialize
-
-Adds the codex section to an existing `.fractary/config.yaml` (created by `@fractary/core`'s config-initialize).
-
-**Prerequisites:** `.fractary/config.yaml` must exist. Fails if codex section already exists (use `--force` to overwrite).
-
-Run: `fractary-codex config-init [--org <name>] [--codex <repo>] [--sync-preset <name>] [--force]`
-
-Before running, confirm auto-detected settings with the user.
-
-### Update
-
-Updates specific fields in the existing codex section of `.fractary/config.yaml`. Only the provided fields are modified — all other values are preserved.
-
-**Prerequisites:** Codex section must exist in config (run init first).
-
-Run: `fractary-codex config-update [--org <name>] [--codex-repo <name>] [--sync-preset <name>]`
-
-### Validate
-
-Checks the codex section of `.fractary/config.yaml` for errors and warnings without modifying any files. Checks config structure, field formats, directory existence, and MCP server configuration.
-
-Run: `fractary-codex config-validate`
-
-This is a **read-only** operation. Do not modify any files.
+If `fractary-codex` is not available globally, fall back to `npx @fractary/codex-cli`.

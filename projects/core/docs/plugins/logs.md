@@ -51,7 +51,7 @@ Start capturing a conversation session for an issue.
 /logs-capture --issue 123 --title "Auth implementation session" --redact
 ```
 
-This command delegates to the `fractary-logs:logs-capture` agent.
+This command delegates to the `fractary-logs-logs-capture` agent.
 
 ### /logs-stop
 
@@ -122,7 +122,7 @@ Analyze logs for patterns, errors, or time spent.
 /logs-analyze --issue 123 --report time
 ```
 
-This command delegates to the `fractary-logs:logs-analyze` agent.
+This command delegates to the `fractary-logs-logs-analyze` agent.
 
 ### /logs-archive
 
@@ -180,7 +180,7 @@ Log a specific message or decision to an issue's log.
 
 ## Agents
 
-### fractary-logs:logs-capture
+### fractary-logs-logs-capture
 
 Starts capturing a conversation session for an issue.
 
@@ -188,7 +188,7 @@ Starts capturing a conversation session for an issue.
 - `/logs-capture` command
 - Proactively when user mentions starting logging or recording
 
-### fractary-logs:logs-stop
+### fractary-logs-logs-stop
 
 Stops active session capture.
 
@@ -196,7 +196,7 @@ Stops active session capture.
 - `/logs-stop` command
 - Proactively when user mentions stopping or ending session
 
-### fractary-logs:logs-analyze
+### fractary-logs-logs-analyze
 
 Analyzes logs for patterns, errors, or time spent.
 
@@ -210,30 +210,30 @@ Analyzes logs for patterns, errors, or time spent.
 - Time tracking by phase
 - Trend analysis
 
-### fractary-logs:logs-read
+### fractary-logs-logs-read
 
 Reads log files for an issue.
 
-### fractary-logs:logs-search
+### fractary-logs-logs-search
 
 Searches across logs.
 
-### fractary-logs:logs-archive
+### fractary-logs-logs-archive
 
 Archives logs for completed issues.
 
-### fractary-logs:logs-cleanup
+### fractary-logs-logs-cleanup
 
 Cleans up old logs.
 
-### fractary-logs:logs-audit
+### fractary-logs-logs-audit
 
 Audits logs in project and generates management plan.
 
 **Triggered by:**
 - Proactively when user mentions audit, health check, or log compliance
 
-### fractary-logs:logs-log
+### fractary-logs-logs-log
 
 Logs a specific message or decision.
 
@@ -244,7 +244,7 @@ Logs a specific message or decision.
 ```
 User: Start capturing this session for issue #123
 
-Claude: [Uses fractary-logs:logs-capture agent]
+Claude: [Uses fractary-logs-logs-capture agent]
 
 Session capture started:
 - Session ID: SESSION-20240115-001
@@ -257,7 +257,7 @@ I'll capture our conversation. Use /logs-stop when done.
 
 User: We're done, stop the capture
 
-Claude: [Uses fractary-logs:logs-stop agent]
+Claude: [Uses fractary-logs-logs-stop agent]
 
 Session capture stopped:
 - Session ID: SESSION-20240115-001
@@ -271,7 +271,7 @@ Session capture stopped:
 ```
 User: How much time have I spent on issue #123?
 
-Claude: [Uses fractary-logs:logs-analyze agent]
+Claude: [Uses fractary-logs-logs-analyze agent]
 
 ## Time Analysis for Issue #123
 
