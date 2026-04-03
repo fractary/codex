@@ -322,16 +322,16 @@ CLI automatically manages SDK dependencies.
 
 ## Delegation Pattern
 
-Other skills should invoke cli-helper via the Skill tool:
+Other skills should invoke cli-helper by delegating to this skill:
 ```
-USE SKILL: cli-helper
-Operation: invoke-cli
-Parameters: {
-  "command": "fetch",
-  "args": ["codex://fractary/project/file.md"],
-  "parse_output": true
-}
+Invoke the cli-helper skill with:
+  Operation: invoke-cli
+  Parameters: {
+    "command": "fetch",
+    "args": ["codex://fractary/project/file.md"],
+    "parse_output": true
+  }
 ```
 
-Never call scripts directly - always go through the skill invocation.
+Never call scripts directly - always go through skill invocation.
 </NOTES>

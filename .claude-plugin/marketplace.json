@@ -28,12 +28,6 @@
       ],
       "category": "documentation",
       "strict": true,
-      "commands": [
-        "./commands/fractary-codex-config-init.md",
-        "./commands/fractary-codex-config-update.md",
-        "./commands/fractary-codex-config-validate.md",
-        "./commands/fractary-codex-sync.md"
-      ],
       "agents": [
         "./agents/fractary-codex-config-initializer.md",
         "./agents/fractary-codex-config-updater.md",
