@@ -14,7 +14,6 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
   },
-  "devDependencies": {},
   "keywords": [
     "codex",
     "knowledge-management",
@@ -32,5 +31,9 @@
     "skills": [
       "plugins/codex/skills"
     ]
+  },
+  "dependencies": {
+    "@fractary/core": "^0.8.1",
+    "@fractary/core-cli": "^0.5.1"
   }
 }
