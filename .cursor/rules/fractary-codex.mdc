@@ -1,0 +1,33 @@
+---
+description: Fractary Codex skills and CLI reference
+globs:
+alwaysApply: true
+---
+
+# Fractary Codex
+
+This project uses the `fractary-codex` CLI and skills for knowledge management, document fetching, caching, and project-to-codex synchronization.
+
+## Skills
+
+Skills are in `plugins/codex/skills/*/SKILL.md`. Read the relevant skill for detailed guidance.
+
+Available skills:
+- **fractary-codex-config** — Initialize, update, or validate codex configuration
+- **fractary-codex-sync** — Sync project with codex repository
+- **fractary-codex-cli-helper** — Shared CLI invocation utility
+- **fractary-codex-repo-discoverer** — Discover organization repositories for sync
+- **fractary-codex-memory-audit** — Audit memory entries for validity
+- **fractary-codex-memory-create** — Create structured memory entries
+
+## CLI
+
+Run `fractary-codex --help` for full usage. Key commands:
+- `fractary-codex fetch <uri>` — Fetch a document by codex:// URI
+- `fractary-codex cache list|clear|stats|health` — Manage document cache
+- `fractary-codex sync [--to-codex|--from-codex] [--work-id <id>]` — Sync with codex repository
+- `fractary-codex config-init|config-update|config-validate` — Manage configuration
+
+## Configuration
+
+Configuration lives at `.fractary/config.yaml`. Validate with `fractary-codex config-validate`.

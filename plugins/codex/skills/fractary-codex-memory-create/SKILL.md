@@ -1,14 +1,6 @@
 ---
 name: fractary-codex-memory-create
 description: Create structured memory entries from troubleshooting sessions, architectural decisions, performance findings, and other reusable knowledge
-user-invocable: true
-argument-hint: "[--template <type>] [--context <description>] [--title <title>]"
-allowed-tools:
-  - Read
-  - Write
-  - Glob
-  - Bash
-  - AskUserQuestion
 ---
 
 # Memory Create
@@ -56,4 +48,4 @@ related: []
 1. ALWAYS generate a unique memory ID — never overwrite existing files
 2. ALWAYS set status to `draft` for new memories
 3. NEVER fabricate content — use provided context or ask the user
-4. Use AskUserQuestion for all interactive prompts
+4. Ask the user for all interactive prompts when context is not provided

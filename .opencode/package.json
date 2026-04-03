@@ -1,0 +1,16 @@
+{
+  "name": "@fractary/opencode-codex",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./plugins/fractary-codex.js",
+  "keywords": ["opencode-plugin", "fractary", "codex"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fractary/codex",
+    "directory": ".opencode"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@opencode-ai/plugin": "1.3.x"
+  }
+}

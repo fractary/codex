@@ -1,10 +1,6 @@
 ---
 name: fractary-codex-sync
 description: Sync project bidirectionally with codex repository, with optional GitHub issue scoping
-user-invocable: true
-argument-hint: "[--work-id <id>] [--to-codex|--from-codex] [--dry-run] [--env <env>] [--include <pattern>] [--exclude <pattern>]"
-allowed-tools:
-  - Bash
 ---
 
 # Codex Sync

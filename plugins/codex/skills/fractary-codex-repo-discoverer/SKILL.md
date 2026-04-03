@@ -1,7 +1,6 @@
 ---
 name: fractary-codex-repo-discoverer
 description: Discover repositories in an organization for sync operations
-model: claude-haiku-4-5
 ---
 
 <CONTEXT>

@@ -36,9 +36,7 @@ For each contradiction, record:
 
 Search for topic overlap:
 ```
-USE TOOL: Grep
-Pattern: "{key terms from memory}"
-Path: .fractary/codex/memory/
+Search for "{key terms from memory}" in .fractary/codex/memory/
 ```
 
 ## Superseded Memory Detection
@@ -66,8 +64,7 @@ Look for newer memories addressing the same topic by searching for shared keywor
 
 For file references not found, check if renamed or moved:
 ```
-USE TOOL: Grep
-Pattern: "{filename_without_extension}"
+Search the codebase for "{filename_without_extension}"
 ```
 
 ## Dependency Verification (when --deep)
@@ -89,18 +86,8 @@ Apply additional adjustments beyond the base scoring algorithm (see `docs/scorin
 
 When contradictions are found, batch related findings and present together:
 
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "Contradiction detected between two memories:\n\nMEM-CV-002 (convention): 'Always use async/await'\nMEM-PT-005 (pattern): 'Use .then() chains for pipelines'\n\nWhich should take precedence?",
-    header: "Memory Contradiction",
-    options: [
-      { label: "Keep first, deprecate second", description: "The convention is authoritative" },
-      { label: "Keep second, deprecate first", description: "The pattern is valid for this use case" },
-      { label: "Keep both, add clarifying notes", description: "Both valid in different contexts" },
-      { label: "Deprecate both", description: "Neither is accurate anymore" }
-    ]
-  }
-]
-```
+Ask the user which memory should take precedence, with options:
+- Keep first, deprecate second (the convention is authoritative)
+- Keep second, deprecate first (the pattern is valid for this use case)
+- Keep both, add clarifying notes (both valid in different contexts)
+- Deprecate both (neither is accurate anymore)

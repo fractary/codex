@@ -24,7 +24,7 @@ Fractary Codex provides infrastructure for managing organizational knowledge acr
 ### 1. Install
 
 ```bash
-npm install @fractary/codex          # SDK (required by CLI and MCP server)
+npm install -g @fractary/codex        # SDK (required by CLI and MCP server)
 npm install -g @fractary/codex-cli   # CLI
 ```
 

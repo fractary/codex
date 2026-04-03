@@ -4,23 +4,11 @@ Handling flows for memories that score below the action threshold.
 
 ## Presenting Low-Scoring Memories
 
-For each memory below threshold, use AskUserQuestion:
+For each memory below threshold, present the details and ask the user what to do:
 
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "Memory <ID> scored <score> validity.\n\nTitle: <title>\nType: <type>\nCreated: <date>\n\nFailed claims:\n- <claim 1>\n- <claim 2>\n\nWhat would you like to do?",
-    header: "Low Validity Memory",
-    options: [
-      { label: "Keep as-is", description: "Still relevant despite failed checks (e.g., file renamed but content accurate)" },
-      { label: "Update", description: "I'll update the memory to reflect current state" },
-      { label: "Deprecate", description: "Mark as deprecated — preserved for history" },
-      { label: "Delete", description: "Remove the memory file entirely" }
-    ]
-  }
-]
-```
+- Memory ID, title, type, creation date
+- Failed claims with evidence
+- Options: **Keep as-is** (still relevant despite failed checks), **Update** (reflect current state), **Deprecate** (mark deprecated, preserved for history), or **Delete** (remove entirely)
 
 ## Applying Decisions
 
@@ -41,20 +29,7 @@ Questions: [
 - Update `last_audited`
 
 ### Delete
-Confirm deletion before proceeding:
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "Confirm permanent deletion of <ID>?\n\nFile: .fractary/codex/memory/<type>/<id>.md",
-    header: "Confirm Deletion",
-    options: [
-      { label: "Yes, delete permanently", description: "File will be removed from disk" },
-      { label: "No, deprecate instead", description: "Mark as deprecated but keep file" }
-    ]
-  }
-]
-```
+Confirm deletion before proceeding — ask the user: "Confirm permanent deletion of `<ID>`?" with options to delete permanently or deprecate instead.
 
 If confirmed: `rm .fractary/codex/memory/{type}/{id}.md`
 If not: apply deprecation instead.
@@ -63,17 +38,4 @@ If not: apply deprecation instead.
 
 For memories above threshold but not audited recently, batch them:
 
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "The following N memories haven't been audited in over <stale_days> days but appear valid:\n\n- <id1> (score: <s1>)\n- <id2> (score: <s2>)\n\nMark all as audited?",
-    header: "Stale but Valid Memories",
-    options: [
-      { label: "Mark all as audited", description: "Update last_audited for all" },
-      { label: "Review individually", description: "Let me check each one" },
-      { label: "Skip for now", description: "Leave timestamps unchanged" }
-    ]
-  }
-]
-```
+Ask the user whether to mark all stale-but-valid memories as audited, review them individually, or skip for now.

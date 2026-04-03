@@ -17,10 +17,7 @@ Memory IDs follow the pattern: `MEM-{PREFIX}-{SEQ}-{slug}`
 
 Scan the type directory to find the next available sequence:
 
-```
-USE TOOL: Glob
-Pattern: .fractary/codex/memory/{type}/MEM-{PREFIX}-*.md
-```
+Search for files matching `.fractary/codex/memory/{type}/MEM-{PREFIX}-*.md`.
 
 Count existing files. Next sequence = count + 1, zero-padded to 3 digits (e.g., `001`, `042`).
 

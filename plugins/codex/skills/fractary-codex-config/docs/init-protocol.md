@@ -45,46 +45,15 @@ gh repo list <org> --json name --jq '.[].name | select(startswith("codex."))'
 
 ### 4. Confirm Settings With User (REQUIRED)
 
-**You MUST use AskUserQuestion to confirm settings before running the CLI.**
+**You MUST confirm settings with the user before running the CLI.**
 
-If the user provided ALL settings as explicit arguments, skip this step. Otherwise, present auto-detected values:
+If the user provided ALL settings as explicit arguments, skip this step. Otherwise, present the auto-detected values and ask the user to confirm or adjust:
+- Organization, project name, codex repository, sync preset
+- Let them specify different values if the auto-detected ones are wrong
 
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "I detected the following settings. Please confirm or adjust:",
-    header: "Codex Configuration",
-    options: [
-      {
-        label: "Confirm and proceed",
-        description: "Organization: <org>\nProject: <project>\nCodex Repo: <repo>\nSync Preset: standard"
-      },
-      {
-        label: "Let me specify different values",
-        description: "I'll ask you for the values to use instead"
-      }
-    ]
-  }
-]
-```
-
-If user chooses different values, ask follow-up questions for each setting.
-
-For sync preset (if not provided):
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "Which sync preset would you like to use?",
-    header: "Sync Preset",
-    options: [
-      { label: "Standard (Recommended)", description: "Syncs docs/**, README.md, and CLAUDE.md" },
-      { label: "Minimal", description: "Syncs docs/** and README.md only" }
-    ]
-  }
-]
-```
+For sync preset (if not provided), ask the user to choose:
+- **Standard (Recommended)** — Syncs docs/**, README.md, and CLAUDE.md
+- **Minimal** — Syncs docs/** and README.md only
 
 ### 5. Execute CLI Command
 

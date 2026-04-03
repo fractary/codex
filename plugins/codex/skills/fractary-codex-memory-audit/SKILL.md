@@ -1,15 +1,6 @@
 ---
 name: fractary-codex-memory-audit
 description: Audit memory entries for validity by checking claims against current project state and scoring relevance
-user-invocable: true
-argument-hint: "[--type <type>] [--id <memory-id>] [--threshold <float>] [--stale-days <int>] [--deep]"
-allowed-tools:
-  - Read
-  - Write
-  - Glob
-  - Grep
-  - Bash
-  - AskUserQuestion
 ---
 
 # Memory Audit
@@ -18,9 +9,9 @@ Scans memories in `.fractary/codex/memory/`, extracts verifiable claims, checks 
 
 ## Workflow
 
-1. **Discover memories**: Glob `.fractary/codex/memory/**/*.md`. Filter by `--type` or `--id` if provided. Skip `status: deprecated`.
+1. **Discover memories**: Search for files matching `.fractary/codex/memory/**/*.md`. Filter by `--type` or `--id` if provided. Skip `status: deprecated`.
 2. **Extract claims**: Parse each memory for file references, package names, config keys, code references, version references.
-3. **Verify claims**: Check each claim against project state using Glob (files), Grep (packages, code, config), Read (versions).
+3. **Verify claims**: Check each claim against project state — search for files, search content for packages/code/config, read files for versions.
 4. **Score validity**: Read `docs/scoring-algorithm.md` for the scoring formula.
 5. **Deep analysis** (if `--deep`): Read `docs/deep-analysis.md` for git history, contradiction detection, and superseded memory checks.
 6. **Present findings**: For memories below threshold (default 0.5), read `docs/user-decisions.md` for the decision flow.
@@ -31,7 +22,7 @@ Scans memories in `.fractary/codex/memory/`, extracts verifiable claims, checks 
 ## Critical Rules
 
 1. ALWAYS verify claims against actual project state — never assume validity
-2. ALWAYS use AskUserQuestion before changing status or deleting
+2. ALWAYS ask the user before changing status or deleting
 3. NEVER modify memory content without user approval — only `last_audited` updates automatically
 4. ALWAYS provide evidence when flagging — show claim, current state, and conflict
 5. Skip `status: deprecated` memories unless needed for cross-reference

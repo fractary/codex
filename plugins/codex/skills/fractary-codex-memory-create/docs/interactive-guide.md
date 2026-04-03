@@ -14,53 +14,25 @@ If `--context` is provided but no type, analyze the text to suggest:
 - API/service/library/config/integration language → suggest `integration`
 - Convention/standard/naming/rule language → suggest `convention`
 
-Present suggestion for confirmation:
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "Based on your description, this sounds like an architectural decision. Is that correct?",
-    header: "Memory Type",
-    options: [
-      { label: "Yes, Architectural Decision", description: "Design choices with rationale and trade-offs" },
-      { label: "No, let me choose a different type", description: "I'll show you all available types" }
-    ]
-  }
-]
-```
+Present suggestion for confirmation. Ask the user:
+- "Based on your description, this sounds like an architectural decision. Is that correct?"
+- Options: "Yes, Architectural Decision" or "No, let me choose a different type"
 
 ### Full Type Selection Menu
 
-If no context or user wants to choose:
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "What type of knowledge would you like to capture?",
-    header: "Memory Type Selection",
-    options: [
-      { label: "Troubleshooting", description: "Bug fixes, error resolutions, debugging techniques you discovered" },
-      { label: "Architectural Decision", description: "Design choices you made, with rationale and trade-offs" },
-      { label: "Performance", description: "Benchmarks, optimizations, performance insights you found" },
-      { label: "Pattern", description: "Reusable code patterns, idioms, or best practices" },
-      { label: "Integration", description: "Third-party service integrations, API usage, configuration details" },
-      { label: "Convention", description: "Team conventions, coding standards, naming rules" }
-    ]
-  }
-]
-```
+If no context or user wants to choose, ask the user to select from:
+- **Troubleshooting** — Bug fixes, error resolutions, debugging techniques you discovered
+- **Architectural Decision** — Design choices you made, with rationale and trade-offs
+- **Performance** — Benchmarks, optimizations, performance insights you found
+- **Pattern** — Reusable code patterns, idioms, or best practices
+- **Integration** — Third-party service integrations, API usage, configuration details
+- **Convention** — Team conventions, coding standards, naming rules
 
 ## Content Gathering (when --context is NOT provided)
 
 Guide through each section sequentially:
 
-1. **Overview first:**
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  { question: "Tell me about what you discovered or decided. What's the key takeaway?", header: "Overview", allowFreeText: true }
-]
-```
+1. **Overview first:** Ask the user: "Tell me about what you discovered or decided. What's the key takeaway?"
 
 2. **Type-specific follow-ups** — ask for each section relevant to the chosen type (see `docs/type-sections.md` for the sections). Ask one section at a time.
 
@@ -76,17 +48,4 @@ Parse the context to fill sections. Then ask targeted follow-ups only for missin
 
 ## Title Determination
 
-If `--title` not provided, propose based on content:
-```
-USE TOOL: AskUserQuestion
-Questions: [
-  {
-    question: "I'd suggest the title: \"<proposed title>\". Would you like to use this?",
-    header: "Memory Title",
-    options: [
-      { label: "Use suggested title", description: "<proposed title>" },
-      { label: "Enter a different title", description: "I'll type my own title" }
-    ]
-  }
-]
-```
+If `--title` not provided, propose a title based on content and ask the user to confirm or enter a different one.

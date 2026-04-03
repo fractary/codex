@@ -1,12 +1,6 @@
 ---
 name: fractary-codex-config
 description: Initialize, update, or validate codex configuration in .fractary/config.yaml
-user-invocable: true
-argument-hint: "<init|update|validate> [--org <name>] [--codex-repo <name>] [--sync-preset <name>] [--force] [--json]"
-allowed-tools:
-  - Bash
-  - Read
-  - AskUserQuestion
 ---
 
 # Codex Config Manager
@@ -31,7 +25,7 @@ Parse the first positional argument to determine operation:
 1. ALL operations delegate to CLI: `fractary-codex config-{operation}` or `npx @fractary/codex-cli config-{operation}`
 2. NEVER write YAML directly — the CLI handles file I/O, validation, and persistence
 3. `.fractary/config.yaml` must exist (created by `@fractary/core`'s config-initialize). If missing, tell user to run that first.
-4. Use `AskUserQuestion` for ALL user prompts — never use plain text questions
+4. Ask the user for ALL confirmations — never proceed without explicit user approval
 5. ALWAYS use `--json` flag when invoking CLI for structured output parsing
 
 ## Quick Reference
