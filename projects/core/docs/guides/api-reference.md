@@ -592,7 +592,7 @@ startCapture(options: CaptureStartOptions): CaptureResult
 const capture = logManager.startCapture({
   issueNumber: 123,
   redactSensitive: true,
-  model: 'claude-3.5-sonnet'
+  model: 'claude-sonnet-5'
 });
 ```
 
