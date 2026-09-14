@@ -31,7 +31,7 @@ Capture a log entry (session, build, deployment, etc.).
   "content": "Session transcript...",
   "issue_number": 123,
   "metadata": {
-    "model": "claude-3.5-sonnet",
+    "model": "claude-sonnet-5",
     "duration": 3600
   }
 }
